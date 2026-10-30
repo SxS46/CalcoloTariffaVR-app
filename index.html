@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Videorent Tariffa</title>
+  
+  <!-- Telegram Web App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    :root {
+      --bg: var(--tg-theme-bg-color, #0b132b);
+      --card-bg: var(--tg-theme-secondary-bg-color, #1c2541);
+      --text: var(--tg-theme-text-color, #f8fafc);
+      --text-muted: var(--tg-theme-hint-color, #94a3b8);
+      --primary: var(--tg-theme-button-color, #0ea5e9);
+      --primary-text: var(--tg-theme-button-text-color, #ffffff);
+      --accent: #38bdf8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: rgba(255, 255, 255, 0.08);
+      --radius: 14px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+      padding-bottom: 90px;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Container */
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 12px 16px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0 16px 0;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    }
+    .user-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .user-role {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .icon-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.15s ease;
+    }
+    .icon-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Live Shift Card */
+    .shift-card {
+      position: relative;
+      overflow: hidden;
+      border-left: 4px solid var(--primary);
+    }
+    .shift-card.active {
+      border-left-color: var(--success);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, var(--card-bg) 100%);
+    }
+    .shift-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .shift-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .status-badge.live {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .status-badge.off {
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--text-muted);
+    }
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .shift-details {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin: 8px 0 16px 0;
+    }
+    .shift-time {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .shift-elapsed {
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn:active {
+      transform: scale(0.96);
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--primary-text);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+    .btn-success {
+      background: var(--success);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Month Stats Widget */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 2px;
+    }
+    .stat-value.highlight {
+      color: var(--accent);
+    }
+
+    /* Month Selector */
+    .month-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 18px 0 12px 0;
+    }
+    .month-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Entries List */
+    .entries-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .entry-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .entry-item:active {
+      transform: scale(0.98);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .entry-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .entry-type-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .entry-type-icon.casa {
+      background: rgba(14, 165, 233, 0.15);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+    .entry-type-icon.trasf {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .entry-date {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .entry-hours {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .entry-right {
+      text-align: right;
+    }
+    .entry-pay {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--success);
+    }
+    .entry-extra {
+      font-size: 11px;
+      color: var(--warning);
+      font-weight: 600;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--text-muted);
+    }
+    .empty-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    /* Modal / Bottom Sheet */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-sheet {
+      background: var(--card-bg);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px 20px 34px 20px;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--primary);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)) 0;
+      z-index: 50;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.15s ease;
+      background: none;
+      border: none;
+    }
+    .nav-item.active {
+      color: var(--primary);
+    }
+    .nav-icon {
+      font-size: 20px;
+    }
+
+    /* Screen Views */
+    .view-screen {
+      display: none;
+    }
+    .view-screen.active {
+      display: block;
+    }
+
+    /* Loading Spinner */
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(11, 19, 43, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      gap: 14px;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loader-text {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading State -->
+  <div id="loader" class="loader-overlay">
+    <div class="spinner"></div>
+    <div id="loader-msg" class="loader-text">Connessione a Videorent...</div>
+  </div>
+
+  <div class="container">
+    
+    <!-- Top Header -->
+    <header class="header">
+      <div class="user-info">
+        <div id="user-avatar" class="avatar">VR</div>
+        <div>
+          <div id="user-name" class="user-name">Caricamento...</div>
+          <div id="user-role" class="user-role">Collaboratore</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="fetchDashboardData()" title="Aggiorna dati">🔄</button>
+        <button id="btn-admin" class="icon-btn" style="display:none;" onclick="showScreen('admin')" title="Pannello Colleghi">👥</button>
+      </div>
+    </header>
+
+    <!-- SCREEN 1: DASHBOARD -->
+    <main id="screen-dashboard" class="view-screen active">
+
+      <!-- Shift Live Card -->
+      <div id="shift-card" class="card shift-card">
+        <div class="shift-header">
+          <div class="shift-title">
+            <span id="shift-pulse" class="pulse-dot" style="display:none;"></span>
+            <span id="shift-status-title">Stato Turno</span>
+          </div>
+          <span id="shift-badge" class="status-badge off">Fuori Servizio</span>
+        </div>
+
+        <div class="shift-details">
+          <div id="shift-display-time" class="shift-time">-- : --</div>
+          <div id="shift-elapsed-tag" class="shift-elapsed" style="display:none;">0h 00m</div>
+        </div>
+
+        <!-- Buttons when shift is closed -->
+        <div id="shift-closed-actions" class="btn-row">
+          <button class="btn btn-primary" onclick="openStartShiftModal('CASA')">🏠 Inizia Casa</button>
+          <button class="btn btn-primary" style="background:#0284c7;" onclick="openStartShiftModal('TRASFERTA')">🚗 Inizia Trasferta</button>
+        </div>
+
+        <!-- Buttons when shift is open -->
+        <div id="shift-open-actions" class="btn-row" style="display:none;">
+          <button class="btn btn-success" onclick="openEndShiftModal()">⏹️ Chiudi Turno</button>
+          <button class="btn btn-danger" onclick="confirmCancelShift()">🗑️ Annulla</button>
+        </div>
+      </div>
+
+      <!-- Month Summary Card -->
+      <div class="card">
+        <div class="shift-header">
+          <div class="shift-title">📊 Riepilogo del Mese</div>
+          <span id="stats-month-name" class="status-badge" style="background:rgba(56,189,248,0.15);color:var(--accent);">Mese</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Compenso Stimato</div>
+            <div id="stat-total-pay" class="stat-value highlight">0 €</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Giornate Totali</div>
+            <div id="stat-total-days" class="stat-value">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Casa / Trasferta</div>
+            <div id="stat-split-days" class="stat-value">0 / 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Extra Maturati</div>
+            <div id="stat-extra-pay" class="stat-value">0 €</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Month Navigation & Entries -->
+      <div class="month-nav">
+        <div class="month-title">
+          <span>📅 Giornate Registrate</span>
+        </div>
+        <button class="btn btn-outline" style="padding: 6px 12px; font-size:12px;" onclick="openManualEntryModal()">+ Aggiungi Giorno</button>
+      </div>
+
+      <!-- Entries Container -->
+      <div id="entries-list">
+        <!-- Rendered dynamically -->
+      </div>
+
+    </main>
+
+    <!-- SCREEN 2: IMPOSTAZIONI / TARIFFE -->
+    <section id="screen-settings" class="view-screen">
+      <div class="card">
+        <div class="shift-title" style="margin-bottom:14px;">💰 Le Tue Tariffe Personali</div>
+        
+        <div class="form-group">
+          <label class="form-label">🏠 Casa - Giornata Base (€)</label>
+          <input type="number" id="cfg-casa-base" class="form-input" placeholder="Es. 220">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Straordinario Orario (€)</label>
+            <input type="number" id="cfg-casa-extra" class="form-input" placeholder="Es. 30">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mezza Giornata (€)</label>
+            <input type="number" id="cfg-casa-half" class="form-input" placeholder="Es. 140">
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+
+        <div class="form-group">
+          <label class="form-label">🚗 Trasferta - Giornata Base (€)</label>
+          <input type="number" id="cfg-trasf-base" class="form-input" placeholder="Es. 250">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Straordinario Orario (€)</label>
+            <input type="number" id="cfg-trasf-extra" class="form-input" placeholder="Es. 30">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mezza Giornata (€)</label>
+            <input type="number" id="cfg-trasf-half" class="form-input" placeholder="Es. 250">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label">🎉 Maggiorazione Weekend & Festivi</label>
+          <select id="cfg-weekend-rule" class="form-select">
+            <option value="ALL">Sabato, Domenica e Festivi (Tariffa Trasferta)</option>
+            <option value="SUNDAY_AND_HOLIDAYS">Solo Domenica e Festivi</option>
+            <option value="NONE">Disattivata</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveRatesSettings()">💾 Salva Tariffe</button>
+      </div>
+
+      <div class="card">
+        <div class="shift-title" style="margin-bottom:12px;">📄 Esportazione Documenti</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Visualizza o esporta il prospetto contabile A4 completo del mese corrente in PDF:</p>
+        <button class="btn btn-outline" style="width:100%;" onclick="openMonthlyPdf()">📄 Apri Consuntivo Mensile</button>
+      </div>
+    </section>
+
+    <!-- SCREEN 3: WIZARD INIZIALE (Nuovo Collega Approvato) -->
+    <section id="screen-wizard" class="view-screen">
+      <div class="card" style="border-left: 4px solid var(--accent);">
+        <h2 style="font-size:18px;margin-bottom:8px;">👋 Benvenuto in Videorent!</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+          Configura in 30 secondi i tuoi accordi tariffari. I valori rimangono <strong>100% privati</strong> nel tuo foglio personale.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">1. Compenso Base Casa (€)</label>
+          <input type="number" id="wiz-casa-base" class="form-input" placeholder="Es. 220" value="220">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Straordinario (€)</label>
+            <input type="number" id="wiz-casa-extra" class="form-input" placeholder="30" value="30">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mezza Giornata (€)</label>
+            <input type="number" id="wiz-casa-half" class="form-input" placeholder="140" value="140">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:12px;">
+          <label class="form-label">2. Compenso Base Trasferta (€)</label>
+          <input type="number" id="wiz-trasf-base" class="form-input" placeholder="Es. 250" value="250">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Straordinario (€)</label>
+            <input type="number" id="wiz-trasf-extra" class="form-input" placeholder="30" value="30">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mezza Giornata (€)</label>
+            <input type="number" id="wiz-trasf-half" class="form-input" placeholder="250" value="250">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:12px;">
+          <label class="form-label">3. Maggiorazione Weekend & Festivi</label>
+          <select id="wiz-weekend-rule" class="form-select">
+            <option value="ALL">Sabato, Domenica e Festivi (Tariffa Trasferta)</option>
+            <option value="SUNDAY_AND_HOLIDAYS">Solo Domenica e Festivi</option>
+            <option value="NONE">Disattivata</option>
+          </select>
+        </div>
+
+        <button class="btn btn-success" style="width:100%;margin-top:16px;" onclick="submitWizard()">🚀 Completa Configurazione</button>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: IN ATTESA DI APPROVAZIONE -->
+    <section id="screen-pending" class="view-screen">
+      <div class="card" style="text-align:center;padding:40px 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">⏳</div>
+        <h2 style="font-size:18px;margin-bottom:8px;">Richiesta Inviata</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">
+          La tua richiesta di accesso è stata notificata all'amministratore. Non appena il tuo profilo verrà abilitato, potrai configurare le tue tariffe ed iniziare.
+        </p>
+        <button class="btn btn-outline" style="margin:0 auto;" onclick="fetchDashboardData()">🔄 Controlla Approvazione</button>
+      </div>
+    </section>
+
+    <!-- SCREEN: ACCESSO FUORI TELEGRAM -->
+    <section id="screen-not-telegram" class="view-screen">
+      <div class="card" style="text-align:center;padding:40px 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">📱</div>
+        <h2 style="font-size:18px;margin-bottom:8px;">Applicazione Telegram</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">
+          Questa applicazione è integrata con il Bot Telegram di Videorent. Per accedere ai tuoi dati e al tuo foglio, avvia l'app direttamente dal bot.
+        </p>
+        <a href="https://t.me/sxscalcolotariffabot" class="btn btn-primary" style="text-decoration:none;display:inline-flex;margin:0 auto;">🚀 Apri nel Bot Telegram</a>
+      </div>
+    </section>
+
+    <!-- SCREEN 5: PANNELLO AMMINISTRATORE -->
+    <section id="screen-admin" class="view-screen">
+      <div class="card">
+        <div class="shift-title" style="margin-bottom:12px;">👥 Gestione Colleghi</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Elenco collaboratori censiti nel sistema:</p>
+        <div id="admin-colleagues-list">
+          <!-- Popolato dinamicamente -->
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav id="bottom-bar" class="bottom-nav">
+    <button class="nav-item active" onclick="showScreen('dashboard')">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" onclick="openManualEntryModal()">
+      <span class="nav-icon">➕</span>
+      <span>Aggiungi</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('settings')">
+      <span class="nav-icon">⚙️</span>
+      <span>Tariffe</span>
+    </button>
+  </nav>
+
+  <!-- MODAL: APRI TURNO -->
+  <div id="modal-start-shift" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title" id="start-modal-title">Inizia Turno</div>
+        <button class="close-btn" onclick="closeModal('modal-start-shift')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Orario di Inizio</label>
+        <input type="time" id="start-modal-time" class="form-input">
+      </div>
+      <input type="hidden" id="start-modal-type">
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmStartShift()">🟢 Avvia Turno</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CHIUDI TURNO -->
+  <div id="modal-end-shift" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title">Concludi Turno di Lavoro</div>
+        <button class="close-btn" onclick="closeModal('modal-end-shift')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Orario di Fine</label>
+        <input type="time" id="end-modal-time" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Extra / Rimborsi (€)</label>
+        <input type="number" id="end-modal-extra" class="form-input" placeholder="0" value="0">
+      </div>
+      <button class="btn btn-success" style="width:100%;margin-top:10px;" onclick="confirmEndShift()">✅ Salva e Registra</button>
+    </div>
+  </div>
+
+  <!-- MODAL: AGGIUNGI GIORNATA RETROATTIVA -->
+  <div id="modal-manual-entry" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title">Registra Giornata di Lavoro</div>
+        <button class="close-btn" onclick="closeModal('modal-manual-entry')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input type="date" id="manual-date" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipologia</label>
+        <select id="manual-type" class="form-select">
+          <option value="CASA">🏠 Casa</option>
+          <option value="TRASFERTA">🚗 Trasferta</option>
+        </select>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Inizio</label>
+          <input type="time" id="manual-start" class="form-input" value="08:00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fine</label>
+          <input type="time" id="manual-end" class="form-input" value="17:00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Extra (€)</label>
+        <input type="number" id="manual-extra" class="form-input" placeholder="0" value="0">
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmManualEntry()">💾 Registra nel Foglio</button>
+    </div>
+  </div>
+
+  <!-- MODAL: MODIFICA GIORNATA -->
+  <div id="modal-edit-entry" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title">Modifica Giornata</div>
+        <button class="close-btn" onclick="closeModal('modal-edit-entry')">✕</button>
+      </div>
+      <input type="hidden" id="edit-row">
+      <input type="hidden" id="edit-sheet-name">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Inizio</label>
+          <input type="time" id="edit-start" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fine</label>
+          <input type="time" id="edit-end" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Extra (€)</label>
+        <input type="number" id="edit-extra" class="form-input">
+      </div>
+      <div class="btn-row" style="margin-top:14px;">
+        <button class="btn btn-primary" onclick="confirmEditEntry()">💾 Salva Modifiche</button>
+        <button class="btn btn-danger" style="flex:0.4;" onclick="confirmDeleteEntry()">🗑️ Elimina</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURAZIONE ENDPOINT GOOGLE APPS SCRIPT
+    const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbxZZMRCEy3OmmuQht3ABI3_o4YOFfrITiWRnQxQz4hL9rU5LG2zT6HXLmgmVOwQMw/exec";
+
+    // Telegram Web App Init
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      try { tg.enableClosingConfirmation(); } catch (e) {}
+    }
+
+    // State
+    let appState = {
+      user: null,
+      isAdmin: false,
+      rates: null,
+      activeShift: null,
+      stats: null,
+      entries: [],
+      monthName: "",
+      timerInterval: null
+    };
+
+    // Estrai dati utente da Telegram SDK
+    function getTelegramUser() {
+      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        return tg.initDataUnsafe.user;
+      }
+      // Parametri URL opzionali se passati esplicitamente
+      const urlParams = new URLSearchParams(window.location.search);
+      const testId = urlParams.get("telegram_id") || urlParams.get("userId");
+      if (testId) {
+        return {
+          id: Number(testId),
+          first_name: urlParams.get("first_name") || "Utente",
+          username: urlParams.get("username") || ""
+        };
+      }
+      return null;
+    }
+
+    // Chiamata API verso Google Apps Script
+    async function callApi(action, extraParams = {}) {
+      const tgUser = getTelegramUser();
+      if (!tgUser || !tgUser.id) {
+        throw new Error("Utente non identificato");
+      }
+      const params = new URLSearchParams({
+        action: action,
+        telegram_id: tgUser.id,
+        first_name: tgUser.first_name || "",
+        last_name: tgUser.last_name || "",
+        username: tgUser.username || "",
+        initData: tg?.initData || "",
+        ...extraParams
+      });
+
+      const url = `${API_ENDPOINT}?${params.toString()}`;
+      const res = await fetch(url);
+      return await res.json();
+    }
+
+    function showLoader(msg) {
+      document.getElementById("loader-msg").textContent = msg || "Caricamento...";
+      document.getElementById("loader").style.display = "flex";
+    }
+
+    function hideLoader() {
+      document.getElementById("loader").style.display = "none";
+    }
+
+    // Inizializzazione Dashboard
+    async function fetchDashboardData() {
+      const tgUser = getTelegramUser();
+      if (!tgUser || !tgUser.id) {
+        showScreen("not-telegram");
+        document.getElementById("bottom-bar").style.display = "none";
+        document.getElementById("user-name").textContent = "Accesso Telegram Richiesto";
+        document.getElementById("user-role").textContent = "Non Connesso";
+        hideLoader();
+        return;
+      }
+
+      showLoader("Caricamento dati...");
+      try {
+        const data = await callApi("miniapp_init");
+        if (!data || !data.success) {
+          alert("Errore caricamento: " + (data?.error || "Risposta non valida"));
+          hideLoader();
+          return;
+        }
+
+        appState.isAdmin = Boolean(data.isAdmin);
+
+        // Controllo stato utente
+        if (data.status === "PENDING_APPROVAL") {
+          showScreen("pending");
+          hideLoader();
+          return;
+        }
+
+        if (data.status === "APPROVED_PENDING_WIZARD") {
+          showScreen("wizard");
+          hideLoader();
+          return;
+        }
+
+        // Utente Attivo
+        appState.user = data.user;
+        appState.rates = data.rates;
+        appState.activeShift = data.activeShift;
+        appState.stats = data.stats;
+        appState.entries = data.entries || [];
+        appState.monthName = data.monthName || "";
+
+        renderHeader();
+        renderActiveShift();
+        renderStats();
+        renderEntries();
+        populateSettingsInputs();
+
+        if (appState.isAdmin) {
+          document.getElementById("btn-admin").style.display = "flex";
+        }
+
+        showScreen("dashboard");
+      } catch (err) {
+        console.error("Errore fetchDashboardData:", err);
+        alert("Errore di connessione: " + err.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function renderHeader() {
+      const u = appState.user || getTelegramUser();
+      const nameEl = document.getElementById("user-name");
+      const avatarEl = document.getElementById("user-avatar");
+      const roleEl = document.getElementById("user-role");
+
+      nameEl.textContent = u.name || u.first_name || "Collaboratore";
+      const initials = (u.name || u.first_name || "VR").substring(0, 2).toUpperCase();
+      avatarEl.textContent = initials;
+      roleEl.textContent = appState.isAdmin ? "👑 Amministratore" : "Collaboratore";
+    }
+
+    function renderActiveShift() {
+      const card = document.getElementById("shift-card");
+      const title = document.getElementById("shift-status-title");
+      const badge = document.getElementById("shift-badge");
+      const pulse = document.getElementById("shift-pulse");
+      const timeDisplay = document.getElementById("shift-display-time");
+      const elapsedTag = document.getElementById("shift-elapsed-tag");
+      const closedActions = document.getElementById("shift-closed-actions");
+      const openActions = document.getElementById("shift-open-actions");
+
+      if (appState.timerInterval) {
+        clearInterval(appState.timerInterval);
+        appState.timerInterval = null;
+      }
+
+      if (appState.activeShift && appState.activeShift.start) {
+        card.classList.add("active");
+        const typeLabel = (appState.activeShift.type === "CASA") ? "🏠 Casa" : "🚗 Trasferta";
+        title.textContent = `In Turno • ${typeLabel}`;
+        badge.className = "status-badge live";
+        badge.textContent = "In Servizio";
+        pulse.style.display = "inline-block";
+        timeDisplay.textContent = `dalle ${appState.activeShift.start}`;
+        elapsedTag.style.display = "block";
+        closedActions.style.display = "none";
+        openActions.style.display = "flex";
+
+        updateElapsedTime();
+        appState.timerInterval = setInterval(updateElapsedTime, 60000);
+      } else {
+        card.classList.remove("active");
+        title.textContent = "Stato Turno";
+        badge.className = "status-badge off";
+        badge.textContent = "Fuori Servizio";
+        pulse.style.display = "none";
+        timeDisplay.textContent = "-- : --";
+        elapsedTag.style.display = "none";
+        closedActions.style.display = "flex";
+        openActions.style.display = "none";
+      }
+    }
+
+    function updateElapsedTime() {
+      if (!appState.activeShift || !appState.activeShift.start) return;
+      const parts = appState.activeShift.start.split(":");
+      const startH = parseInt(parts[0], 10);
+      const startM = parseInt(parts[1], 10);
+
+      const now = new Date();
+      const currentH = now.getHours();
+      const currentM = now.getMinutes();
+
+      let diffMinutes = (currentH * 60 + currentM) - (startH * 60 + startM);
+      if (diffMinutes < 0) diffMinutes += 24 * 60; // Notturno
+
+      const h = Math.floor(diffMinutes / 60);
+      const m = diffMinutes % 60;
+      document.getElementById("shift-elapsed-tag").textContent = `${h}h ${m < 10 ? '0' : ''}${m}m`;
+    }
+
+    function renderStats() {
+      const s = appState.stats || { casaDays: 0, trasfDays: 0, totalEuro: 0, totalExtra: 0 };
+      document.getElementById("stats-month-name").textContent = appState.monthName || "Mese Corrente";
+      document.getElementById("stat-total-pay").textContent = (s.totalEuro || 0) + " €";
+      document.getElementById("stat-total-days").textContent = (s.casaDays || 0) + (s.trasfDays || 0);
+      document.getElementById("stat-split-days").textContent = `${s.casaDays || 0} / ${s.trasfDays || 0}`;
+      document.getElementById("stat-extra-pay").textContent = (s.totalExtra || 0) + " €";
+    }
+
+    function renderEntries() {
+      const listEl = document.getElementById("entries-list");
+      listEl.innerHTML = "";
+
+      if (!appState.entries || appState.entries.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🏖️</div>
+            <div>Nessuna giornata registrata questo mese</div>
+          </div>
+        `;
+        return;
+      }
+
+      appState.entries.forEach(e => {
+        const isCasa = (e.type === "CASA");
+        const div = document.createElement("div");
+        div.className = "entry-item";
+        div.onclick = () => openEditEntryModal(e);
+
+        div.innerHTML = `
+          <div class="entry-left">
+            <div class="entry-type-icon ${isCasa ? 'casa' : 'trasf'}">
+              ${isCasa ? '🏠' : '🚗'}
+            </div>
+            <div>
+              <div class="entry-date">${e.date}</div>
+              <div class="entry-hours">${e.start} - ${e.end}</div>
+            </div>
+          </div>
+          <div class="entry-right">
+            <div class="entry-pay">${e.total ? e.total + ' €' : '—'}</div>
+            ${e.extra > 0 ? `<div class="entry-extra">+${e.extra} € extra</div>` : ''}
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+    }
+
+    function populateSettingsInputs() {
+      const r = appState.rates || {};
+      const u = appState.user || {};
+      document.getElementById("cfg-casa-base").value = r.casaBase || "";
+      document.getElementById("cfg-casa-extra").value = r.casaStraord || "";
+      document.getElementById("cfg-casa-half").value = r.casaShortPay || "";
+      document.getElementById("cfg-trasf-base").value = r.trasfBase || "";
+      document.getElementById("cfg-trasf-extra").value = r.trasfStraord || "";
+      document.getElementById("cfg-trasf-half").value = r.trasfShortPay || "";
+      document.getElementById("cfg-weekend-rule").value = u.weekendHolidayAsTrasferta || "NONE";
+    }
+
+    // Gestione Schermate
+    function showScreen(name) {
+      document.querySelectorAll(".view-screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(`screen-${name}`).classList.add("active");
+
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      if (name === "dashboard") document.querySelectorAll(".nav-item")[0].classList.add("active");
+      if (name === "settings") document.querySelectorAll(".nav-item")[2].classList.add("active");
+
+      if (name === "admin") {
+        fetchAdminUsers();
+      }
+    }
+
+    // Modal helpers
+    function openModal(id) {
+      document.getElementById(id).classList.add("open");
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("open");
+    }
+
+    // Live Shift Actions
+    function openStartShiftModal(type) {
+      document.getElementById("start-modal-type").value = type;
+      document.getElementById("start-modal-title").textContent = (type === "CASA") ? "🏠 Inizia Turno Casa" : "🚗 Inizia Turno Trasferta";
+      
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById("start-modal-time").value = `${hh}:${mm}`;
+      openModal("modal-start-shift");
+    }
+
+    async function confirmStartShift() {
+      const type = document.getElementById("start-modal-type").value;
+      const start = document.getElementById("start-modal-time").value;
+      if (!start) return alert("Inserisci un orario di inizio");
+
+      closeModal("modal-start-shift");
+      showLoader("Apertura turno in corso...");
+
+      try {
+        const res = await callApi("miniapp_start_shift", { type: type, start: start });
+        if (res.success) {
+          appState.activeShift = res.activeShift;
+          renderActiveShift();
+          if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        } else {
+          alert("Errore: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function openEndShiftModal() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById("end-modal-time").value = `${hh}:${mm}`;
+      document.getElementById("end-modal-extra").value = "0";
+      openModal("modal-end-shift");
+    }
+
+    async function confirmEndShift() {
+      const end = document.getElementById("end-modal-time").value;
+      const extra = document.getElementById("end-modal-extra").value || "0";
+      if (!end) return alert("Inserisci un orario di fine");
+
+      closeModal("modal-end-shift");
+      showLoader("Salvataggio e calcolo tariffa...");
+
+      try {
+        const res = await callApi("miniapp_end_shift", { end: end, extra: extra });
+        if (res.success) {
+          appState.activeShift = null;
+          appState.stats = res.stats;
+          appState.entries = res.entries || [];
+          renderActiveShift();
+          renderStats();
+          renderEntries();
+          if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        } else {
+          alert("Errore: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function confirmCancelShift() {
+      if (!confirm("Sei sicuro di voler annullare il turno in corso senza salvare?")) return;
+      showLoader("Annullamento...");
+      try {
+        const res = await callApi("miniapp_cancel_shift");
+        if (res.success) {
+          appState.activeShift = null;
+          renderActiveShift();
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Manual Entry Actions
+    function openManualEntryModal() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById("manual-date").value = today;
+      openModal("modal-manual-entry");
+    }
+
+    async function confirmManualEntry() {
+      const date = document.getElementById("manual-date").value;
+      const type = document.getElementById("manual-type").value;
+      const start = document.getElementById("manual-start").value;
+      const end = document.getElementById("manual-end").value;
+      const extra = document.getElementById("manual-extra").value || "0";
+
+      if (!date || !start || !end) return alert("Compila data, orario di inizio e fine");
+
+      closeModal("modal-manual-entry");
+      showLoader("Registrazione giornata...");
+
+      try {
+        const res = await callApi("miniapp_add_manual_entry", {
+          date: date,
+          type: type,
+          start: start,
+          end: end,
+          extra: extra
+        });
+        if (res.success) {
+          appState.stats = res.stats;
+          appState.entries = res.entries || [];
+          renderStats();
+          renderEntries();
+        } else {
+          alert("Errore: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Edit / Delete Entry
+    function openEditEntryModal(entry) {
+      document.getElementById("edit-row").value = entry.row;
+      document.getElementById("edit-sheet-name").value = entry.sheetName || "";
+      document.getElementById("edit-start").value = entry.start || "";
+      document.getElementById("edit-end").value = entry.end || "";
+      document.getElementById("edit-extra").value = entry.extra || "0";
+      openModal("modal-edit-entry");
+    }
+
+    async function confirmEditEntry() {
+      const row = document.getElementById("edit-row").value;
+      const sheetName = document.getElementById("edit-sheet-name").value;
+      const start = document.getElementById("edit-start").value;
+      const end = document.getElementById("edit-end").value;
+      const extra = document.getElementById("edit-extra").value;
+
+      closeModal("modal-edit-entry");
+      showLoader("Aggiornamento riga...");
+
+      try {
+        const res = await callApi("miniapp_update_entry", {
+          row: row,
+          sheetName: sheetName,
+          start: start,
+          end: end,
+          extra: extra
+        });
+        if (res.success) {
+          appState.stats = res.stats;
+          appState.entries = res.entries || [];
+          renderStats();
+          renderEntries();
+        } else {
+          alert("Errore: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function confirmDeleteEntry() {
+      if (!confirm("Sei sicuro di voler eliminare definitivamente questa registrazione dal foglio?")) return;
+      const row = document.getElementById("edit-row").value;
+      const sheetName = document.getElementById("edit-sheet-name").value;
+
+      closeModal("modal-edit-entry");
+      showLoader("Eliminazione riga...");
+
+      try {
+        const res = await callApi("miniapp_delete_entry", {
+          row: row,
+          sheetName: sheetName
+        });
+        if (res.success) {
+          appState.stats = res.stats;
+          appState.entries = res.entries || [];
+          renderStats();
+          renderEntries();
+        } else {
+          alert("Errore: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Settings & Rates
+    async function saveRatesSettings() {
+      const payload = {
+        casaBase: document.getElementById("cfg-casa-base").value,
+        casaStraord: document.getElementById("cfg-casa-extra").value,
+        casaShortPay: document.getElementById("cfg-casa-half").value,
+        trasfBase: document.getElementById("cfg-trasf-base").value,
+        trasfStraord: document.getElementById("cfg-trasf-extra").value,
+        trasfShortPay: document.getElementById("cfg-trasf-half").value,
+        weekendHolidayAsTrasferta: document.getElementById("cfg-weekend-rule").value
+      };
+
+      showLoader("Salvataggio impostazioni...");
+      try {
+        const res = await callApi("miniapp_save_rates", { rates: JSON.stringify(payload) });
+        if (res.success) {
+          alert("✅ Tariffe aggiornate con successo!");
+          showScreen("dashboard");
+          fetchDashboardData();
+        } else {
+          alert("Errore: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Wizard Submission
+    async function submitWizard() {
+      const wiz = {
+        casaBase: Number(document.getElementById("wiz-casa-base").value) || 220,
+        casaStraord: Number(document.getElementById("wiz-casa-extra").value) || 30,
+        casaShortHours: 4,
+        casaShortPay: Number(document.getElementById("wiz-casa-half").value) || 140,
+        trasfBase: Number(document.getElementById("wiz-trasf-base").value) || 250,
+        trasfStraord: Number(document.getElementById("wiz-trasf-extra").value) || 30,
+        trasfShortHours: 0,
+        trasfShortPay: Number(document.getElementById("wiz-trasf-half").value) || 250,
+        weekendHolidayAsTrasferta: document.getElementById("wiz-weekend-rule").value
+      };
+
+      showLoader("Salvataggio configurazione iniziale...");
+      try {
+        const res = await callApi("miniapp_save_wizard", { wizard: JSON.stringify(wiz) });
+        if (res.success) {
+          alert("🎉 Configurazione completata! Benvenuto a bordo.");
+          fetchDashboardData();
+        } else {
+          alert("Errore: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Open PDF View
+    function openMonthlyPdf() {
+      const tgUser = getTelegramUser();
+      const url = `${API_ENDPOINT}?action=miniapp_get_pdf&telegram_id=${tgUser.id}`;
+      window.open(url, "_blank");
+    }
+
+    // Admin Panel
+    async function fetchAdminUsers() {
+      const container = document.getElementById("admin-colleagues-list");
+      container.innerHTML = "<div style='color:var(--text-muted);padding:10px;'>Caricamento colleghi...</div>";
+
+      try {
+        const res = await callApi("miniapp_admin_action", { subAction: "list_users" });
+        if (!res.success) {
+          container.innerHTML = "<div style='color:var(--danger);'>Accesso negato</div>";
+          return;
+        }
+
+        container.innerHTML = "";
+        const list = res.users || [];
+        if (list.length === 0) {
+          container.innerHTML = "<div style='color:var(--text-muted);'>Nessun collega registrato</div>";
+          return;
+        }
+
+        list.forEach(u => {
+          const div = document.createElement("div");
+          div.className = "entry-item";
+          div.style.cursor = "default";
+          const isPending = (u.status === "PENDING_APPROVAL");
+          const isSuspended = (u.status === "SUSPENDED");
+
+          div.innerHTML = `
+            <div style="flex:1;">
+              <div style="font-weight:700;">${u.name} <span style="font-size:11px;color:var(--text-muted);">(@${u.username || '—'})</span></div>
+              <div style="font-size:11px;color:${isPending ? 'var(--warning)' : (isSuspended ? 'var(--danger)' : 'var(--success)')};font-weight:600;">
+                Stato: ${u.status}
+              </div>
+            </div>
+            <div>
+              ${isPending ? `<button class="btn btn-success" style="padding:6px 10px;font-size:12px;" onclick="adminApproveUser(${u.id}, '${u.name}')">✅ Approva</button>` : ''}
+              ${!isPending && u.role !== 'ADMIN' ? `<button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" onclick="adminToggleSuspend(${u.id})">${isSuspended ? 'Riattiva' : 'Sospendi'}</button>` : ''}
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (e) {
+        container.innerHTML = "<div style='color:var(--danger);'>Errore: " + e.message + "</div>";
+      }
+    }
+
+    async function adminApproveUser(id, name) {
+      showLoader("Approvazione collega...");
+      try {
+        await callApi("miniapp_admin_action", { subAction: "approve_user", targetUserId: id, customName: name });
+        fetchAdminUsers();
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function adminToggleSuspend(id) {
+      showLoader("Modifica stato...");
+      try {
+        await callApi("miniapp_admin_action", { subAction: "toggle_suspend", targetUserId: id });
+        fetchAdminUsers();
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Start App
+    window.addEventListener("DOMContentLoaded", () => {
+      fetchDashboardData();
+    });
+  </script>
+</body>
+</html>
