@@ -862,7 +862,7 @@
         <div id="user-avatar" class="avatar">VR</div>
         <div>
           <div id="user-name" class="user-name">Caricamento...</div>
-          <div id="user-role" class="user-role">Collaboratore</div>
+          <div id="user-role" class="user-role" style="display:none;"></div>
         </div>
       </div>
       <div class="header-actions">
@@ -1735,10 +1735,16 @@
       const avatarEl = document.getElementById("user-avatar");
       const roleEl = document.getElementById("user-role");
 
-      nameEl.textContent = u.name || u.first_name || "Collaboratore";
+      nameEl.textContent = u.name || u.first_name || "";
       const initials = (u.name || u.first_name || "VR").substring(0, 2).toUpperCase();
       avatarEl.textContent = initials;
-      roleEl.textContent = appState.isAdmin ? "👑 Amministratore" : "Collaboratore";
+      if (appState.isAdmin) {
+        roleEl.textContent = "👑 Amministratore";
+        roleEl.style.display = "block";
+      } else {
+        roleEl.textContent = "";
+        roleEl.style.display = "none";
+      }
     }
 
     function renderActiveShift() {
