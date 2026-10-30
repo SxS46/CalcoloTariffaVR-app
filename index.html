@@ -213,6 +213,7 @@
       justify-content: center;
       gap: 6px;
       transition: all 0.15s ease;
+      text-decoration: none;
     }
     .btn:active {
       transform: scale(0.96);
@@ -418,6 +419,67 @@
       cursor: pointer;
     }
 
+    /* PDF Full-Screen Modal */
+    .pdf-modal-sheet {
+      background: var(--card-bg);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      width: 100%;
+      height: 94vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.25s ease-out;
+      overflow: hidden;
+    }
+    .pdf-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .pdf-content-container {
+      flex: 1;
+      width: 100%;
+      overflow-y: auto;
+      background: #ffffff;
+      color: #000000;
+      padding: 12px;
+    }
+    .pdf-footer {
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+      background: var(--card-bg);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(14, 165, 233, 0.95);
+      color: white;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      z-index: 300;
+      opacity: 0;
+      transition: all 0.25s ease;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* Form Controls */
     .form-group {
       margin-bottom: 14px;
@@ -532,6 +594,9 @@
     <div id="loader-msg" class="loader-text">Connessione a Videorent...</div>
   </div>
 
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Notifica</div>
+
   <div class="container">
     
     <!-- Top Header -->
@@ -580,11 +645,15 @@
         </div>
       </div>
 
-      <!-- Month Summary Card -->
+      <!-- Month Summary Card with Navigation -->
       <div class="card">
         <div class="shift-header">
           <div class="shift-title">📊 Riepilogo del Mese</div>
-          <span id="stats-month-name" class="status-badge" style="background:rgba(56,189,248,0.15);color:var(--accent);">Mese</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(-1)" title="Mese precedente">◀️</button>
+            <span id="stats-month-name" class="status-badge" style="background:rgba(56,189,248,0.15);color:var(--accent);font-size:11px;">Mese</span>
+            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(1)" title="Mese successivo">▶️</button>
+          </div>
         </div>
         <div class="stats-grid">
           <div class="stat-box">
@@ -606,7 +675,7 @@
         </div>
       </div>
 
-      <!-- Month Navigation & Entries -->
+      <!-- Month Navigation & Entries (Decrescente: recenti in alto) -->
       <div class="month-nav">
         <div class="month-title">
           <span>📅 Giornate Registrate</span>
@@ -621,10 +690,12 @@
 
     </main>
 
-    <!-- SCREEN 2: IMPOSTAZIONI / TARIFFE -->
+    <!-- SCREEN 2: IMPOSTAZIONI COMPLETE (PARITÀ 100% BOT) -->
     <section id="screen-settings" class="view-screen">
+      
+      <!-- SUBSECTION 1: TARIFFE E STRAORDINARI -->
       <div class="card">
-        <div class="shift-title" style="margin-bottom:14px;">💰 Le Tue Tariffe Personali</div>
+        <div class="shift-title" style="margin-bottom:14px;">💰 Tariffe e Straordinari</div>
         
         <div class="form-group">
           <label class="form-label">🏠 Casa - Giornata Base (€)</label>
@@ -670,11 +741,90 @@
         <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveRatesSettings()">💾 Salva Tariffe</button>
       </div>
 
+      <!-- SUBSECTION 2: GOOGLE CALENDAR -->
       <div class="card">
-        <div class="shift-title" style="margin-bottom:12px;">📄 Esportazione Documenti</div>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Visualizza o esporta il prospetto contabile A4 completo del mese corrente in PDF:</p>
-        <button class="btn btn-outline" style="width:100%;" onclick="openMonthlyPdf()">📄 Apri Consuntivo Mensile</button>
+        <div class="shift-title" style="margin-bottom:12px;">📅 Sincronizzazione Google Calendar</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
+          Sincronizza automaticamente turni e commesse confermate con l'agenda Google del tuo smartphone.
+        </p>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.03);padding:12px;border-radius:10px;border:1px solid var(--border);margin-bottom:14px;">
+          <div>
+            <div style="font-weight:700;font-size:14px;">Stato Sincronizzazione</div>
+            <div id="cal-status-desc" style="font-size:12px;color:var(--text-muted);">Disattivata</div>
+          </div>
+          <button id="btn-toggle-cal" class="btn btn-outline" style="padding:6px 14px;font-size:12px;" onclick="toggleCalendarSync()">Attiva</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Account Google (Gmail)</label>
+          <div style="display:flex;gap:8px;">
+            <input type="email" id="cfg-cal-email" class="form-input" placeholder="nome@gmail.com">
+            <button class="btn btn-primary" style="flex:0 0 auto;padding:0 14px;" onclick="saveCalendarEmail()">Collega</button>
+          </div>
+        </div>
+
+        <button id="btn-add-cal" class="btn btn-outline" style="width:100%;margin-top:6px;font-size:13px;" onclick="openAddGoogleCalendar()">➕ Aggiungi al mio Google Calendar</button>
       </div>
+
+      <!-- SUBSECTION 3: CONNESSIONE GESTIONALE VIDEORENT -->
+      <div class="card">
+        <div class="shift-title" style="margin-bottom:12px;">⚡ Connessione Gestionale Videorent</div>
+
+        <!-- Videorent Cloud -->
+        <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-weight:700;font-size:14px;">☁️ Videorent Cloud</div>
+            <span id="vr-cloud-badge" class="status-badge" style="background:rgba(239,68,68,0.15);color:var(--danger);">Non Collegato</span>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+            Compilazione remota automatica degli slot orari e compensi sul portale Videorent.
+          </p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Username Portale</label>
+              <input type="text" id="cfg-vr-user" class="form-input" placeholder="Es. nome.cognome">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password Portale</label>
+              <input type="password" id="cfg-vr-pass" class="form-input" placeholder="••••••••">
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:4px;">
+            <button class="btn btn-primary" onclick="saveVrCloudCredentials()">💾 Salva Credenziali</button>
+            <button class="btn btn-outline" onclick="triggerVrCompileAll()">⚡ Compila Adesso</button>
+          </div>
+        </div>
+
+        <!-- Estensione Browser PC -->
+        <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;border:1px solid var(--border);">
+          <div style="font-weight:700;font-size:14px;margin-bottom:6px;">💻 Estensione Browser PC (Tampermonkey)</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+            Script per compilare automaticamente il planner da Chrome o Edge su PC.
+          </p>
+          <div class="btn-row" style="margin-bottom:8px;">
+            <button class="btn btn-primary" onclick="installTampermonkeyScript()">⚡ Installa con 1 Clic</button>
+            <button class="btn btn-outline" onclick="copySyncKey()">📋 Copia Chiave</button>
+          </div>
+          <button class="btn btn-outline" style="width:100%;font-size:12px;padding:8px;" onclick="downloadUserscriptFile()">⬇️ Scarica Script .user.js</button>
+        </div>
+      </div>
+
+      <!-- SUBSECTION 4: DOCUMENTI E FOGLIO DRIVE -->
+      <div class="card">
+        <div class="shift-title" style="margin-bottom:12px;">📊 Foglio di Calcolo & Documenti</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
+          Tutti i tuoi dati contabili personali risiedono nel tuo foglio Google dedicato.
+        </p>
+
+        <button class="btn btn-outline" style="width:100%;margin-bottom:10px;" onclick="openGoogleSheet()">📊 Apri Foglio Personale su Google Drive</button>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="openMonthlyPdfPreview()">📄 Anteprima Consuntivo</button>
+          <button class="btn btn-success" onclick="sendPdfToTelegram()">📩 Invia PDF su Telegram</button>
+        </div>
+      </div>
+
     </section>
 
     <!-- SCREEN 3: WIZARD INIZIALE (Nuovo Collega Approvato) -->
@@ -777,7 +927,7 @@
     </button>
     <button class="nav-item" onclick="showScreen('settings')">
       <span class="nav-icon">⚙️</span>
-      <span>Tariffe</span>
+      <span>Impostazioni</span>
     </button>
   </nav>
 
@@ -882,6 +1032,23 @@
     </div>
   </div>
 
+  <!-- MODAL: ANTEPRIMA CONSUNTIVO A4 -->
+  <div id="modal-pdf-preview" class="modal-overlay">
+    <div class="pdf-modal-sheet">
+      <div class="pdf-header">
+        <div class="modal-title" id="pdf-preview-title">Consuntivo Mensile</div>
+        <button class="close-btn" onclick="closeModal('modal-pdf-preview')">✕</button>
+      </div>
+      <div id="pdf-container" class="pdf-content-container">
+        <!-- HTML del consuntivo inserito dinamicamente -->
+      </div>
+      <div class="pdf-footer">
+        <button class="btn btn-primary" onclick="printPdfPreview()">🖨️ Stampa / Salva</button>
+        <button class="btn btn-success" onclick="sendPdfToTelegram()">📩 Ricevi su Telegram</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // CONFIGURAZIONE ENDPOINT GOOGLE APPS SCRIPT
     const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbxZZMRCEy3OmmuQht3ABI3_o4YOFfrITiWRnQxQz4hL9rU5LG2zT6HXLmgmVOwQMw/exec";
@@ -903,15 +1070,23 @@
       stats: null,
       entries: [],
       monthName: "",
+      selectedDate: new Date(),
       timerInterval: null
     };
+
+    // Toast helper
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 3000);
+    }
 
     // Estrai dati utente da Telegram SDK
     function getTelegramUser() {
       if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
         return tg.initDataUnsafe.user;
       }
-      // Parametri URL opzionali se passati esplicitamente
       const urlParams = new URLSearchParams(window.location.search);
       const testId = urlParams.get("telegram_id") || urlParams.get("userId");
       if (testId) {
@@ -1017,6 +1192,29 @@
       }
     }
 
+    // Navigazione Mese
+    async function changeMonth(delta) {
+      appState.selectedDate.setMonth(appState.selectedDate.getMonth() + delta);
+      showLoader("Caricamento mese...");
+      try {
+        const res = await callApi("miniapp_get_month", {
+          year: appState.selectedDate.getFullYear(),
+          month: appState.selectedDate.getMonth()
+        });
+        if (res.success) {
+          appState.stats = res.stats;
+          appState.entries = res.entries || [];
+          appState.monthName = res.monthName || "";
+          renderStats();
+          renderEntries();
+        }
+      } catch (e) {
+        alert("Errore cambio mese: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
     function renderHeader() {
       const u = appState.user || getTelegramUser();
       const nameEl = document.getElementById("user-name");
@@ -1105,6 +1303,7 @@
       document.getElementById("stat-extra-pay").textContent = (s.totalExtra || 0) + " €";
     }
 
+    // Cronologia decrescente: le giornate più recenti compaiono in alto!
     function renderEntries() {
       const listEl = document.getElementById("entries-list");
       listEl.innerHTML = "";
@@ -1113,13 +1312,18 @@
         listEl.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">🏖️</div>
-            <div>Nessuna giornata registrata questo mese</div>
+            <div>Nessuna giornata registrata in questo mese</div>
           </div>
         `;
         return;
       }
 
-      appState.entries.forEach(e => {
+      const sorted = [...appState.entries].sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return b.row - a.row;
+      });
+
+      sorted.forEach(e => {
         const isCasa = (e.type === "CASA");
         const div = document.createElement("div");
         div.className = "entry-item";
@@ -1150,6 +1354,8 @@
     function populateSettingsInputs() {
       const r = appState.rates || {};
       const u = appState.user || {};
+
+      // Tariffe
       document.getElementById("cfg-casa-base").value = r.casaBase || "";
       document.getElementById("cfg-casa-extra").value = r.casaStraord || "";
       document.getElementById("cfg-casa-half").value = r.casaShort || r.casaShortPay || "";
@@ -1162,6 +1368,20 @@
       document.getElementById("cfg-trasf-extra").value = tExtra;
       document.getElementById("cfg-trasf-half").value = tShort;
       document.getElementById("cfg-weekend-rule").value = u.weekendHolidayAsTrasferta || "NONE";
+
+      // Google Calendar
+      const isCalActive = Boolean(u.calendarSyncEnabled);
+      document.getElementById("cal-status-desc").textContent = isCalActive ? "🟢 Sincronizzazione Attiva" : "🔴 Disattivata";
+      document.getElementById("btn-toggle-cal").textContent = isCalActive ? "Disattiva" : "Attiva";
+      document.getElementById("cfg-cal-email").value = u.calendarEmail || "";
+
+      // Videorent Cloud
+      const isVrConn = Boolean(u.vrConnected);
+      const vrBadge = document.getElementById("vr-cloud-badge");
+      vrBadge.textContent = isVrConn ? "🟢 Connesso" : "🔴 Non Collegato";
+      vrBadge.style.color = isVrConn ? "var(--success)" : "var(--danger)";
+      vrBadge.style.background = isVrConn ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)";
+      document.getElementById("cfg-vr-user").value = u.vrUsername || "";
     }
 
     // Gestione Schermate
@@ -1211,6 +1431,7 @@
         if (res.success) {
           appState.activeShift = res.activeShift;
           renderActiveShift();
+          showToast("🟢 Turno aperto con successo!");
           if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
           alert("Errore: " + res.error);
@@ -1248,6 +1469,7 @@
           renderActiveShift();
           renderStats();
           renderEntries();
+          showToast("✅ Turno concluso e registrato!");
           if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
           alert("Errore: " + res.error);
@@ -1267,6 +1489,7 @@
         if (res.success) {
           appState.activeShift = null;
           renderActiveShift();
+          showToast("🗑️ Turno annullato.");
         }
       } catch (e) {
         alert("Errore: " + e.message);
@@ -1307,6 +1530,7 @@
           appState.entries = res.entries || [];
           renderStats();
           renderEntries();
+          showToast("💾 Giornata aggiunta con successo!");
         } else {
           alert("Errore: " + res.error);
         }
@@ -1350,6 +1574,7 @@
           appState.entries = res.entries || [];
           renderStats();
           renderEntries();
+          showToast("💾 Modifiche salvate!");
         } else {
           alert("Errore: " + res.error);
         }
@@ -1378,6 +1603,7 @@
           appState.entries = res.entries || [];
           renderStats();
           renderEntries();
+          showToast("🗑️ Riga eliminata!");
         } else {
           alert("Errore: " + res.error);
         }
@@ -1404,15 +1630,190 @@
         weekendHolidayAsTrasferta: document.getElementById("cfg-weekend-rule").value
       };
 
-      showLoader("Salvataggio impostazioni...");
+      showLoader("Salvataggio tariffe...");
       try {
         const res = await callApi("miniapp_save_rates", { rates: JSON.stringify(payload) });
         if (res.success) {
-          alert("✅ Tariffe aggiornate con successo!");
-          showScreen("dashboard");
+          showToast("✅ Tariffe aggiornate con successo!");
           fetchDashboardData();
         } else {
           alert("Errore: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Google Calendar Settings
+    async function toggleCalendarSync() {
+      const curr = Boolean(appState.user?.calendarSyncEnabled);
+      const next = !curr;
+      showLoader(next ? "Attivazione Calendar..." : "Disattivazione Calendar...");
+      try {
+        const res = await callApi("miniapp_update_calendar", { enabled: next });
+        if (res.success) {
+          if (appState.user) appState.user.calendarSyncEnabled = res.calendarSyncEnabled;
+          populateSettingsInputs();
+          showToast(next ? "🟢 Sincronizzazione Calendar ATTIVATA!" : "🔴 Sincronizzazione Calendar DISATTIVATA");
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function saveCalendarEmail() {
+      const email = document.getElementById("cfg-cal-email").value;
+      if (!email || !email.includes("@")) return alert("Inserisci un indirizzo email valido");
+      showLoader("Collegamento email...");
+      try {
+        const res = await callApi("miniapp_update_calendar", { email: email });
+        if (res.success) {
+          if (appState.user) appState.user.calendarEmail = res.calendarEmail;
+          showToast("📧 Email Google collegata con successo!");
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function openAddGoogleCalendar() {
+      const cid = appState.user?.calendarId;
+      if (cid) {
+        const url = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(cid)}`;
+        window.open(url, "_blank");
+      } else {
+        alert("Collega prima la tua email Gmail per generare il tuo calendario personale!");
+      }
+    }
+
+    // Videorent Cloud Settings
+    async function saveVrCloudCredentials() {
+      const user = document.getElementById("cfg-vr-user").value;
+      const pass = document.getElementById("cfg-vr-pass").value;
+      if (!user) return alert("Inserisci lo username del portale Videorent");
+      showLoader("Salvataggio credenziali Cloud...");
+      try {
+        const res = await callApi("miniapp_update_vr_cloud", { username: user, password: pass });
+        if (res.success) {
+          if (appState.user) {
+            appState.user.vrUsername = res.vrUsername;
+            appState.user.vrConnected = res.vrConnected;
+          }
+          populateSettingsInputs();
+          showToast("☁️ Credenziali salvate con successo!");
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function triggerVrCompileAll() {
+      showLoader("Compilazione su Videorent in corso...");
+      try {
+        const res = await callApi("miniapp_compile_vr_all");
+        if (res.success) {
+          alert(res.message);
+        } else {
+          alert("Esito: " + res.error);
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // Tampermonkey Script Helpers
+    function installTampermonkeyScript() {
+      if (appState.user?.scriptInstallUrl) {
+        window.open(appState.user.scriptInstallUrl, "_blank");
+      } else {
+        alert("Chiave sync non trovata.");
+      }
+    }
+
+    function copySyncKey() {
+      const key = appState.user?.syncKey;
+      if (!key) return alert("Nessuna chiave sync disponibile");
+      navigator.clipboard.writeText(key).then(() => {
+        showToast("📋 Chiave di sincronizzazione copiata!");
+      }).catch(() => {
+        prompt("Copia la tua chiave di sincronizzazione:", key);
+      });
+    }
+
+    function downloadUserscriptFile() {
+      if (appState.user?.scriptInstallUrl) {
+        const url = appState.user.scriptInstallUrl.replace("action=install_script", "action=get_script");
+        window.open(url, "_blank");
+      }
+    }
+
+    function openGoogleSheet() {
+      if (appState.user?.sheetUrl) {
+        window.open(appState.user.sheetUrl, "_blank");
+      } else {
+        alert("Foglio Google non trovato");
+      }
+    }
+
+    // Anteprima e Invio Consuntivo Mensile
+    async function openMonthlyPdfPreview() {
+      showLoader("Generazione consuntivo...");
+      try {
+        const res = await callApi("miniapp_get_pdf", {
+          format: "json",
+          year: appState.selectedDate.getFullYear(),
+          month: appState.selectedDate.getMonth()
+        });
+
+        if (res.success && res.html) {
+          document.getElementById("pdf-preview-title").textContent = `Consuntivo ${res.monthName || ''} ${res.year || ''}`;
+          document.getElementById("pdf-container").innerHTML = res.html;
+          openModal("modal-pdf-preview");
+        } else {
+          alert("Impossibile generare l'anteprima del consuntivo.");
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    function printPdfPreview() {
+      const container = document.getElementById("pdf-container");
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write('<html><head><title>Consuntivo</title>');
+      printWindow.document.write('<style>body{font-family:sans-serif;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ccc;padding:8px;text-align:left;}</style>');
+      printWindow.document.write('</head><body>');
+      printWindow.document.write(container.innerHTML);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    }
+
+    async function sendPdfToTelegram() {
+      showLoader("Invio consuntivo su Telegram...");
+      try {
+        const res = await callApi("miniapp_send_pdf_telegram", {
+          year: appState.selectedDate.getFullYear(),
+          month: appState.selectedDate.getMonth()
+        });
+        if (res.success) {
+          showToast("📩 Consuntivo PDF inviato nella tua chat!");
+          closeModal("modal-pdf-preview");
+        } else {
+          alert("Errore: " + (res.error || "Invio non riuscito"));
         }
       } catch (e) {
         alert("Errore: " + e.message);
@@ -1449,13 +1850,6 @@
       } finally {
         hideLoader();
       }
-    }
-
-    // Open PDF View
-    function openMonthlyPdf() {
-      const tgUser = getTelegramUser();
-      const url = `${API_ENDPOINT}?action=miniapp_get_pdf&telegram_id=${tgUser.id}`;
-      window.open(url, "_blank");
     }
 
     // Admin Panel
