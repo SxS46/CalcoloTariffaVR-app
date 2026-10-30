@@ -239,6 +239,114 @@
       color: var(--text);
     }
 
+    /* Quick Actions Grid (Home) */
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .action-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-decoration: none;
+    }
+    .action-card:active {
+      transform: scale(0.97);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .action-icon {
+      font-size: 20px;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+    }
+    .action-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .action-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.25;
+    }
+
+    /* Segmented Control (Modal) */
+    .segmented-control {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+    .segmented-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .segmented-btn.active.casa {
+      background: rgba(14, 165, 233, 0.25);
+      color: var(--accent);
+      border: 1px solid rgba(14, 165, 233, 0.5);
+    }
+    .segmented-btn.active.trasf {
+      background: rgba(245, 158, 11, 0.25);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+    }
+
+    /* Quick Chips (Modal) */
+    .chip-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .chip-btn {
+      flex: 1;
+      padding: 7px 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip-btn:active {
+      transform: scale(0.95);
+      background: var(--primary);
+      color: white;
+    }
+
     /* Month Stats Widget */
     .stats-grid {
       display: grid;
@@ -623,7 +731,7 @@
       </div>
     </header>
 
-    <!-- SCREEN 1: DASHBOARD -->
+    <!-- SCREEN 1: HOME (PRIVACY ON LAUNCH & COMANDI BOT) -->
     <main id="screen-dashboard" class="view-screen active">
 
       <!-- Shift Live Card -->
@@ -653,6 +761,53 @@
           <button class="btn btn-danger" onclick="confirmCancelShift()">🗑️ Annulla</button>
         </div>
       </div>
+
+      <!-- Quick Actions (Comandi versione chat) -->
+      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin:16px 0 8px 4px;letter-spacing:0.5px;">
+        ⚡ Azioni Rapide
+      </div>
+      <div class="quick-actions-grid">
+        <div class="action-card" onclick="openManualEntryModal()">
+          <div class="action-icon" style="background:rgba(14,165,233,0.15);color:var(--accent);">➕</div>
+          <div class="action-title">Aggiungi Giornata</div>
+          <div class="action-desc">Inserisci un turno passato o retroattivo</div>
+        </div>
+
+        <div class="action-card" onclick="showScreen('summary')">
+          <div class="action-icon" style="background:rgba(16,185,129,0.15);color:var(--success);">📊</div>
+          <div class="action-title">Riepilogo Mese</div>
+          <div class="action-desc">Guadagni, presenze e storico giornate</div>
+        </div>
+
+        <div class="action-card" onclick="triggerVrCompileAll()">
+          <div class="action-icon" style="background:rgba(245,158,11,0.15);color:var(--warning);">⚡</div>
+          <div class="action-title">Compila Videorent</div>
+          <div class="action-desc">Registra orari e compensi a gestionale</div>
+        </div>
+
+        <div class="action-card" onclick="openAddGoogleCalendar()">
+          <div class="action-icon" style="background:rgba(56,189,248,0.15);color:var(--primary);">📅</div>
+          <div class="action-title">Google Calendar</div>
+          <div class="action-desc">Visualizza o aggiungi al tuo calendario</div>
+        </div>
+
+        <div class="action-card" onclick="openGoogleSheet()">
+          <div class="action-icon" style="background:rgba(16,185,129,0.15);color:var(--success);">📈</div>
+          <div class="action-title">Foglio Drive</div>
+          <div class="action-desc">Apri il tuo foglio di calcolo personale</div>
+        </div>
+
+        <div class="action-card" onclick="openMonthlyPdfPreview()">
+          <div class="action-icon" style="background:rgba(139,92,246,0.15);color:#a78bfa);">📄</div>
+          <div class="action-title">Consuntivo PDF</div>
+          <div class="action-desc">Genera prospetto A4 o ricevi in chat</div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- SCREEN 2: RIEPILOGO DEL MESE & GIORNATE REGISTRATE -->
+    <main id="screen-summary" class="view-screen">
 
       <!-- Month Summary Card with Navigation -->
       <div class="card">
@@ -699,7 +854,7 @@
 
     </main>
 
-    <!-- SCREEN 2: IMPOSTAZIONI COMPLETE (PARITÀ 100% BOT) -->
+    <!-- SCREEN 3: IMPOSTAZIONI COMPLETE (PARITÀ 100% BOT) -->
     <section id="screen-settings" class="view-screen">
       
       <!-- SUBSECTION 1: TARIFFE E STRAORDINARI -->
@@ -776,6 +931,28 @@
         </div>
 
         <button id="btn-add-cal" class="btn btn-outline" style="width:100%;margin-top:6px;font-size:13px;" onclick="openAddGoogleCalendar()">➕ Aggiungi al mio Google Calendar</button>
+
+        <!-- Colori Google Calendar (24 Colori) -->
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🎨 Colori Commesse su Google Calendar</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+            Scegli il colore con cui visualizzare le commesse nel tuo Google Calendar:
+          </p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">🟢 Eventi Confermati</label>
+              <select id="cfg-cal-color-confirmed" class="form-select" onchange="saveCalendarColors()">
+                <!-- Popolato dinamicamente -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">🟡 Da Confermare</label>
+              <select id="cfg-cal-color-unconfirmed" class="form-select" onchange="saveCalendarColors()">
+                <!-- Popolato dinamicamente -->
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- SUBSECTION 3: CONNESSIONE GESTIONALE VIDEORENT -->
@@ -938,9 +1115,9 @@
       <span class="nav-icon">🏠</span>
       <span>Home</span>
     </button>
-    <button class="nav-item" onclick="openManualEntryModal()">
-      <span class="nav-icon">➕</span>
-      <span>Aggiungi</span>
+    <button class="nav-item" onclick="showScreen('summary')">
+      <span class="nav-icon">📊</span>
+      <span>Riepilogo</span>
     </button>
     <button class="nav-item" onclick="showScreen('settings')">
       <span class="nav-icon">⚙️</span>
@@ -1019,15 +1196,30 @@
     </div>
   </div>
 
-  <!-- MODAL: MODIFICA GIORNATA -->
+  <!-- MODAL: MODIFICA GIORNATA (PARITÀ COMPLETA BOT) -->
   <div id="modal-edit-entry" class="modal-overlay">
     <div class="modal-sheet">
       <div class="modal-header">
-        <div class="modal-title">Modifica Giornata</div>
+        <div>
+          <div class="modal-title" id="edit-modal-title">Modifica Giornata</div>
+          <div id="edit-modal-date" style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;"></div>
+        </div>
         <button class="close-btn" onclick="closeModal('modal-edit-entry')">✕</button>
       </div>
       <input type="hidden" id="edit-row">
       <input type="hidden" id="edit-sheet-name">
+      <input type="hidden" id="edit-type-val" value="CASA">
+
+      <!-- Selettore Tipologia Casa / Trasferta -->
+      <div class="form-group">
+        <label class="form-label">Tipologia Lavoro</label>
+        <div class="segmented-control">
+          <button type="button" id="btn-seg-casa" class="segmented-btn active casa" onclick="setEditType('CASA')">🏠 Casa</button>
+          <button type="button" id="btn-seg-trasf" class="segmented-btn" onclick="setEditType('TRASFERTA')">🚗 Trasferta</button>
+        </div>
+      </div>
+
+      <!-- Orari Inizio e Fine -->
       <div class="form-grid">
         <div class="form-group">
           <label class="form-label">Inizio</label>
@@ -1038,10 +1230,39 @@
           <input type="time" id="edit-end" class="form-input">
         </div>
       </div>
+
+      <!-- Extra -->
       <div class="form-group">
         <label class="form-label">Extra (€)</label>
-        <input type="number" id="edit-extra" class="form-input">
+        <input type="number" id="edit-extra" class="form-input" placeholder="0">
       </div>
+
+      <!-- Tariffa Concordata / Forfait -->
+      <div class="card" style="padding:12px;margin:12px 0;background:rgba(255,255,255,0.02);border:1px dashed var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;">💵 Tariffa Concordata / Forfait</div>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-muted);">
+            <input type="checkbox" id="edit-is-fixed" onchange="toggleEditFixedPay(this.checked)">
+            <span>Attiva</span>
+          </label>
+        </div>
+        <div id="edit-fixed-container" style="display:none;">
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+            Compenso forfettario slegato dal calcolo ore. Gli orari rimarranno registrati nel foglio presenze.
+          </p>
+          <input type="number" id="edit-fixed-pay" class="form-input" placeholder="Importo concordato in €">
+          <div class="chip-row">
+            <button type="button" class="chip-btn" onclick="setFixedPayPreset(150)">150 €</button>
+            <button type="button" class="chip-btn" onclick="setFixedPayPreset(200)">200 €</button>
+            <button type="button" class="chip-btn" onclick="setFixedPayPreset(250)">250 €</button>
+            <button type="button" class="chip-btn" onclick="setFixedPayPreset(300)">300 €</button>
+          </div>
+        </div>
+        <div id="edit-auto-desc" style="font-size:11px;color:var(--text-muted);">
+          Calcolo automatico standard basato sulla tariffa base e straordinari orari.
+        </div>
+      </div>
+
       <div class="btn-row" style="margin-top:14px;">
         <button class="btn btn-primary" onclick="confirmEditEntry()">💾 Salva Modifiche</button>
         <button class="btn btn-danger" style="flex:0.4;" onclick="confirmDeleteEntry()">🗑️ Elimina</button>
@@ -1088,7 +1309,8 @@
       entries: [],
       monthName: "",
       selectedDate: new Date(),
-      timerInterval: null
+      timerInterval: null,
+      calendarPalette: null
     };
 
     // Toast helper
@@ -1189,6 +1411,7 @@
         appState.stats = data.stats;
         appState.entries = data.entries || [];
         appState.monthName = data.monthName || "";
+        appState.calendarPalette = data.calendarPalette || null;
 
         renderHeader();
         renderActiveShift();
@@ -1348,6 +1571,7 @@
 
         const rowTotal = (e.total !== undefined && e.total !== null) ? e.total : ((e.dayPay || 0) + (e.extra || 0));
         const displayTotal = rowTotal > 0 ? (rowTotal + ' €') : (e.dayPay > 0 ? e.dayPay + ' €' : '—');
+        const fixedBadge = e.isFixedRate ? `<span style="font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(56,189,248,0.15);color:var(--accent);margin-left:4px;font-weight:700;">💵 FISSA</span>` : '';
 
         div.innerHTML = `
           <div class="entry-left">
@@ -1360,12 +1584,89 @@
             </div>
           </div>
           <div class="entry-right">
-            <div class="entry-pay">${displayTotal}</div>
+            <div class="entry-pay">${displayTotal}${fixedBadge}</div>
             ${e.extra > 0 ? `<div class="entry-extra">+${e.extra} € extra</div>` : ''}
           </div>
         `;
         listEl.appendChild(div);
       });
+    }
+
+    const CALENDAR_COLORS_DEFAULT = {
+      "1": { name: "Cacao", emoji: "🟤" },
+      "2": { name: "Fenicottero", emoji: "🌸" },
+      "3": { name: "Pomodoro", emoji: "🔴" },
+      "4": { name: "Mandarino", emoji: "🟠" },
+      "5": { name: "Zucca", emoji: "🎃" },
+      "6": { name: "Mango", emoji: "🥭" },
+      "7": { name: "Eucalipto", emoji: "🍃" },
+      "8": { name: "Basilico", emoji: "🟢" },
+      "9": { name: "Pistacchio", emoji: "🍏" },
+      "10": { name: "Avocado", emoji: "🥑" },
+      "11": { name: "Cedro", emoji: "🍋" },
+      "12": { name: "Banana", emoji: "🟡" },
+      "13": { name: "Salvia", emoji: "🌿" },
+      "14": { name: "Pavone", emoji: "🩵" },
+      "15": { name: "Cobalto", emoji: "🧊" },
+      "16": { name: "Mirtillo", emoji: "🔵" },
+      "17": { name: "Lavanda", emoji: "🪻" },
+      "18": { name: "Glicine", emoji: "🟣" },
+      "19": { name: "Grafite", emoji: "🩶" },
+      "20": { name: "Betulla", emoji: "⚪" },
+      "21": { name: "Barbabietola", emoji: "🪾" },
+      "22": { name: "Ciliegio", emoji: "🌸" },
+      "23": { name: "Uva", emoji: "🍇" },
+      "24": { name: "Ametista", emoji: "🔮" }
+    };
+
+    function populateCalendarColorPickers() {
+      const palette = appState.calendarPalette || CALENDAR_COLORS_DEFAULT;
+      const userColors = appState.user?.calendarColors || { confirmed: "8", unconfirmed: "12" };
+      const selConf = document.getElementById("cfg-cal-color-confirmed");
+      const selUnconf = document.getElementById("cfg-cal-color-unconfirmed");
+      if (!selConf || !selUnconf) return;
+
+      selConf.innerHTML = "";
+      selUnconf.innerHTML = "";
+
+      for (let id = 1; id <= 24; id++) {
+        const key = String(id);
+        const col = palette[key] || CALENDAR_COLORS_DEFAULT[key];
+        if (!col) continue;
+
+        const opt1 = document.createElement("option");
+        opt1.value = key;
+        opt1.textContent = `${col.emoji} ${col.name}`;
+        if (String(userColors.confirmed) === key) opt1.selected = true;
+        selConf.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = key;
+        opt2.textContent = `${col.emoji} ${col.name}`;
+        if (String(userColors.unconfirmed) === key) opt2.selected = true;
+        selUnconf.appendChild(opt2);
+      }
+    }
+
+    async function saveCalendarColors() {
+      const confId = document.getElementById("cfg-cal-color-confirmed").value;
+      const unconfId = document.getElementById("cfg-cal-color-unconfirmed").value;
+
+      showLoader("Aggiornamento colori...");
+      try {
+        const res = await callApi("miniapp_update_calendar_colors", {
+          confirmedColorId: confId,
+          unconfirmedColorId: unconfId
+        });
+        if (res.success) {
+          if (appState.user) appState.user.calendarColors = res.calendarColors;
+          showToast(`🎨 Colori aggiornati (${res.updatedCount || 0} eventi sincronizzati live)!`);
+        }
+      } catch (e) {
+        alert("Errore salvataggio colori: " + e.message);
+      } finally {
+        hideLoader();
+      }
     }
 
     function populateSettingsInputs() {
@@ -1415,6 +1716,7 @@
       document.getElementById("cal-status-desc").textContent = isCalActive ? "🟢 Sincronizzazione Attiva" : "🔴 Disattivata";
       document.getElementById("btn-toggle-cal").textContent = isCalActive ? "Disattiva" : "Attiva";
       document.getElementById("cfg-cal-email").value = u.calendarEmail || "";
+      populateCalendarColorPickers();
 
       // Videorent Cloud
       const isVrConn = Boolean(u.vrConnected);
@@ -1445,6 +1747,7 @@
 
       document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
       if (name === "dashboard") document.querySelectorAll(".nav-item")[0].classList.add("active");
+      if (name === "summary") document.querySelectorAll(".nav-item")[1].classList.add("active");
       if (name === "settings") document.querySelectorAll(".nav-item")[2].classList.add("active");
 
       if (name === "admin") {
@@ -1611,40 +1914,88 @@
       }
     }
 
-    // Edit / Delete Entry
+    // Edit / Delete Entry (Parità Completa col Bot)
+    let currentEditType = "CASA";
+
+    function setEditType(type) {
+      currentEditType = type;
+      document.getElementById("edit-type-val").value = type;
+      const btnCasa = document.getElementById("btn-seg-casa");
+      const btnTrasf = document.getElementById("btn-seg-trasf");
+      if (type === "CASA") {
+        btnCasa.className = "segmented-btn active casa";
+        btnTrasf.className = "segmented-btn";
+      } else {
+        btnCasa.className = "segmented-btn";
+        btnTrasf.className = "segmented-btn active trasf";
+      }
+    }
+
+    function toggleEditFixedPay(checked) {
+      document.getElementById("edit-fixed-container").style.display = checked ? "block" : "none";
+      document.getElementById("edit-auto-desc").style.display = checked ? "none" : "block";
+    }
+
+    function setFixedPayPreset(val) {
+      document.getElementById("edit-fixed-pay").value = val;
+    }
+
     function openEditEntryModal(entry) {
       document.getElementById("edit-row").value = entry.row;
       document.getElementById("edit-sheet-name").value = entry.sheetName || "";
+      document.getElementById("edit-modal-date").textContent = entry.date || "";
       document.getElementById("edit-start").value = entry.start || "";
       document.getElementById("edit-end").value = entry.end || "";
       document.getElementById("edit-extra").value = entry.extra || "0";
+
+      const eType = (entry.type === "TRASFERTA") ? "TRASFERTA" : "CASA";
+      setEditType(eType);
+
+      const isFixed = Boolean(entry.isFixedRate);
+      document.getElementById("edit-is-fixed").checked = isFixed;
+      toggleEditFixedPay(isFixed);
+      document.getElementById("edit-fixed-pay").value = isFixed ? (entry.fixedPay || entry.dayPay || "") : "";
+
       openModal("modal-edit-entry");
     }
 
     async function confirmEditEntry() {
       const row = document.getElementById("edit-row").value;
       const sheetName = document.getElementById("edit-sheet-name").value;
+      const type = document.getElementById("edit-type-val").value;
       const start = document.getElementById("edit-start").value;
       const end = document.getElementById("edit-end").value;
       const extra = document.getElementById("edit-extra").value;
+      const isFixed = document.getElementById("edit-is-fixed").checked;
+      const fixedPay = document.getElementById("edit-fixed-pay").value;
 
       closeModal("modal-edit-entry");
-      showLoader("Aggiornamento riga...");
+      showLoader("Salvataggio modifiche...");
 
       try {
-        const res = await callApi("miniapp_update_entry", {
+        const payload = {
           row: row,
           sheetName: sheetName,
+          type: type,
           start: start,
           end: end,
-          extra: extra
-        });
+          extra: extra,
+          isFixedRate: isFixed ? "true" : "false"
+        };
+        if (isFixed) {
+          payload.fixedPay = fixedPay || 0;
+        } else {
+          payload.restoreFormula = "true";
+        }
+
+        const res = await callApi("miniapp_update_entry", payload);
         if (res.success) {
           appState.stats = res.stats;
           appState.entries = res.entries || [];
           renderStats();
           renderEntries();
-          showToast("💾 Modifiche salvate!");
+          showToast("💾 Modifiche salvate con successo!");
+          if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
           alert("Errore: " + res.error);
         }
