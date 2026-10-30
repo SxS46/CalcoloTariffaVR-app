@@ -951,6 +951,12 @@
           <div class="action-desc">Scegli mese ed esporta prospetto A4</div>
         </div>
 
+        <div class="action-card" onclick="showScreen('events')">
+          <div class="action-icon" style="background:rgba(56,189,248,0.15);color:var(--accent);">📋</div>
+          <div class="action-title">Eventi Videorent</div>
+          <div class="action-desc">Note, materiali e prossime commesse</div>
+        </div>
+
         <div class="action-card" onclick="showScreen('settings')">
           <div class="action-icon" style="background:rgba(148,163,184,0.15);color:var(--text-muted);">⚙️</div>
           <div class="action-title">Impostazioni</div>
@@ -958,6 +964,39 @@
         </div>
       </div>
 
+    </main>
+
+    <!-- SCREEN: EVENTI / COMMESSE VIDEORENT -->
+    <main id="screen-events" class="view-screen">
+      <!-- Header con switcher tab Prossimi / Storico e refresh -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;">
+        <div style="display:flex;background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:3px;flex:1;">
+          <button id="tab-events-upcoming" class="btn btn-sm" style="flex:1;background:var(--primary);color:#fff;border-radius:8px;font-size:12px;padding:6px 0;" onclick="switchEventsTab('upcoming')">Prossimi Eventi</button>
+          <button id="tab-events-past" class="btn btn-sm" style="flex:1;background:transparent;color:var(--text-muted);border-radius:8px;font-size:12px;padding:6px 0;" onclick="switchEventsTab('past')">Storico</button>
+        </div>
+        <button class="icon-btn" style="width:36px;height:36px;flex-shrink:0;" onclick="loadEventsScreen(true)" title="Aggiorna da Videorent">🔄</button>
+      </div>
+
+      <!-- Container Not Configured -->
+      <div id="events-not-configured" class="card" style="display:none;text-align:center;padding:24px 16px;">
+        <div style="font-size:32px;margin-bottom:8px;">☁️</div>
+        <div class="shift-title" style="margin-bottom:6px;">Connetti Videorent Cloud</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+          Inserisci username e password del portale nelle Impostazioni per visualizzare la lista eventi, le note di produzione e i materiali.
+        </p>
+        <button class="btn btn-primary" style="width:100%;" onclick="showScreen('settings')">⚙️ Vai a Impostazioni</button>
+      </div>
+
+      <!-- Container Loading Spinner -->
+      <div id="events-loading" style="display:none;text-align:center;padding:32px 16px;color:var(--text-muted);font-size:13px;">
+        <div class="spinner" style="margin:0 auto 12px auto;width:28px;height:28px;border-width:3px;"></div>
+        Caricamento eventi da Videorent...
+      </div>
+
+      <!-- Container Lista Eventi -->
+      <div id="events-list">
+        <!-- Popolato dinamicamente -->
+      </div>
     </main>
 
     <!-- SCREEN 2: RIEPILOGO DEL MESE & GIORNATE REGISTRATE -->
@@ -1510,6 +1549,10 @@
       <span class="nav-icon">🏠</span>
       <span>Home</span>
     </button>
+    <button class="nav-item" onclick="showScreen('events')">
+      <span class="nav-icon">📋</span>
+      <span>Eventi</span>
+    </button>
     <button class="nav-item" onclick="showScreen('summary')">
       <span class="nav-icon">📊</span>
       <span>Riepilogo</span>
@@ -1519,6 +1562,92 @@
       <span>Impostazioni</span>
     </button>
   </nav>
+
+  <!-- MODAL: DETTAGLIO EVENTO VIDEORENT -->
+  <div id="modal-event-detail" class="modal-overlay">
+    <div class="modal-sheet" style="max-height:92vh;display:flex;flex-direction:column;">
+      <div class="modal-header" style="flex-shrink:0;">
+        <div style="min-width:0;flex:1;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+            <span id="ev-detail-id" class="status-badge" style="background:rgba(14,165,233,0.15);color:var(--accent);font-weight:700;">#00000</span>
+            <span id="ev-detail-status-badge" class="status-badge">Confermato</span>
+          </div>
+          <div class="modal-title" id="ev-detail-title" style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Titolo Evento</div>
+        </div>
+        <button class="close-btn" onclick="closeModal('modal-event-detail')">✕</button>
+      </div>
+
+      <div id="ev-detail-body" style="overflow-y:auto;padding-right:2px;flex:1;">
+        <!-- Sezione 1: Logistica & Date -->
+        <div class="card" style="margin-bottom:10px;">
+          <div class="shift-title" style="margin-bottom:8px;">📍 Informazioni & Set</div>
+          <div style="font-size:12px;line-height:1.6;">
+            <div>🏢 <strong>Cliente:</strong> <span id="ev-detail-client">—</span></div>
+            <div>👤 <strong>Referente:</strong> <span id="ev-detail-contact">—</span></div>
+            <div>🎭 <strong>Mansione:</strong> <span id="ev-detail-role">—</span></div>
+            <div id="ev-detail-crew-row" style="display:none;">👥 <strong>Troupe:</strong> <span id="ev-detail-crew">—</span></div>
+            <div>📅 <strong>Inizio:</strong> <span id="ev-detail-start">—</span></div>
+            <div>🏁 <strong>Fine:</strong> <span id="ev-detail-end">—</span></div>
+            <div style="margin-top:4px;">📍 <strong>Luogo:</strong> <span id="ev-detail-location">—</span></div>
+          </div>
+          <div id="ev-detail-maps-row" style="margin-top:10px;display:none;">
+            <a id="ev-detail-maps-link" href="#" target="_blank" class="btn btn-outline" style="width:100%;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px;">
+              🗺️ Apri Posizione su Google Maps
+            </a>
+          </div>
+        </div>
+
+        <!-- Sezione 2: Note Scheda Lavoro (Note Produzione) -->
+        <div id="ev-detail-notes-prod-card" class="card" style="margin-bottom:10px;display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);">
+          <div class="shift-title" style="color:var(--warning);margin-bottom:6px;">⚠️ Note Scheda Lavoro</div>
+          <div id="ev-detail-notes-prod" style="font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.4;"></div>
+        </div>
+
+        <!-- Sezione 3: Materiali & Scheda Tecnica -->
+        <div class="card" style="margin-bottom:10px;">
+          <div class="shift-title" style="margin-bottom:8px;">📦 Materiali & Attrezzatura</div>
+          <div id="ev-detail-drive-row" style="margin-bottom:10px;display:none;">
+            <a id="ev-detail-drive-link" href="#" target="_blank" class="btn btn-primary" style="width:100%;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px;">
+              📁 Apri Cartella Drive Materiali
+            </a>
+          </div>
+          <div id="ev-materials-loading" style="text-align:center;padding:12px;font-size:12px;color:var(--text-muted);">
+            Caricamento lista materiali...
+          </div>
+          <div id="ev-materials-list" style="display:none;font-size:12px;">
+            <!-- Raggruppato per sala/categoria -->
+          </div>
+        </div>
+
+        <!-- Sezione 4: Note del Tecnico (Diario) -->
+        <div class="card" style="margin-bottom:10px;">
+          <div class="shift-title" style="margin-bottom:8px;">💬 Note del Tecnico</div>
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+            Annotazioni visibili a Videorent e ai colleghi di commessa.
+          </p>
+          <div id="ev-tech-notes-list" style="margin-bottom:10px;">
+            <!-- Popolato dinamicamente -->
+          </div>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="input-new-tech-note" class="form-input" placeholder="Scrivi una nota per il set..." style="font-size:12px;padding:8px 10px;">
+            <button class="btn btn-primary" style="flex:0 0 auto;font-size:12px;padding:8px 14px;" onclick="submitTechNote()">Invia</button>
+          </div>
+        </div>
+
+        <!-- Sezione 5: Presenza Tecnico -->
+        <div id="ev-presence-action-card" class="card" style="display:none;">
+          <div class="shift-title" style="margin-bottom:6px;">✋ Conferma Presenza</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
+            Risulti assegnato a questa commessa in attesa di conferma.
+          </p>
+          <button id="btn-confirm-presence-modal" class="btn btn-success" style="width:100%;" onclick="confirmPresenceFromModal()">
+            ✅ Conferma la tua Presenza su Videorent
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: APRI TURNO -->
   <div id="modal-start-shift" class="modal-overlay">
@@ -2657,8 +2786,9 @@
 
       document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
       if (name === "dashboard") document.querySelectorAll(".nav-item")[0]?.classList.add("active");
-      if (name === "summary") document.querySelectorAll(".nav-item")[1]?.classList.add("active");
-      if (name === "settings") document.querySelectorAll(".nav-item")[2]?.classList.add("active");
+      if (name === "events") document.querySelectorAll(".nav-item")[1]?.classList.add("active");
+      if (name === "summary") document.querySelectorAll(".nav-item")[2]?.classList.add("active");
+      if (name === "settings") document.querySelectorAll(".nav-item")[3]?.classList.add("active");
 
       // Aggiorna l'icona Admin nell'header: casa se siamo in admin, colleghi se altrove
       const btnAdmin = document.getElementById("btn-admin");
@@ -2674,6 +2804,10 @@
 
       if (name === "admin") {
         fetchAdminUsers();
+      }
+
+      if (name === "events") {
+        loadEventsScreen();
       }
     }
 
@@ -4198,6 +4332,448 @@ function openModal(id) {
         alert("Errore: " + e.message);
       } finally {
         hideLoader();
+      }
+    }
+
+    // =========================================================================
+    // SEZIONE EVENTI / COMMESSE VIDEORENT
+    // =========================================================================
+    const vrEventsState = {
+      activeTab: 'upcoming', // 'upcoming' | 'past'
+      upcoming: [],
+      past: [],
+      loaded: false,
+      currentEventDetail: null
+    };
+
+    function formatEventDates(startStr, endStr) {
+      if (!startStr) return "";
+      const dStart = new Date(startStr);
+      if (isNaN(dStart.getTime())) return startStr;
+      const dayS = dStart.getDate();
+      const monthS = dStart.toLocaleString("it-IT", { month: "short" }).toUpperCase();
+
+      if (!endStr) return `${dayS} ${monthS}`;
+      const dEnd = new Date(endStr);
+      if (isNaN(dEnd.getTime())) return `${dayS} ${monthS}`;
+      const dayE = dEnd.getDate();
+      const monthE = dEnd.toLocaleString("it-IT", { month: "short" }).toUpperCase();
+
+      if (monthS === monthE && dayS === dayE) {
+        return `${dayS} ${monthS}`;
+      }
+      if (monthS === monthE) {
+        return `${dayS} – ${dayE} ${monthS}`;
+      }
+      return `${dayS} ${monthS} – ${dayE} ${monthE}`;
+    }
+
+    function formatDateTimeFull(str) {
+      if (!str) return "—";
+      const d = new Date(str);
+      if (isNaN(d.getTime())) return str;
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, "0");
+      const mins = String(d.getMinutes()).padStart(2, "0");
+      return `${day}/${month}/${year} ore ${hours}:${mins}`;
+    }
+
+    async function loadEventsScreen(forceRefresh = false) {
+      if (vrEventsState.loaded && !forceRefresh) {
+        renderEventsList();
+        return;
+      }
+
+      const listEl = document.getElementById("events-list");
+      const loadingEl = document.getElementById("events-loading");
+      const notCfgEl = document.getElementById("events-not-configured");
+
+      if (loadingEl) loadingEl.style.display = "block";
+      if (listEl) listEl.style.display = "none";
+      if (notCfgEl) notCfgEl.style.display = "none";
+
+      try {
+        const res = await callApi("miniapp_get_vr_events");
+        if (loadingEl) loadingEl.style.display = "none";
+
+        if (!res || !res.success) {
+          if (listEl) {
+            listEl.style.display = "block";
+            listEl.innerHTML = `<div class="card" style="text-align:center;color:var(--danger);padding:18px;">${res?.error || "Errore di connessione a Videorent"}</div>`;
+          }
+          return;
+        }
+
+        if (res.notConfigured) {
+          if (notCfgEl) notCfgEl.style.display = "block";
+          return;
+        }
+
+        vrEventsState.upcoming = res.upcoming || [];
+        vrEventsState.past = res.past || [];
+        vrEventsState.loaded = true;
+
+        if (listEl) listEl.style.display = "block";
+        renderEventsList();
+
+      } catch (err) {
+        if (loadingEl) loadingEl.style.display = "none";
+        if (listEl) {
+          listEl.style.display = "block";
+          listEl.innerHTML = `<div class="card" style="text-align:center;color:var(--danger);padding:18px;">Errore: ${err.message || String(err)}</div>`;
+        }
+      }
+    }
+
+    function switchEventsTab(tab) {
+      vrEventsState.activeTab = tab;
+      const btnUp = document.getElementById("tab-events-upcoming");
+      const btnPast = document.getElementById("tab-events-past");
+      if (btnUp && btnPast) {
+        if (tab === "upcoming") {
+          btnUp.style.background = "var(--primary)";
+          btnUp.style.color = "#fff";
+          btnPast.style.background = "transparent";
+          btnPast.style.color = "var(--text-muted)";
+        } else {
+          btnPast.style.background = "var(--primary)";
+          btnPast.style.color = "#fff";
+          btnUp.style.background = "transparent";
+          btnUp.style.color = "var(--text-muted)";
+        }
+      }
+      renderEventsList();
+    }
+
+    function renderEventsList() {
+      const container = document.getElementById("events-list");
+      if (!container) return;
+
+      const events = (vrEventsState.activeTab === "upcoming") ? vrEventsState.upcoming : vrEventsState.past;
+
+      if (events.length === 0) {
+        container.innerHTML = `
+          <div class="card" style="text-align:center;padding:24px 16px;color:var(--text-muted);">
+            <div style="font-size:24px;margin-bottom:6px;">📋</div>
+            <div>Nessun evento ${(vrEventsState.activeTab === "upcoming" ? "in programma" : "nello storico")}.</div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = "";
+      events.forEach(ev => {
+        const isPending = (ev.presenza_confirmed === 0 || ev.isTechnicianConfirmed === false);
+        const dateFormatted = formatEventDates(ev.start, ev.end);
+        const loc = [ev.venue, ev.city].filter(Boolean).join(" — ") || ev.fullLocation || "Luogo da definire";
+        const crewHtml = (ev.crew && ev.crew.length > 0) ? `<div style="font-size:11px;color:var(--accent);margin-top:4px;">👥 ${ev.crew.join(", ")}</div>` : "";
+
+        html += `
+          <div class="card" style="cursor:pointer;margin-bottom:10px;" onclick="openEventDetail('${ev.id}')">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:6px;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span class="status-badge" style="background:rgba(14,165,233,0.15);color:var(--accent);font-weight:700;">#${ev.id}</span>
+                <span style="font-size:11px;color:var(--text-muted);font-weight:600;">${dateFormatted}</span>
+              </div>
+              <div>
+                ${isPending 
+                  ? `<span class="status-badge" style="background:rgba(245,158,11,0.15);color:var(--warning);">In Attesa</span>`
+                  : `<span class="status-badge" style="background:rgba(16,185,129,0.15);color:var(--success);">Confermato</span>`}
+              </div>
+            </div>
+
+            <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;line-height:1.3;">
+              ${escapeHtml(ev.title || ev.fullHeading || "Commessa #" + ev.id)}
+            </div>
+
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.4;">
+              ${ev.client ? `<div>🏢 ${escapeHtml(ev.client)}</div>` : ''}
+              <div>📍 ${escapeHtml(loc)}</div>
+              ${crewHtml}
+            </div>
+
+            ${isPending ? `
+              <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;">
+                <button class="btn btn-success btn-sm" style="font-size:11px;padding:5px 12px;" onclick="event.stopPropagation(); confirmPresenceDirect('${ev.id}')">
+                  ✅ Conferma Presenza
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function openEventDetail(eventId) {
+      const all = [...vrEventsState.upcoming, ...vrEventsState.past];
+      const ev = all.find(e => String(e.id) === String(eventId));
+      if (!ev) return;
+
+      vrEventsState.currentEventDetail = ev;
+
+      document.getElementById("ev-detail-id").textContent = `#${ev.id}`;
+      document.getElementById("ev-detail-title").textContent = ev.title || ev.fullHeading || "Evento #" + ev.id;
+      
+      const statusBadge = document.getElementById("ev-detail-status-badge");
+      const isPending = (ev.presenza_confirmed === 0 || ev.isTechnicianConfirmed === false);
+      if (statusBadge) {
+        statusBadge.textContent = isPending ? "In Attesa" : "Confermato";
+        statusBadge.style.background = isPending ? "rgba(245,158,11,0.15)" : "rgba(16,185,129,0.15)";
+        statusBadge.style.color = isPending ? "var(--warning)" : "var(--success)";
+      }
+
+      document.getElementById("ev-detail-client").textContent = ev.client || "—";
+      document.getElementById("ev-detail-contact").textContent = ev.contact || "—";
+      document.getElementById("ev-detail-role").textContent = ev.mansione || "Tecnico";
+      
+      const crewRow = document.getElementById("ev-detail-crew-row");
+      const crewEl = document.getElementById("ev-detail-crew");
+      if (crewRow && crewEl) {
+        if (ev.crew && ev.crew.length > 0) {
+          crewRow.style.display = "block";
+          crewEl.textContent = ev.crew.join(", ");
+        } else {
+          crewRow.style.display = "none";
+        }
+      }
+
+      document.getElementById("ev-detail-start").textContent = formatDateTimeFull(ev.start);
+      document.getElementById("ev-detail-end").textContent = formatDateTimeFull(ev.end);
+      document.getElementById("ev-detail-location").textContent = ev.fullLocation || [ev.venue, ev.address, ev.city].filter(Boolean).join(" — ") || "—";
+
+      const mapsRow = document.getElementById("ev-detail-maps-row");
+      const mapsLink = document.getElementById("ev-detail-maps-link");
+      const locQuery = [ev.venue, ev.address, ev.city].filter(Boolean).join(", ");
+      if (mapsRow && mapsLink && locQuery) {
+        mapsRow.style.display = "block";
+        mapsLink.href = `https://maps.google.com/?q=${encodeURIComponent(locQuery)}`;
+      } else if (mapsRow) {
+        mapsRow.style.display = "none";
+      }
+
+      // Note Scheda Lavoro
+      const noteProdCard = document.getElementById("ev-detail-notes-prod-card");
+      const noteProdEl = document.getElementById("ev-detail-notes-prod");
+      const noteText = ev.note_scheda_lavoro || "";
+      if (noteProdCard && noteProdEl) {
+        if (noteText.trim()) {
+          noteProdCard.style.display = "block";
+          noteProdEl.textContent = noteText.trim();
+        } else {
+          noteProdCard.style.display = "none";
+        }
+      }
+
+      // Drive Folder
+      const driveRow = document.getElementById("ev-detail-drive-row");
+      const driveLink = document.getElementById("ev-detail-drive-link");
+      if (driveRow && driveLink) {
+        if (ev.drive_link) {
+          driveRow.style.display = "block";
+          driveLink.href = ev.drive_link;
+        } else {
+          driveRow.style.display = "none";
+        }
+      }
+
+      // Presenza Card
+      const presCard = document.getElementById("ev-presence-action-card");
+      if (presCard) {
+        presCard.style.display = isPending ? "block" : "none";
+      }
+
+      // Reset Sezioni Dinamiche (Materiali & Note Tecnico)
+      const matLoading = document.getElementById("ev-materials-loading");
+      const matList = document.getElementById("ev-materials-list");
+      if (matLoading) matLoading.style.display = "block";
+      if (matList) { matList.style.display = "none"; matList.innerHTML = ""; }
+
+      const techNotesList = document.getElementById("ev-tech-notes-list");
+      if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Caricamento note...</div>`;
+
+      openModal("modal-event-detail");
+
+      // Fetch Dettagli da API
+      try {
+        const res = await callApi("miniapp_get_vr_event_detail", { eventId: ev.id });
+        if (res && res.success) {
+          renderMaterials(res.preventivo);
+          renderTechNotes(res.notes, res.current_user_id);
+          if (res.preventivo && res.preventivo.noteSchedaLavoro && !noteText) {
+            if (noteProdCard && noteProdEl) {
+              noteProdCard.style.display = "block";
+              noteProdEl.textContent = res.preventivo.noteSchedaLavoro.trim();
+            }
+          }
+          if (res.preventivo && res.preventivo.evento && res.preventivo.evento.drive_tech_folder_link && !ev.drive_link) {
+            if (driveRow && driveLink) {
+              driveRow.style.display = "block";
+              driveLink.href = res.preventivo.evento.drive_tech_folder_link;
+            }
+          }
+        } else {
+          if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Nessuna lista materiali disponibile per questa commessa.</span>`;
+          if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Nessuna nota presente.</div>`;
+        }
+      } catch (errDet) {
+        if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Dettagli materiali non disponibili.</span>`;
+        if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Impossibile recuperare le note.</div>`;
+      }
+    }
+
+    function renderMaterials(prev) {
+      const matLoading = document.getElementById("ev-materials-loading");
+      const matList = document.getElementById("ev-materials-list");
+      if (matLoading) matLoading.style.display = "none";
+      if (!matList) return;
+
+      if (!prev || !Array.isArray(prev.rows) || prev.rows.length === 0) {
+        matList.style.display = "block";
+        matList.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding:8px;">Nessun articolo assegnato in scheda lavoro.</div>`;
+        return;
+      }
+
+      let html = "";
+      let currentGroup = "";
+      prev.rows.forEach(r => {
+        if (r.tipo === "hdr") {
+          currentGroup = r.descr || "Generale";
+          html += `
+            <div style="font-weight:700;color:var(--accent);font-size:12px;margin-top:10px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid rgba(255,255,255,0.06);">
+              🏷️ ${escapeHtml(currentGroup)}
+            </div>
+          `;
+        } else {
+          const qtyStr = r.qty ? `<span class="status-badge" style="background:rgba(255,255,255,0.06);font-size:11px;font-weight:700;margin-right:6px;">${r.qty}x</span>` : '';
+          const noteStr = r.note ? `<span style="color:var(--warning);font-size:10px;margin-left:4px;">(${escapeHtml(r.note)})</span>` : '';
+          html += `
+            <div style="display:flex;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
+              ${qtyStr}
+              <span style="color:var(--text);flex:1;">${escapeHtml(r.descr || 'Articolo')}</span>
+              ${noteStr}
+            </div>
+          `;
+        }
+      });
+
+      matList.style.display = "block";
+      matList.innerHTML = html;
+    }
+
+    function renderTechNotes(notes, currentUserId) {
+      const container = document.getElementById("ev-tech-notes-list");
+      if (!container) return;
+
+      if (!Array.isArray(notes) || notes.length === 0) {
+        container.innerHTML = `<div style="color:var(--text-muted);font-size:12px;padding:4px 0;">Nessuna nota del tecnico inserita.</div>`;
+        return;
+      }
+
+      let html = "";
+      notes.forEach(n => {
+        const isMine = (currentUserId && n.user_id && String(n.user_id) === String(currentUserId));
+        html += `
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-muted);margin-bottom:4px;">
+              <span><strong>${escapeHtml(n.author || 'Tecnico')}</strong> • ${n.created_at || ''}</span>
+              ${isMine ? `<button class="icon-btn" style="width:22px;height:22px;font-size:11px;color:var(--danger);" onclick="deleteTechNote(${n.id})" title="Elimina nota">🗑️</button>` : ''}
+            </div>
+            <div style="font-size:12px;color:var(--text);line-height:1.4;white-space:pre-wrap;">${escapeHtml(n.note || '')}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    async function submitTechNote() {
+      const input = document.getElementById("input-new-tech-note");
+      if (!input || !input.value.trim() || !vrEventsState.currentEventDetail) return;
+      const noteText = input.value.trim();
+      const eventId = vrEventsState.currentEventDetail.id;
+
+      showLoader("Invio nota in corso...");
+      try {
+        const res = await callApi("miniapp_add_vr_note", { eventId: eventId, note: noteText });
+        hideLoader();
+        if (res && res.success) {
+          input.value = "";
+          // Ricarica le note
+          const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: eventId });
+          if (detRes && detRes.success) {
+            renderTechNotes(detRes.notes, detRes.current_user_id);
+          }
+        } else {
+          alert("Errore invio nota: " + (res?.error || "Operazione fallita"));
+        }
+      } catch (e) {
+        hideLoader();
+        alert("Errore: " + (e.message || String(e)));
+      }
+    }
+
+    async function deleteTechNote(noteId) {
+      const ok = await askConfirmation("Vuoi eliminare questa nota da Videorent?");
+      if (!ok) return;
+
+      showLoader("Eliminazione nota...");
+      try {
+        const res = await callApi("miniapp_delete_vr_note", { noteId: noteId });
+        hideLoader();
+        if (res && res.success) {
+          if (vrEventsState.currentEventDetail) {
+            const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: vrEventsState.currentEventDetail.id });
+            if (detRes && detRes.success) {
+              renderTechNotes(detRes.notes, detRes.current_user_id);
+            }
+          }
+        } else {
+          alert("Errore eliminazione nota: " + (res?.error || "Operazione non riuscita"));
+        }
+      } catch (e) {
+        hideLoader();
+        alert("Errore: " + (e.message || String(e)));
+      }
+    }
+
+    async function confirmPresenceDirect(eventId) {
+      const ok = await askConfirmation(`Vuoi confermare la tua presenza su Videorent per la commessa #${eventId}?`);
+      if (!ok) return;
+
+      showLoader("Conferma presenza...");
+      try {
+        const res = await callApi("miniapp_confirm_vr_presence", { eventId: eventId });
+        hideLoader();
+        if (res && res.success) {
+          showToast("✅ Presenza confermata su Videorent!");
+          const ev = [...vrEventsState.upcoming, ...vrEventsState.past].find(e => String(e.id) === String(eventId));
+          if (ev) {
+            ev.presenza_confirmed = 1;
+            ev.isTechnicianConfirmed = true;
+          }
+          renderEventsList();
+        } else {
+          alert("Errore conferma presenza: " + (res?.error || "Operazione non riuscita"));
+        }
+      } catch (e) {
+        hideLoader();
+        alert("Errore: " + (e.message || String(e)));
+      }
+    }
+
+    async function confirmPresenceFromModal() {
+      if (!vrEventsState.currentEventDetail) return;
+      await confirmPresenceDirect(vrEventsState.currentEventDetail.id);
+      const presCard = document.getElementById("ev-presence-action-card");
+      if (presCard) presCard.style.display = "none";
+      const statusBadge = document.getElementById("ev-detail-status-badge");
+      if (statusBadge) {
+        statusBadge.textContent = "Confermato";
+        statusBadge.style.background = "rgba(16,185,129,0.15)";
+        statusBadge.style.color = "var(--success)";
       }
     }
 
