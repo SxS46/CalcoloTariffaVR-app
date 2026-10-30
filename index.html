@@ -3654,6 +3654,19 @@
         const scriptUrl = res.scriptUrl;
         const calAddUrl = res.calAddUrl;
 
+        // Risoluzione difensiva tariffe per evitare qualsiasi "undefined"
+        const cBase = (rates && rates.casaBase != null) ? rates.casaBase : '—';
+        const cHours = (rates && rates.casaFullHours != null) ? rates.casaFullHours : 9;
+        const cExtra = (rates && (rates.casaStraord ?? rates.casaExtra)) != null ? (rates.casaStraord ?? rates.casaExtra) : 30;
+        const cShortH = (rates && rates.casaShortHours != null) ? rates.casaShortHours : 0;
+        const cShortP = (rates && (rates.casaShortPay ?? rates.casaShort)) != null ? (rates.casaShortPay ?? rates.casaShort) : '—';
+
+        const tBase = (rates && (rates.trasfertaBase ?? rates.trasfBase)) != null ? (rates.trasfertaBase ?? rates.trasfBase) : '—';
+        const tHours = (rates && (rates.trasfertaFullHours ?? rates.trasfFullHours)) != null ? (rates.trasfertaFullHours ?? rates.trasfFullHours) : 9;
+        const tExtra = (rates && (rates.trasfertaStraord ?? rates.trasfExtra ?? rates.trasfStraord)) != null ? (rates.trasfertaStraord ?? rates.trasfExtra ?? rates.trasfStraord) : 30;
+        const tShortH = (rates && (rates.trasfertaShortHours ?? rates.trasfShortHours)) != null ? (rates.trasfertaShortHours ?? rates.trasfShortHours) : 0;
+        const tShortP = (rates && (rates.trasfertaShort ?? rates.trasfShortPay ?? rates.trasfShort)) != null ? (rates.trasfertaShort ?? rates.trasfShortPay ?? rates.trasfShort) : '—';
+
         titleEl.textContent = u.name;
         subEl.textContent = `ID: ${u.id} • @${u.username || 'nessuno'}`;
 
@@ -3738,16 +3751,16 @@
             ${rates ? `
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;margin-bottom:10px;">
                 <div style="background:rgba(2,132,199,0.1);padding:8px;border-radius:6px;border:1px solid rgba(2,132,199,0.2);">
-                  <div style="font-weight:700;color:var(--primary);margin-bottom:4px;">🏠 CASA</div>
-                  <div>Base: <strong>${rates.casaBase} €</strong></div>
-                  <div>Extra: <strong>${rates.casaExtra} €/h</strong></div>
-                  <div>Mezza: <strong>${rates.casaShortHours > 0 ? rates.casaShortPay + ' € (' + rates.casaShortHours + 'h)' : 'Non attiva'}</strong></div>
+                  <div style="font-weight:700;color:var(--primary);margin-bottom:4px;">🏠 CASA (${cHours}h)</div>
+                  <div>Base: <strong>${cBase} €</strong></div>
+                  <div>Extra: <strong>${cExtra} €/h</strong></div>
+                  <div>Mezza: <strong>${cShortH > 0 ? (cShortP + ' € (' + cShortH + 'h)') : 'Non attiva'}</strong></div>
                 </div>
                 <div style="background:rgba(103,175,35,0.1);padding:8px;border-radius:6px;border:1px solid rgba(103,175,35,0.2);">
-                  <div style="font-weight:700;color:var(--success);margin-bottom:4px;">🚗 TRASFERTA</div>
-                  <div>Base: <strong>${rates.trasfBase} €</strong></div>
-                  <div>Extra: <strong>${rates.trasfExtra} €/h</strong></div>
-                  <div>Mezza: <strong>${rates.trasfShortHours > 0 ? rates.trasfShortPay + ' € (' + rates.trasfShortHours + 'h)' : 'Non attiva'}</strong></div>
+                  <div style="font-weight:700;color:var(--success);margin-bottom:4px;">🚗 TRASFERTA (${tHours}h)</div>
+                  <div>Base: <strong>${tBase} €</strong></div>
+                  <div>Extra: <strong>${tExtra} €/h</strong></div>
+                  <div>Mezza: <strong>${tShortH > 0 ? (tShortP + ' € (' + tShortH + 'h)') : 'Non attiva'}</strong></div>
                 </div>
               </div>
             ` : '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Tariffe non ancora configurate o foglio non accessibile.</div>'}
