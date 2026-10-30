@@ -1580,6 +1580,24 @@
       document.getElementById("loader").style.display = "none";
     }
 
+    // Dialog di conferma unificato (Telegram Native showConfirm con fallback su window.confirm)
+    function askConfirmation(message) {
+      return new Promise((resolve) => {
+        if (window.Telegram && window.Telegram.WebApp && typeof window.Telegram.WebApp.showConfirm === "function") {
+          try {
+            window.Telegram.WebApp.showConfirm(message, (confirmed) => {
+              resolve(Boolean(confirmed));
+            });
+            return;
+          } catch (e) {
+            console.warn("showConfirm error fallback:", e);
+          }
+        }
+        const res = window.confirm(message);
+        resolve(Boolean(res));
+      });
+    }
+
     // Inizializzazione Dashboard
     async function fetchDashboardData() {
       const tgUser = getTelegramUser();
@@ -1989,7 +2007,14 @@
       }
     }
 
-    function cancelVrCloudEdit() {
+    async function cancelVrCloudEdit() {
+      const curUser = document.getElementById("cfg-vr-user").value;
+      const curPass = document.getElementById("cfg-vr-pass").value;
+      const origUser = appState.user?.vrUsername || "";
+      if (curUser !== origUser || (curPass && curPass !== "••••••••")) {
+        const ok = await askConfirmation("⚠️ Vuoi annullare la modifica delle credenziali? Le modifiche inserite andranno perse.");
+        if (!ok) return;
+      }
       isVrCloudEditing = false;
       renderVrCloudState();
     }
@@ -2162,8 +2187,9 @@
     }
 
     async function confirmCancelShift() {
-      if (!confirm("Sei sicuro di voler annullare il turno in corso senza salvare?")) return;
-      showLoader("Annullamento...");
+      const ok = await askConfirmation("⚠️ Sei sicuro di voler annullare il turno in corso senza salvare?\n\nTutti i dati registrati per la giornata odierna andranno persi.");
+      if (!ok) return;
+      showLoader("Annullamento turno...");
       try {
         const res = await callApi("miniapp_cancel_shift");
         if (res.success) {
@@ -2314,7 +2340,9 @@
     }
 
     async function confirmDeleteEntry() {
-      if (!confirm("Sei sicuro di voler eliminare definitivamente questa registrazione dal foglio?")) return;
+      const dateText = document.getElementById("edit-modal-date")?.textContent || "";
+      const ok = await askConfirmation(`⚠️ Sei sicuro di voler eliminare definitivamente questa registrazione ${dateText} dal foglio Google?\n\nQuesta operazione non può essere annullata.`);
+      if (!ok) return;
       const row = document.getElementById("edit-row").value;
       const sheetName = document.getElementById("edit-sheet-name").value;
 
@@ -2386,6 +2414,12 @@
     async function toggleCalendarSync() {
       const curr = Boolean(appState.user?.calendarSyncEnabled);
       const next = !curr;
+
+      if (!next) {
+        const ok = await askConfirmation("⚠️ Sei sicuro di voler disattivare la sincronizzazione con Google Calendar?\n\nI tuoi turni non verranno più aggiornati automaticamente nell'agenda dello smartphone.");
+        if (!ok) return;
+      }
+
       showLoader(next ? "Attivazione Calendar..." : "Disattivazione Calendar...");
       try {
         const res = await callApi("miniapp_update_calendar", { enabled: next });
@@ -2457,7 +2491,8 @@
     }
 
     async function disconnectVrCloud() {
-      if (!confirm("⚠️ Sei sicuro di voler disconnettere l'account Videorent Cloud?\n\nNon riceverai più notifiche automatiche di nuove commesse e la compilazione remota verrà disabilitata.")) return;
+      const ok = await askConfirmation("⚠️ Sei sicuro di voler disconnettere l'account Videorent Cloud?\n\nNon riceverai più notifiche automatiche di nuove commesse e la compilazione remota verrà disabilitata.");
+      if (!ok) return;
       showLoader("Disconnessione in corso...");
       try {
         const res = await callApi("miniapp_disconnect_vr_cloud");
@@ -2842,8 +2877,8 @@
               </div>
             </div>
             <div>
-              ${isPending ? `<button class="btn btn-success" style="padding:6px 10px;font-size:12px;" onclick="adminApproveUser(${u.id}, '${u.name}')">✅ Approva</button>` : ''}
-              ${!isPending && u.role !== 'ADMIN' ? `<button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" onclick="adminToggleSuspend(${u.id})">${isSuspended ? 'Riattiva' : 'Sospendi'}</button>` : ''}
+              ${isPending ? `<button class="btn btn-success" style="padding:6px 10px;font-size:12px;" onclick="adminApproveUser(${u.id}, '${u.name || ''}')">✅ Approva</button>` : ''}
+              ${!isPending && u.role !== 'ADMIN' ? `<button class="btn btn-outline" style="padding:6px 10px;font-size:12px;" onclick="adminToggleSuspend(${u.id}, ${isSuspended}, '${u.name || ''}')">${isSuspended ? 'Riattiva' : 'Sospendi'}</button>` : ''}
             </div>
           `;
           container.appendChild(div);
@@ -2854,10 +2889,14 @@
     }
 
     async function adminApproveUser(id, name) {
+      const ok = await askConfirmation(`Confermi l'approvazione del nuovo collega ${name || id}?\n\nVerrà creato il suo foglio Google personale dedicato.`);
+      if (!ok) return;
+
       showLoader("Approvazione collega...");
       try {
         await callApi("miniapp_admin_action", { subAction: "approve_user", targetUserId: id, customName: name });
         fetchAdminUsers();
+        showToast("✅ Collega approvato con successo!");
       } catch (e) {
         alert("Errore: " + e.message);
       } finally {
@@ -2865,12 +2904,23 @@
       }
     }
 
-    async function adminToggleSuspend(id) {
-      showLoader("Modifica stato...");
+    async function adminToggleSuspend(id, isSuspended, name) {
+      const ok = await askConfirmation(isSuspended 
+        ? `Vuoi riattivare l'accesso per il collega ${name || id}?` 
+        : `⚠️ Sei sicuro di voler sospendere l'accesso per il collega ${name || id}?\n\nNon potrà più accedere al bot o registrare turni finché non verrà riattivato.`);
+      if (!ok) return;
+
+      showLoader(isSuspended ? "Riattivazione collega..." : "Sospensione collega...");
       try {
         await callApi("miniapp_admin_action", { subAction: "toggle_suspend", targetUserId: id });
         fetchAdminUsers();
+        showToast(isSuspended ? "✅ Accesso riattivato!" : "🚫 Accesso sospeso.");
       } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
         alert("Errore: " + e.message);
       } finally {
         hideLoader();
