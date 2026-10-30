@@ -777,7 +777,7 @@
             <div style="font-weight:700;font-size:14px;">☁️ Videorent Cloud</div>
             <span id="vr-cloud-badge" class="status-badge" style="background:rgba(239,68,68,0.15);color:var(--danger);">Non Collegato</span>
           </div>
-          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+          <p id="vr-cloud-desc" style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
             Compilazione remota automatica degli slot orari e compensi sul portale Videorent.
           </p>
 
@@ -793,7 +793,13 @@
           </div>
           <div class="btn-row" style="margin-top:4px;">
             <button class="btn btn-primary" onclick="saveVrCloudCredentials()">💾 Salva Credenziali</button>
-            <button class="btn btn-outline" onclick="triggerVrCompileAll()">⚡ Compila Adesso</button>
+          </div>
+
+          <div id="vr-cloud-connected-actions" style="display:none;margin-top:10px;">
+            <div class="btn-row">
+              <button class="btn btn-outline" style="border-color:rgba(14,165,233,0.4);" onclick="triggerVrCompileAll()">⚡ Compila Adesso</button>
+              <button class="btn btn-danger" style="flex:0.6;" onclick="disconnectVrCloud()">Disconnetti</button>
+            </div>
           </div>
         </div>
 
@@ -1378,9 +1384,22 @@
       // Videorent Cloud
       const isVrConn = Boolean(u.vrConnected);
       const vrBadge = document.getElementById("vr-cloud-badge");
-      vrBadge.textContent = isVrConn ? "🟢 Connesso" : "🔴 Non Collegato";
-      vrBadge.style.color = isVrConn ? "var(--success)" : "var(--danger)";
-      vrBadge.style.background = isVrConn ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)";
+      const vrDesc = document.getElementById("vr-cloud-desc");
+      const vrConnActions = document.getElementById("vr-cloud-connected-actions");
+
+      if (isVrConn) {
+        vrBadge.textContent = "🟢 Collegato";
+        vrBadge.style.color = "var(--success)";
+        vrBadge.style.background = "rgba(16,185,129,0.15)";
+        if (vrDesc) vrDesc.textContent = `Account connesso: ${u.vrUsername || ''} • Notifiche e compilazione abilitate`;
+        if (vrConnActions) vrConnActions.style.display = "block";
+      } else {
+        vrBadge.textContent = "🔴 Non Collegato";
+        vrBadge.style.color = "var(--danger)";
+        vrBadge.style.background = "rgba(239,68,68,0.15)";
+        if (vrDesc) vrDesc.textContent = "Collega il tuo account Videorent per ricevere notifiche e compilare gli orari da telefono.";
+        if (vrConnActions) vrConnActions.style.display = "none";
+      }
       document.getElementById("cfg-vr-user").value = u.vrUsername || "";
     }
 
@@ -1683,10 +1702,12 @@
     }
 
     function openAddGoogleCalendar() {
+      const addUrl = appState.user?.addCalUrl;
       const cid = appState.user?.calendarId;
-      if (cid) {
-        const url = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(cid)}`;
-        window.open(url, "_blank");
+      if (addUrl) {
+        window.open(addUrl, "_blank");
+      } else if (cid) {
+        window.open(`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(cid)}`, "_blank");
       } else {
         alert("Collega prima la tua email Gmail per generare il tuo calendario personale!");
       }
@@ -1707,6 +1728,28 @@
           }
           populateSettingsInputs();
           showToast("☁️ Credenziali salvate con successo!");
+        } else {
+          alert("Errore: " + (res.error || "Impossibile salvare credenziali"));
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function disconnectVrCloud() {
+      if (!confirm("Sei sicuro di voler disconnettere l'account Videorent Cloud?")) return;
+      showLoader("Disconnessione in corso...");
+      try {
+        const res = await callApi("miniapp_disconnect_vr_cloud");
+        if (res.success) {
+          if (appState.user) {
+            appState.user.vrUsername = "";
+            appState.user.vrConnected = false;
+          }
+          populateSettingsInputs();
+          showToast("Account Videorent disconnesso.");
         }
       } catch (e) {
         alert("Errore: " + e.message);
