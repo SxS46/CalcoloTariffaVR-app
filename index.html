@@ -1171,59 +1171,282 @@
 
     </section>
 
-    <!-- SCREEN 3: WIZARD INIZIALE (Nuovo Collega Approvato) -->
+    <!-- SCREEN 3: WIZARD INIZIALE (Nuovo Collega Approvato - Multi-Step Completo Identico al Bot) -->
     <section id="screen-wizard" class="view-screen">
-      <div id="wiz-test-banner" style="display:none;background:rgba(234, 179, 8, 0.15);border:1px solid var(--warning);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center;">
-        <div style="font-weight:700;color:var(--warning);font-size:14px;margin-bottom:4px;">🧪 MODALITÀ ANTEPRIMA WIZARD COLLEGA</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Stai visualizzando il wizard esattamente come appare a un nuovo collaboratore.<br>Nessun dato reale verrà sovrascritto e il tuo turno di oggi non verrà toccato.</div>
+      <!-- Banner Modalità Prova Test -->
+      <div id="wiz-test-banner" style="display:none;background:rgba(234, 179, 8, 0.15);border:1px solid var(--warning);border-radius:12px;padding:12px 14px;margin-bottom:14px;text-align:center;">
+        <div style="font-weight:700;color:var(--warning);font-size:13px;margin-bottom:2px;">🧪 MODALITÀ ANTEPRIMA WIZARD COLLEGA</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Stai testando tutti i passaggi dell'onboarding. Nessun dato reale verrà salvato e il tuo turno di oggi è intatto.</div>
         <button class="btn btn-outline btn-sm" style="margin:0 auto;display:inline-flex;" onclick="exitWizardTestMode()">❌ Esci dalla Prova</button>
       </div>
-      <div class="card" style="border-left: 4px solid var(--accent);">
-        <h2 style="font-size:18px;margin-bottom:8px;">👋 Benvenuto in Videorent!</h2>
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
-          Configura in 30 secondi i tuoi accordi tariffari. I valori rimangono <strong>100% privati</strong> nel tuo foglio personale.
+
+      <!-- Stepper / Indicatori Passo -->
+      <div class="card" style="padding:12px 14px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span id="wiz-step-title" style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Passo 1 di 6: Casa</span>
+          <span id="wiz-step-counter" style="font-size:11px;font-weight:700;color:var(--text-muted);">1 / 6</span>
+        </div>
+        <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden;">
+          <div id="wiz-progress-bar" style="width:16.6%;height:100%;background:var(--accent);transition:width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- PASSO 1: 🏠 CASA -->
+      <div id="wiz-step-1" class="wiz-step-pane card">
+        <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+          <span>🏠</span> 1. Tariffe Lavoro a Casa
+        </h2>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
+          Configura i tuoi accordi per le giornate lavorate a Casa (Bologna).
         </p>
 
         <div class="form-group">
-          <label class="form-label">1. Compenso Base Casa (€)</label>
-          <input type="number" id="wiz-casa-base" class="form-input" placeholder="Es. 220" value="220">
-        </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Straordinario (€)</label>
-            <input type="number" id="wiz-casa-extra" class="form-input" placeholder="30" value="30">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Mezza Giornata (€)</label>
-            <input type="number" id="wiz-casa-half" class="form-input" placeholder="140" value="140">
-          </div>
+          <label class="form-label">Compenso Giornata Intera Base (€)</label>
+          <input type="number" id="wiz-casa-base" class="form-input" placeholder="Es. 220" value="">
         </div>
 
         <div class="form-group" style="margin-top:12px;">
-          <label class="form-label">2. Compenso Base Trasferta (€)</label>
-          <input type="number" id="wiz-trasf-base" class="form-input" placeholder="Es. 250" value="250">
+          <label class="form-label">Quante ore dura la tua giornata intera a Casa?</label>
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <button type="button" class="btn btn-outline btn-sm wiz-casa-hours-btn" data-hours="8" onclick="setWizCasaHours(8)">⏱️ 8 ore</button>
+            <button type="button" class="btn btn-primary btn-sm wiz-casa-hours-btn" data-hours="9" onclick="setWizCasaHours(9)">⏱️ 9 ore</button>
+            <button type="button" class="btn btn-outline btn-sm wiz-casa-hours-btn" data-hours="10" onclick="setWizCasaHours(10)">⏱️ 10 ore</button>
+          </div>
+          <input type="number" id="wiz-casa-full-hours" class="form-input" placeholder="Ore (es. 9)" value="9">
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Straordinario (€)</label>
-            <input type="number" id="wiz-trasf-extra" class="form-input" placeholder="30" value="30">
+
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label">Hai un accordo per la mezza giornata a Casa?</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <button type="button" id="btn-wiz-casa-half-yes" class="btn btn-outline" style="flex:1;font-size:12px;" onclick="toggleWizCasaHalf(true)">✅ Ho la mezza giornata</button>
+            <button type="button" id="btn-wiz-casa-half-no" class="btn btn-primary" style="flex:1;font-size:12px;" onclick="toggleWizCasaHalf(false)">❌ Sempre giornata intera</button>
           </div>
-          <div class="form-group">
-            <label class="form-label">Mezza Giornata (€)</label>
-            <input type="number" id="wiz-trasf-half" class="form-input" placeholder="250" value="250">
+          <div id="wiz-casa-half-details" style="display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:6px;">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" style="font-size:11px;">Fino a quante ore?</label>
+                <input type="number" id="wiz-casa-short-hours" class="form-input" placeholder="4" value="4">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:11px;">Compenso Mezza G. (€)</label>
+                <input type="number" id="wiz-casa-short-pay" class="form-input" placeholder="140" value="">
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label">Straordinario Orario Casa (€/ora)</label>
+          <input type="number" id="wiz-casa-straord" class="form-input" placeholder="Es. 30" value="">
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;margin-top:18px;" onclick="goToWizStep(2)">Continua a Trasferta ➡️</button>
+      </div>
+
+      <!-- PASSO 2: 🚗 TRASFERTA -->
+      <div id="wiz-step-2" class="wiz-step-pane card" style="display:none;">
+        <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+          <span>🚗</span> 2. Tariffe Lavoro in Trasferta
+        </h2>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
+          Configura i tuoi accordi per le trasferte fuori sede.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Compenso Giornata Intera Base (€)</label>
+          <input type="number" id="wiz-trasf-base" class="form-input" placeholder="Es. 250" value="">
         </div>
 
         <div class="form-group" style="margin-top:12px;">
-          <label class="form-label">3. Maggiorazione Weekend & Festivi</label>
-          <select id="wiz-weekend-rule" class="form-select">
-            <option value="ALL">Sabato, Domenica e Festivi (Tariffa Trasferta)</option>
-            <option value="SUNDAY_AND_HOLIDAYS">Solo Domenica e Festivi</option>
-            <option value="NONE">Disattivata</option>
-          </select>
+          <label class="form-label">Quante ore dura la tua giornata intera in trasferta?</label>
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <button type="button" class="btn btn-outline btn-sm wiz-trasf-hours-btn" data-hours="8" onclick="setWizTrasfHours(8)">⏱️ 8 ore</button>
+            <button type="button" class="btn btn-primary btn-sm wiz-trasf-hours-btn" data-hours="9" onclick="setWizTrasfHours(9)">⏱️ 9 ore</button>
+            <button type="button" class="btn btn-outline btn-sm wiz-trasf-hours-btn" data-hours="10" onclick="setWizTrasfHours(10)">⏱️ 10 ore</button>
+          </div>
+          <input type="number" id="wiz-trasf-full-hours" class="form-input" placeholder="Ore (es. 9)" value="9">
         </div>
 
-        <button class="btn btn-success" style="width:100%;margin-top:16px;" onclick="submitWizard()">🚀 Completa Configurazione</button>
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label">Hai un accordo per la mezza giornata in Trasferta?</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <button type="button" id="btn-wiz-trasf-half-yes" class="btn btn-outline" style="flex:1;font-size:12px;" onclick="toggleWizTrasfHalf(true)">✅ Ho la mezza giornata</button>
+            <button type="button" id="btn-wiz-trasf-half-no" class="btn btn-primary" style="flex:1;font-size:12px;" onclick="toggleWizTrasfHalf(false)">❌ Sempre giornata intera</button>
+          </div>
+          <div id="wiz-trasf-half-details" style="display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:6px;">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label" style="font-size:11px;">Fino a quante ore?</label>
+                <input type="number" id="wiz-trasf-short-hours" class="form-input" placeholder="4" value="4">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:11px;">Compenso Mezza G. (€)</label>
+                <input type="number" id="wiz-trasf-short-pay" class="form-input" placeholder="150" value="">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label">Straordinario Orario Trasferta (€/ora)</label>
+          <input type="number" id="wiz-trasf-straord" class="form-input" placeholder="Es. 30" value="">
+        </div>
+
+        <div class="btn-row" style="margin-top:18px;">
+          <button class="btn btn-outline" onclick="goToWizStep(1)">⬅️ Indietro</button>
+          <button class="btn btn-primary" onclick="goToWizStep(3)">Continua a Weekend ➡️</button>
+        </div>
+      </div>
+
+      <!-- PASSO 3: 🎈 REGOLA WEEKEND E FESTIVI -->
+      <div id="wiz-step-3" class="wiz-step-pane card" style="display:none;">
+        <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+          <span>🎈</span> 3. Regola Weekend e Festivi
+        </h2>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
+          Nei giorni festivi nazionali e nei weekend, applichi la tariffa più alta di Trasferta anche se lavori a Casa?
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <div id="card-wiz-we-all" class="card" style="padding:12px;cursor:pointer;border:2px solid var(--accent);margin:0;display:flex;align-items:flex-start;gap:10px;" onclick="selectWizWeekendRule('ALL')">
+            <input type="radio" name="wiz-we-radio" id="wiz-we-radio-all" value="ALL" checked style="margin-top:3px;accent-color:var(--accent);">
+            <div>
+              <div style="font-weight:700;font-size:13px;color:var(--text);">🚗 Sabato, Domenica e Festivi</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Tutti i festivi e sia sabato che domenica a tariffa Trasferta anche da Casa.</div>
+            </div>
+          </div>
+
+          <div id="card-wiz-we-sunday" class="card" style="padding:12px;cursor:pointer;border:1px solid var(--border);margin:0;display:flex;align-items:flex-start;gap:10px;" onclick="selectWizWeekendRule('SUNDAY_AND_HOLIDAYS')">
+            <input type="radio" name="wiz-we-radio" id="wiz-we-radio-sunday" value="SUNDAY_AND_HOLIDAYS" style="margin-top:3px;accent-color:var(--accent);">
+            <div>
+              <div style="font-weight:700;font-size:13px;color:var(--text);">☀️ Solo Domenica e Festivi</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Domenica e festivi a tariffa Trasferta. Il Sabato resta normale tariffa Casa.</div>
+            </div>
+          </div>
+
+          <div id="card-wiz-we-none" class="card" style="padding:12px;cursor:pointer;border:1px solid var(--border);margin:0;display:flex;align-items:flex-start;gap:10px;" onclick="selectWizWeekendRule('NONE')">
+            <input type="radio" name="wiz-we-radio" id="wiz-we-radio-none" value="NONE" style="margin-top:3px;accent-color:var(--accent);">
+            <div>
+              <div style="font-weight:700;font-size:13px;color:var(--text);">❌ Disattivata</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Nessuna maggiorazione: a Casa si applica sempre la normale tariffa Casa.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:18px;">
+          <button class="btn btn-outline" onclick="goToWizStep(2)">⬅️ Indietro</button>
+          <button class="btn btn-primary" onclick="goToWizStep(4)">Continua a Videorent ➡️</button>
+        </div>
+      </div>
+
+      <!-- PASSO 4: ☁️ INTEGRAZIONE VIDEORENT -->
+      <div id="wiz-step-4" class="wiz-step-pane card" style="display:none;">
+        <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+          <span>☁️</span> 4. Integrazione Videorent
+        </h2>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
+          Come preferisci compilare automaticamente i tuoi consuntivi orari su Videorent?
+        </p>
+
+        <div style="display:flex;gap:6px;margin-bottom:14px;">
+          <button type="button" id="tab-wiz-vr-cloud" class="btn btn-primary btn-sm" style="flex:1;" onclick="setWizVrTab('cloud')">☁️ Cloud Sync</button>
+          <button type="button" id="tab-wiz-vr-tamper" class="btn btn-outline btn-sm" style="flex:1;" onclick="setWizVrTab('tamper')">💻 Tampermonkey</button>
+          <button type="button" id="tab-wiz-vr-skip" class="btn btn-outline btn-sm" style="flex:1;" onclick="setWizVrTab('skip')">⏩ Salta</button>
+        </div>
+
+        <div id="wiz-vr-pane-cloud">
+          <div style="background:rgba(14, 165, 233, 0.08);border:1px solid rgba(14, 165, 233, 0.3);border-radius:10px;padding:12px;margin-bottom:12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--accent);margin-bottom:2px;">⭐ Consigliata (Zero installazioni)</div>
+            <div style="font-size:11px;color:var(--text-muted);">Inserisci username e password di Videorent: i consuntivi orari verranno compilati automaticamente in cloud.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username Videorent</label>
+            <input type="text" id="wiz-vr-username" class="form-input" placeholder="Es. mario.rossi">
+          </div>
+          <div class="form-group" style="margin-top:10px;">
+            <label class="form-label">Password Videorent</label>
+            <input type="password" id="wiz-vr-password" class="form-input" placeholder="Password Videorent">
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="testWizVrLogin()">🔑 Verifica Credenziali</button>
+            <span id="wiz-vr-test-res" style="font-size:11px;font-weight:700;"></span>
+          </div>
+        </div>
+
+        <div id="wiz-vr-pane-tamper" style="display:none;">
+          <div style="background:rgba(255, 255, 255, 0.03);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--text);margin-bottom:4px;">💻 Estensione Browser PC</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Se preferisci usare lo script dal browser del tuo computer, potrai installarlo con 2 clic quando sarai al PC:</div>
+            <a href="https://g.videorent.it/my-planner-list.php" target="_blank" class="btn btn-outline btn-sm" style="display:inline-flex;">🌐 Apri Planner Videorent</a>
+          </div>
+        </div>
+
+        <div id="wiz-vr-pane-skip" style="display:none;">
+          <div style="background:rgba(255, 255, 255, 0.03);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text-muted);font-size:12px;">
+            Potrai configurare o collegare il tuo account Videorent in qualsiasi momento successivo dalle Impostazioni.
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:18px;">
+          <button class="btn btn-outline" onclick="goToWizStep(3)">⬅️ Indietro</button>
+          <button class="btn btn-primary" onclick="goToWizStep(5)">Continua a Calendar ➡️</button>
+        </div>
+      </div>
+
+      <!-- PASSO 5: 📅 GOOGLE CALENDAR -->
+      <div id="wiz-step-5" class="wiz-step-pane card" style="display:none;">
+        <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+          <span>📅</span> 5. Google Calendar
+        </h2>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
+          Vuoi sincronizzare automaticamente i tuoi eventi con Google Calendar?
+        </p>
+
+        <div style="display:flex;gap:6px;margin-bottom:14px;">
+          <button type="button" id="tab-wiz-cal-connect" class="btn btn-primary btn-sm" style="flex:1;" onclick="setWizCalTab('connect')">📧 Collega Calendar</button>
+          <button type="button" id="tab-wiz-cal-skip" class="btn btn-outline btn-sm" style="flex:1;" onclick="setWizCalTab('skip')">⏩ Salta</button>
+        </div>
+
+        <div id="wiz-cal-pane-connect">
+          <div style="background:rgba(16, 185, 129, 0.08);border:1px solid rgba(16, 185, 129, 0.3);border-radius:10px;padding:12px;margin-bottom:12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--success);margin-bottom:2px;">📅 Sincronizzazione Automatica Eventi</div>
+            <div style="font-size:11px;color:var(--text-muted);">Inserisci la tua email Google/Gmail: gli eventi confermati e da confermare verranno sincronizzati direttamente sul tuo calendario.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Google (Gmail)</label>
+            <input type="email" id="wiz-cal-email" class="form-input" placeholder="Es. nome.cognome@gmail.com">
+          </div>
+        </div>
+
+        <div id="wiz-cal-pane-skip" style="display:none;">
+          <div style="background:rgba(255, 255, 255, 0.03);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text-muted);font-size:12px;">
+            Puoi saltare questo passaggio e collegare il calendario in seguito dalle Impostazioni.
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:18px;">
+          <button class="btn btn-outline" onclick="goToWizStep(4)">⬅️ Indietro</button>
+          <button class="btn btn-primary" onclick="goToWizStep(6)">Vai al Riepilogo ➡️</button>
+        </div>
+      </div>
+
+      <!-- PASSO 6: 🎉 RIEPILOGO COMPLETO & CONFERMA -->
+      <div id="wiz-step-6" class="wiz-step-pane card" style="display:none;">
+        <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+          <span>🎉</span> 6. Riepilogo & Conferma
+        </h2>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
+          Controlla il riepilogo delle tue impostazioni prima di iniziare. I tuoi accordi restano 100% privati nel tuo foglio Google.
+        </p>
+
+        <div id="wiz-summary-content" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <!-- Generato dinamicamente via JS -->
+        </div>
+
+        <div class="btn-row" style="margin-top:18px;">
+          <button class="btn btn-outline" onclick="goToWizStep(5)">⬅️ Indietro</button>
+          <button class="btn btn-success" style="flex:2;" onclick="submitWizard()">🚀 Completa Configurazione</button>
+        </div>
       </div>
     </section>
 
@@ -2241,17 +2464,292 @@
       }
     }
 
+    let currentWizStep = 1;
+    let wizData = {
+      casaFullHours: 9,
+      casaHasHalf: false,
+      trasfFullHours: 9,
+      trasfHasHalf: false,
+      weekendRule: "ALL",
+      vrTab: "cloud",
+      calTab: "connect"
+    };
+
+    function setWizCasaHours(h) {
+      wizData.casaFullHours = h;
+      const inp = document.getElementById("wiz-casa-full-hours");
+      if (inp) inp.value = h;
+      document.querySelectorAll(".wiz-casa-hours-btn").forEach(btn => {
+        if (Number(btn.getAttribute("data-hours")) === h) {
+          btn.className = "btn btn-primary btn-sm wiz-casa-hours-btn";
+        } else {
+          btn.className = "btn btn-outline btn-sm wiz-casa-hours-btn";
+        }
+      });
+    }
+
+    function toggleWizCasaHalf(hasHalf) {
+      wizData.casaHasHalf = hasHalf;
+      const details = document.getElementById("wiz-casa-half-details");
+      const btnYes = document.getElementById("btn-wiz-casa-half-yes");
+      const btnNo = document.getElementById("btn-wiz-casa-half-no");
+      if (hasHalf) {
+        if (details) details.style.display = "block";
+        if (btnYes) btnYes.className = "btn btn-primary";
+        if (btnNo) btnNo.className = "btn btn-outline";
+      } else {
+        if (details) details.style.display = "none";
+        if (btnYes) btnYes.className = "btn btn-outline";
+        if (btnNo) btnNo.className = "btn btn-primary";
+      }
+    }
+
+    function setWizTrasfHours(h) {
+      wizData.trasfFullHours = h;
+      const inp = document.getElementById("wiz-trasf-full-hours");
+      if (inp) inp.value = h;
+      document.querySelectorAll(".wiz-trasf-hours-btn").forEach(btn => {
+        if (Number(btn.getAttribute("data-hours")) === h) {
+          btn.className = "btn btn-primary btn-sm wiz-trasf-hours-btn";
+        } else {
+          btn.className = "btn btn-outline btn-sm wiz-trasf-hours-btn";
+        }
+      });
+    }
+
+    function toggleWizTrasfHalf(hasHalf) {
+      wizData.trasfHasHalf = hasHalf;
+      const details = document.getElementById("wiz-trasf-half-details");
+      const btnYes = document.getElementById("btn-wiz-trasf-half-yes");
+      const btnNo = document.getElementById("btn-wiz-trasf-half-no");
+      if (hasHalf) {
+        if (details) details.style.display = "block";
+        if (btnYes) btnYes.className = "btn btn-primary";
+        if (btnNo) btnNo.className = "btn btn-outline";
+      } else {
+        if (details) details.style.display = "none";
+        if (btnYes) btnYes.className = "btn btn-outline";
+        if (btnNo) btnNo.className = "btn btn-primary";
+      }
+    }
+
+    function selectWizWeekendRule(rule) {
+      wizData.weekendRule = rule;
+      const radio = document.getElementById("wiz-we-radio-" + (rule === "SUNDAY_AND_HOLIDAYS" ? "sunday" : rule.toLowerCase()));
+      if (radio) radio.checked = true;
+
+      ["all", "sunday", "none"].forEach(k => {
+        const card = document.getElementById("card-wiz-we-" + k);
+        if (card) {
+          if ((k === "all" && rule === "ALL") || (k === "sunday" && rule === "SUNDAY_AND_HOLIDAYS") || (k === "none" && rule === "NONE")) {
+            card.style.border = "2px solid var(--accent)";
+          } else {
+            card.style.border = "1px solid var(--border)";
+          }
+        }
+      });
+    }
+
+    function setWizVrTab(tab) {
+      wizData.vrTab = tab;
+      ["cloud", "tamper", "skip"].forEach(t => {
+        const pane = document.getElementById("wiz-vr-pane-" + t);
+        const btn = document.getElementById("tab-wiz-vr-" + t);
+        if (pane) pane.style.display = (t === tab) ? "block" : "none";
+        if (btn) btn.className = (t === tab) ? "btn btn-primary btn-sm" : "btn btn-outline btn-sm";
+      });
+    }
+
+    async function testWizVrLogin() {
+      const u = (document.getElementById("wiz-vr-username").value || "").trim();
+      const p = (document.getElementById("wiz-vr-password").value || "").trim();
+      const resSpan = document.getElementById("wiz-vr-test-res");
+      if (!u || !p) {
+        if (resSpan) {
+          resSpan.textContent = "⚠️ Inserisci username e password";
+          resSpan.style.color = "var(--warning)";
+        }
+        return;
+      }
+      if (resSpan) {
+        resSpan.textContent = "⏳ Verifica in corso...";
+        resSpan.style.color = "var(--text-muted)";
+      }
+      try {
+        const res = await callApi("miniapp_test_vr_login", { username: u, password: p });
+        if (res && res.success) {
+          if (resSpan) {
+            resSpan.textContent = "✅ Accesso riuscito!";
+            resSpan.style.color = "var(--success)";
+          }
+        } else {
+          if (resSpan) {
+            resSpan.textContent = "❌ " + ((res && res.error) || "Credenziali non valide");
+            resSpan.style.color = "var(--danger)";
+          }
+        }
+      } catch (e) {
+        if (resSpan) {
+          resSpan.textContent = "❌ Errore di connessione";
+          resSpan.style.color = "var(--danger)";
+        }
+      }
+    }
+
+    function setWizCalTab(tab) {
+      wizData.calTab = tab;
+      ["connect", "skip"].forEach(t => {
+        const pane = document.getElementById("wiz-cal-pane-" + t);
+        const btn = document.getElementById("tab-wiz-cal-" + t);
+        if (pane) pane.style.display = (t === tab) ? "block" : "none";
+        if (btn) btn.className = (t === tab) ? "btn btn-primary btn-sm" : "btn btn-outline btn-sm";
+      });
+    }
+
+    function goToWizStep(stepNum) {
+      currentWizStep = stepNum;
+      for (let s = 1; s <= 6; s++) {
+        const pane = document.getElementById("wiz-step-" + s);
+        if (pane) pane.style.display = (s === stepNum) ? "block" : "none";
+      }
+
+      const pBar = document.getElementById("wiz-progress-bar");
+      const pCounter = document.getElementById("wiz-step-counter");
+      const pTitle = document.getElementById("wiz-step-title");
+      if (pBar) pBar.style.width = ((stepNum / 6) * 100) + "%";
+      if (pCounter) pCounter.textContent = stepNum + " / 6";
+
+      const titles = [
+        "Passo 1 di 6: Casa",
+        "Passo 2 di 6: Trasferta",
+        "Passo 3 di 6: Weekend e Festivi",
+        "Passo 4 di 6: Videorent",
+        "Passo 5 di 6: Google Calendar",
+        "Passo 6 di 6: Riepilogo & Fine"
+      ];
+      if (pTitle) pTitle.textContent = titles[stepNum - 1];
+
+      if (stepNum === 6) {
+        renderWizSummary();
+      }
+
+      const screenWiz = document.getElementById("screen-wizard");
+      if (screenWiz) screenWiz.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function renderWizSummary() {
+      const cBase = document.getElementById("wiz-casa-base").value || "220";
+      const cHours = document.getElementById("wiz-casa-full-hours").value || "9";
+      const cStraord = document.getElementById("wiz-casa-straord").value || "30";
+      const cShortHours = document.getElementById("wiz-casa-short-hours").value || "4";
+      const cShortPay = document.getElementById("wiz-casa-short-pay").value || "140";
+
+      const tBase = document.getElementById("wiz-trasf-base").value || "250";
+      const tHours = document.getElementById("wiz-trasf-full-hours").value || "9";
+      const tStraord = document.getElementById("wiz-trasf-straord").value || "30";
+      const tShortHours = document.getElementById("wiz-trasf-short-hours").value || "4";
+      const tShortPay = document.getElementById("wiz-trasf-short-pay").value || "150";
+
+      const weRule = wizData.weekendRule || "ALL";
+      let weDesc = "Sabato, Domenica e Festivi a tariffa Trasferta";
+      if (weRule === "SUNDAY_AND_HOLIDAYS") weDesc = "Solo Domenica e Festivi (Sabato = Casa)";
+      else if (weRule === "NONE") weDesc = "Disattivata (Sempre normale tariffa Casa)";
+
+      const vrTab = wizData.vrTab || "cloud";
+      const vrUser = (document.getElementById("wiz-vr-username").value || "").trim();
+      let vrDesc = "Salta (non configurato)";
+      if (vrTab === "cloud") {
+        vrDesc = vrUser ? ("Videorent Cloud Sync (" + vrUser + ")") : "Videorent Cloud Sync (Consigliata)";
+      } else if (vrTab === "tamper") {
+        vrDesc = "Estensione Tampermonkey PC";
+      }
+
+      const calTab = wizData.calTab || "connect";
+      const calEmail = (document.getElementById("wiz-cal-email").value || "").trim();
+      let calDesc = "Salta (non collegato)";
+      if (calTab === "connect") {
+        calDesc = calEmail ? ("Sincronizzazione attiva (" + calEmail + ")") : "Sincronizzazione attiva";
+      }
+
+      const summaryDiv = document.getElementById("wiz-summary-content");
+      if (!summaryDiv) return;
+
+      summaryDiv.innerHTML = 
+        '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;">' +
+          '<div style="font-weight:700;font-size:13px;color:var(--accent);margin-bottom:6px;">🏠 Lavoro a Casa</div>' +
+          '<div style="font-size:12px;color:var(--text);display:flex;justify-content:space-between;margin-bottom:2px;">' +
+            '<span>Tariffa Base (' + cHours + 'h):</span><strong>' + cBase + ' €</strong>' +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--text);display:flex;justify-content:space-between;margin-bottom:2px;">' +
+            '<span>Mezza Giornata:</span><strong>' + (wizData.casaHasHalf ? (cShortPay + ' € (fino a ' + cShortHours + 'h)') : 'Disattivata') + '</strong>' +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--text);display:flex;justify-content:space-between;">' +
+            '<span>Straordinario:</span><strong>' + cStraord + ' €/h</strong>' +
+          '</div>' +
+        '</div>' +
+
+        '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;">' +
+          '<div style="font-weight:700;font-size:13px;color:var(--accent);margin-bottom:6px;">🚗 Lavoro in Trasferta</div>' +
+          '<div style="font-size:12px;color:var(--text);display:flex;justify-content:space-between;margin-bottom:2px;">' +
+            '<span>Tariffa Base (' + tHours + 'h):</span><strong>' + tBase + ' €</strong>' +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--text);display:flex;justify-content:space-between;margin-bottom:2px;">' +
+            '<span>Mezza Giornata:</span><strong>' + (wizData.trasfHasHalf ? (tShortPay + ' € (fino a ' + tShortHours + 'h)') : 'Disattivata') + '</strong>' +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--text);display:flex;justify-content:space-between;">' +
+            '<span>Straordinario:</span><strong>' + tStraord + ' €/h</strong>' +
+          '</div>' +
+        '</div>' +
+
+        '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;">' +
+          '<div style="font-weight:700;font-size:13px;color:var(--accent);margin-bottom:4px;">🎈 Regola Weekend & Festivi</div>' +
+          '<div style="font-size:12px;color:var(--text);">' + weDesc + '</div>' +
+        '</div>' +
+
+        '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;">' +
+          '<div style="font-weight:700;font-size:13px;color:var(--accent);margin-bottom:4px;">☁️ Videorent & Google Calendar</div>' +
+          '<div style="font-size:12px;color:var(--text);margin-bottom:2px;">• Videorent: <strong>' + vrDesc + '</strong></div>' +
+          '<div style="font-size:12px;color:var(--text);">• Calendar: <strong>' + calDesc + '</strong></div>' +
+        '</div>';
+    }
+
     function startWizardTestMode() {
       appState.isWizardTestMode = true;
       const banner = document.getElementById("wiz-test-banner");
       if (banner) banner.style.display = "block";
-      document.getElementById("wiz-casa-base").value = "";
-      document.getElementById("wiz-casa-extra").value = "";
-      document.getElementById("wiz-casa-half").value = "";
-      document.getElementById("wiz-trasf-base").value = "";
-      document.getElementById("wiz-trasf-extra").value = "";
-      document.getElementById("wiz-trasf-half").value = "";
-      document.getElementById("wiz-weekend-rule").value = "ALL";
+
+      const cBase = document.getElementById("wiz-casa-base");
+      if (cBase) cBase.value = "";
+      setWizCasaHours(9);
+      toggleWizCasaHalf(false);
+      const cPay = document.getElementById("wiz-casa-short-pay");
+      if (cPay) cPay.value = "";
+      const cStr = document.getElementById("wiz-casa-straord");
+      if (cStr) cStr.value = "";
+
+      const tBase = document.getElementById("wiz-trasf-base");
+      if (tBase) tBase.value = "";
+      setWizTrasfHours(9);
+      toggleWizTrasfHalf(false);
+      const tPay = document.getElementById("wiz-trasf-short-pay");
+      if (tPay) tPay.value = "";
+      const tStr = document.getElementById("wiz-trasf-straord");
+      if (tStr) tStr.value = "";
+
+      selectWizWeekendRule("ALL");
+      setWizVrTab("cloud");
+      const vrU = document.getElementById("wiz-vr-username");
+      if (vrU) vrU.value = "";
+      const vrP = document.getElementById("wiz-vr-password");
+      if (vrP) vrP.value = "";
+      const vrRes = document.getElementById("wiz-vr-test-res");
+      if (vrRes) vrRes.textContent = "";
+
+      setWizCalTab("connect");
+      const calE = document.getElementById("wiz-cal-email");
+      if (calE) calE.value = "";
+
+      goToWizStep(1);
       showScreen("wizard");
     }
 
@@ -3011,27 +3509,49 @@
     // Wizard Submission
     async function submitWizard() {
       if (appState.isWizardTestMode) {
-        alert("🎉 Prova Wizard completata con successo!\n\nHai provato tutti i passaggi del wizard come appaiono a un nuovo collaboratore.\nLe tue tariffe e il tuo turno di oggi sono rimasti intatti al 100%.");
+        alert("🎉 Prova Wizard completata con successo!\n\nHai provato tutti i 6 passaggi del wizard esattamente come appaiono a un nuovo collaboratore:\n• Tariffe, Durata e Mezza Giornata Casa\n• Tariffe, Durata e Mezza Giornata Trasferta\n• Regola Weekend e Festivi\n• Collegamento Videorent Cloud\n• Google Calendar\n• Riepilogo e Attivazione\n\nLe tue tariffe personali e il tuo turno di oggi sono rimasti intatti al 100%.");
         exitWizardTestMode();
         return;
       }
+
+      const cBase = Number(document.getElementById("wiz-casa-base").value);
+      const tBase = Number(document.getElementById("wiz-trasf-base").value);
+
+      if (!cBase || cBase <= 0 || !tBase || tBase <= 0) {
+        alert("⚠️ Inserisci almeno le tariffe base per Casa e Trasferta.");
+        return;
+      }
+
       const wiz = {
-        casaBase: Number(document.getElementById("wiz-casa-base").value) || 220,
-        casaStraord: Number(document.getElementById("wiz-casa-extra").value) || 30,
-        casaShortHours: 4,
-        casaShortPay: Number(document.getElementById("wiz-casa-half").value) || 140,
-        trasfBase: Number(document.getElementById("wiz-trasf-base").value) || 250,
-        trasfStraord: Number(document.getElementById("wiz-trasf-extra").value) || 30,
-        trasfShortHours: 0,
-        trasfShortPay: Number(document.getElementById("wiz-trasf-half").value) || 250,
-        weekendHolidayAsTrasferta: document.getElementById("wiz-weekend-rule").value
+        casaBase: cBase,
+        casaFullHours: Number(document.getElementById("wiz-casa-full-hours").value) || 9,
+        casaShortHours: wizData.casaHasHalf ? (Number(document.getElementById("wiz-casa-short-hours").value) || 4) : 0,
+        casaShortPay: wizData.casaHasHalf ? (Number(document.getElementById("wiz-casa-short-pay").value) || cBase) : cBase,
+        casaStraord: Number(document.getElementById("wiz-casa-straord").value) || 30,
+
+        trasfBase: tBase,
+        trasfFullHours: Number(document.getElementById("wiz-trasf-full-hours").value) || 9,
+        trasfShortHours: wizData.trasfHasHalf ? (Number(document.getElementById("wiz-trasf-short-hours").value) || 4) : 0,
+        trasfShortPay: wizData.trasfHasHalf ? (Number(document.getElementById("wiz-trasf-short-pay").value) || tBase) : tBase,
+        trasfStraord: Number(document.getElementById("wiz-trasf-straord").value) || 30,
+
+        weekendHolidayAsTrasferta: wizData.weekendRule || "ALL"
       };
+
+      if (wizData.vrTab === "cloud") {
+        wiz.vrUsername = (document.getElementById("wiz-vr-username").value || "").trim();
+        wiz.vrPassword = (document.getElementById("wiz-vr-password").value || "").trim();
+      }
+
+      if (wizData.calTab === "connect") {
+        wiz.calendarEmail = (document.getElementById("wiz-cal-email").value || "").trim();
+      }
 
       showLoader("Salvataggio configurazione iniziale...");
       try {
         const res = await callApi("miniapp_save_wizard", { wizard: JSON.stringify(wiz) });
         if (res.success) {
-          alert("🎉 Configurazione completata! Benvenuto a bordo.");
+          alert("🎉 Configurazione completata con successo!\n\nIl tuo profilo è ora attivo. Benvenuto a bordo!");
           fetchDashboardData();
         } else {
           alert("Errore: " + res.error);
