@@ -1073,9 +1073,12 @@
 
     function updateElapsedTime() {
       if (!appState.activeShift || !appState.activeShift.start) return;
-      const parts = appState.activeShift.start.split(":");
+      const cleanStart = String(appState.activeShift.start).replace(".", ":");
+      const parts = cleanStart.split(":");
       const startH = parseInt(parts[0], 10);
-      const startM = parseInt(parts[1], 10);
+      const startM = parseInt(parts[1], 10) || 0;
+
+      if (isNaN(startH)) return;
 
       const now = new Date();
       const currentH = now.getHours();
@@ -1090,11 +1093,15 @@
     }
 
     function renderStats() {
-      const s = appState.stats || { casaDays: 0, trasfDays: 0, totalEuro: 0, totalExtra: 0 };
-      document.getElementById("stats-month-name").textContent = appState.monthName || "Mese Corrente";
-      document.getElementById("stat-total-pay").textContent = (s.totalEuro || 0) + " €";
-      document.getElementById("stat-total-days").textContent = (s.casaDays || 0) + (s.trasfDays || 0);
-      document.getElementById("stat-split-days").textContent = `${s.casaDays || 0} / ${s.trasfDays || 0}`;
+      const s = appState.stats || {};
+      document.getElementById("stats-month-name").textContent = appState.monthName || s.monthName || "Mese Corrente";
+      const totalEur = s.totalPay !== undefined ? s.totalPay : (s.totalEuro !== undefined ? s.totalEuro : 0);
+      document.getElementById("stat-total-pay").textContent = totalEur + " €";
+      
+      const cDays = s.casaDays || 0;
+      const tDays = (s.trasfertaDays !== undefined) ? s.trasfertaDays : (s.trasfDays || 0);
+      document.getElementById("stat-total-days").textContent = cDays + tDays;
+      document.getElementById("stat-split-days").textContent = `${cDays} / ${tDays}`;
       document.getElementById("stat-extra-pay").textContent = (s.totalExtra || 0) + " €";
     }
 
@@ -1118,6 +1125,9 @@
         div.className = "entry-item";
         div.onclick = () => openEditEntryModal(e);
 
+        const rowTotal = (e.total !== undefined && e.total !== null) ? e.total : ((e.dayPay || 0) + (e.extra || 0));
+        const displayTotal = rowTotal > 0 ? (rowTotal + ' €') : (e.dayPay > 0 ? e.dayPay + ' €' : '—');
+
         div.innerHTML = `
           <div class="entry-left">
             <div class="entry-type-icon ${isCasa ? 'casa' : 'trasf'}">
@@ -1129,7 +1139,7 @@
             </div>
           </div>
           <div class="entry-right">
-            <div class="entry-pay">${e.total ? e.total + ' €' : '—'}</div>
+            <div class="entry-pay">${displayTotal}</div>
             ${e.extra > 0 ? `<div class="entry-extra">+${e.extra} € extra</div>` : ''}
           </div>
         `;
@@ -1142,10 +1152,15 @@
       const u = appState.user || {};
       document.getElementById("cfg-casa-base").value = r.casaBase || "";
       document.getElementById("cfg-casa-extra").value = r.casaStraord || "";
-      document.getElementById("cfg-casa-half").value = r.casaShortPay || "";
-      document.getElementById("cfg-trasf-base").value = r.trasfBase || "";
-      document.getElementById("cfg-trasf-extra").value = r.trasfStraord || "";
-      document.getElementById("cfg-trasf-half").value = r.trasfShortPay || "";
+      document.getElementById("cfg-casa-half").value = r.casaShort || r.casaShortPay || "";
+      
+      const tBase = r.trasfertaBase !== undefined ? r.trasfertaBase : (r.trasfBase || "");
+      const tExtra = r.trasfertaStraord !== undefined ? r.trasfertaStraord : (r.trasfStraord || "");
+      const tShort = r.trasfertaShort !== undefined ? r.trasfertaShort : (r.trasfShortPay || "");
+
+      document.getElementById("cfg-trasf-base").value = tBase;
+      document.getElementById("cfg-trasf-extra").value = tExtra;
+      document.getElementById("cfg-trasf-half").value = tShort;
       document.getElementById("cfg-weekend-rule").value = u.weekendHolidayAsTrasferta || "NONE";
     }
 
@@ -1378,9 +1393,13 @@
       const payload = {
         casaBase: document.getElementById("cfg-casa-base").value,
         casaStraord: document.getElementById("cfg-casa-extra").value,
+        casaShort: document.getElementById("cfg-casa-half").value,
         casaShortPay: document.getElementById("cfg-casa-half").value,
+        trasfertaBase: document.getElementById("cfg-trasf-base").value,
         trasfBase: document.getElementById("cfg-trasf-base").value,
+        trasfertaStraord: document.getElementById("cfg-trasf-extra").value,
         trasfStraord: document.getElementById("cfg-trasf-extra").value,
+        trasfertaShort: document.getElementById("cfg-trasf-half").value,
         trasfShortPay: document.getElementById("cfg-trasf-half").value,
         weekendHolidayAsTrasferta: document.getElementById("cfg-weekend-rule").value
       };
