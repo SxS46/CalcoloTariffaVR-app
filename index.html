@@ -1169,6 +1169,22 @@
         </div>
       </div>
 
+      <!-- SUBSECTION 5: GUIDA E MANUALE UTENTE -->
+      <div class="card" style="border-left:4px solid var(--accent);">
+        <div class="shift-title" style="margin-bottom:10px;">📖 Manuale & Guida Utente</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.4;">
+          Guida ufficiale e documentazione completa all'utilizzo del Bot Telegram e della Mini App: turni live, tariffe, Google Calendar e compilazione automatica.
+        </p>
+        <div class="btn-row">
+          <button class="btn btn-primary" style="flex:1.4;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;" onclick="openManualReader()">
+            📖 Leggi Manuale Completo
+          </button>
+          <button class="btn btn-outline" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;" onclick="openPdfDownloadFromManual()">
+            ⬇️ Scarica PDF
+          </button>
+        </div>
+      </div>
+
     </section>
 
     <!-- SCREEN 3: WIZARD INIZIALE (Nuovo Collega Approvato - Multi-Step Completo Identico al Bot) -->
@@ -1801,6 +1817,215 @@
 
       <div id="aud-content" style="margin-top:14px;">
         <div style="color:var(--text-muted);text-align:center;padding:20px;">Caricamento dettagli...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LETTORE MANUALE UTENTE UFFICIALE -->
+  <div id="modal-manual-reader" class="modal-overlay">
+    <div class="pdf-modal-sheet" style="background:var(--bg);height:92vh;">
+      <div class="pdf-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">📖</span>
+          <div>
+            <div class="modal-title" style="font-size:15px;line-height:1.2;">Manuale Utente Videorent</div>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Guida collaboratori • v3.20</div>
+          </div>
+        </div>
+        <button class="close-btn" onclick="closeModal('modal-manual-reader')">✕</button>
+      </div>
+
+      <!-- Barra Pillole Navigazione Rapida Capitoli -->
+      <div style="display:flex;gap:6px;padding:8px 14px;background:var(--card-bg);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;">
+        <button id="pill-man-all" class="btn btn-primary btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('all')">🌟 Tutto</button>
+        <button id="pill-man-cap1" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap1')">1. Abilitazione</button>
+        <button id="pill-man-cap2" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap2')">2. Tariffe & Wizard</button>
+        <button id="pill-man-cap3" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap3')">3. Turni & Mini App</button>
+        <button id="pill-man-cap4" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap4')">4. Google Calendar</button>
+        <button id="pill-man-cap5" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap5')">5. Gestionale Cloud</button>
+        <button id="pill-man-cap6" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap6')">6. FAQ</button>
+      </div>
+
+      <!-- Contenitore Testo Manuale Scrollabile -->
+      <div id="manual-reader-body" style="flex:1;overflow-y:auto;padding:16px 14px;color:var(--text);line-height:1.55;font-size:13px;-webkit-overflow-scrolling:touch;">
+        
+        <!-- INTRO -->
+        <div style="background:linear-gradient(135deg, rgba(14,165,233,0.15) 0%, rgba(99,102,241,0.15) 100%);border:1px solid var(--accent);border-radius:12px;padding:14px;margin-bottom:16px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Guida Ufficiale Collaboratori • v3.20</div>
+          <h1 style="font-size:18px;font-weight:800;color:var(--text);margin:0 0 6px 0;">Videorent Bot & Telegram Mini App</h1>
+          <p style="font-size:12px;color:var(--text-muted);margin:0;">
+            Sistema integrato per la gestione oraria dei turni, il calcolo automatico dei compensi e la sincronizzazione con il portale Videorent direttamente dallo smartphone.
+          </p>
+        </div>
+
+        <!-- CAPITOLO 1 -->
+        <section id="man-sec-cap1" style="margin-bottom:24px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Capitolo 1</div>
+          <h2 style="font-size:16px;font-weight:800;margin:2px 0 8px 0;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:4px;">1. Primo Accesso e Abilitazione</h2>
+          <p>
+            Il sistema è progettato per essere <strong>immediato</strong> e a prova di errore. Non devi installare applicazioni sconosciute: utilizzi direttamente <strong>Telegram</strong> che hai già sul telefono.
+          </p>
+          <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:12px;">
+            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px;">
+              <strong style="color:var(--accent);">1. Avvia il Bot:</strong> Cerca su Telegram il bot <code>@sxscalcolotariffabot</code> e premi <strong>"AVVIA"</strong> (o scrivi <code>/start</code>).
+            </div>
+            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px;">
+              <strong style="color:var(--accent);">2. Approvazione:</strong> Il bot inoltra la richiesta di accesso a <strong>Simone</strong>. Riceverai una notifica non appena sarai abilitato.
+            </div>
+            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px;">
+              <strong style="color:var(--accent);">3. Foglio Dedicato:</strong> Il server assegna automaticamente una copia personale e protetta del foglio di calcolo Google Drive intestata a tuo nome.
+            </div>
+          </div>
+          <div style="background:rgba(14,165,233,0.08);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 12px;font-size:12px;">
+            <strong>✨ Due strumenti integrati:</strong> Puoi usare indifferentemente la <strong>Chat rapida</strong> con messaggi testuali veloci oppure la <strong>Telegram Mini App</strong> grafica aprendola con il pulsante <em>Menu / Apri App</em> in basso a sinistra (o digitando <code>/app</code>).
+          </div>
+        </section>
+
+        <!-- CAPITOLO 2 -->
+        <section id="man-sec-cap2" style="margin-bottom:24px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Capitolo 2</div>
+          <h2 style="font-size:16px;font-weight:800;margin:2px 0 8px 0;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:4px;">2. Il Nuovo Wizard a 6 Step e Gestione Tariffe</h2>
+          <p>
+            All'abilitazione del profilo si avvia la guida interattiva a <strong>6 passaggi</strong> per memorizzare i tuoi accordi personali:
+          </p>
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;">
+            <div style="padding:8px 12px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);font-weight:700;font-size:12px;">
+              I 6 Passaggi dell'Onboarding
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;">
+              <strong>1. 🏠 Tariffe Casa:</strong> Compenso base giornata intera (€), durata standard (8h, 9h, 10h), accordo mezza giornata (Sì/No con ore e compenso), straordinario orario (€/h).
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;">
+              <strong>2. 🚗 Tariffe Trasferta:</strong> Compenso base fuori sede (€), durata standard, mezza giornata (Sì/No con ore e compenso), straordinario orario (€/h).
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;">
+              <strong>3. 🎈 Regola Weekend & Festivi:</strong> Applica la tariffa Trasferta alle giornate Casa svolte di sabato, domenica o festivi (<em>Sab, Dom e Festivi</em> / <em>Solo Dom e Festivi</em> / <em>Disattivata</em>).
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;">
+              <strong>4. ☁️ Videorent Gestionale:</strong> Scegli tra Videorent Cloud (consigliata, con verifica immediata credenziali), Tampermonkey PC, oppure Salta.
+            </div>
+            <div style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;">
+              <strong>5. 📅 Google Calendar:</strong> Collega la tua email Gmail per sincronizzare gli eventi o Salta.
+            </div>
+            <div style="padding:10px 12px;font-size:12px;">
+              <strong>6. 🎉 Riepilogo & Fine:</strong> Verifica il riassunto complessivo e attiva istantaneamente il tuo profilo.
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);">
+            <em>Le tariffe sono sempre modificabili:</em> dalla Mini App vai in <strong>⚙️ Impostazioni ➔ 💰 Tariffe e Straordinari</strong>, aggiorna i valori e premi <em>Salva Tariffe</em>.
+          </p>
+        </section>
+
+        <!-- CAPITOLO 3 -->
+        <section id="man-sec-cap3" style="margin-bottom:24px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Capitolo 3</div>
+          <h2 style="font-size:16px;font-weight:800;margin:2px 0 8px 0;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:4px;">3. Utilizzo Quotidiano: Bot e Mini App</h2>
+          <p>
+            Il sistema ti offre la massima libertà d'uso sincronizzando all'istante ogni modifica tra chat, Mini App e foglio Google:
+          </p>
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">
+            <div style="font-weight:700;color:var(--accent);margin-bottom:4px;">💬 Chat Telegram (Comandi Veloci)</div>
+            <ul style="padding-left:18px;margin:4px 0;font-size:12px;">
+              <li><strong>🟢 Inizia Giornata:</strong> 1 tocco e scegli orario suggerito o digiti l'orario a mano (es. <code>8.15</code>).</li>
+              <li><strong>🔴 Termina Giornata:</strong> Selezioni orario di fine, inserisci eventuali extra/rimborsi e salvi.</li>
+              <li><strong>Promemoria 14 Ore:</strong> Se dimentichi il turno aperto, dopo 14 ore ricevi un alert con pulsanti di chiusura rapida.</li>
+              <li><strong>Comandi Utili:</strong> <code>/app</code> (Mini App), <code>/stats</code> (riepilogo mese), <code>/settimana</code> (mini-agenda), <code>/pdf</code> (consuntivo mensile).</li>
+            </ul>
+          </div>
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
+            <div style="font-weight:700;color:var(--success);margin-bottom:4px;">📱 Nuova Telegram Mini App Grafica</div>
+            <ul style="padding-left:18px;margin:4px 0;font-size:12px;">
+              <li><strong>Home Interattiva:</strong> Avvio/chiusura turni in tempo reale con badge live e commutatore Casa/Trasferta.</li>
+              <li><strong>Registrazione Retroattiva:</strong> Inserimento date passate con calcolo orario automatico o con toggle <em>"Tariffa Concordata Fissa"</em> per compensi speciali.</li>
+              <li><strong>Riepilogo Calendario:</strong> Vista mensile a schede con ore lavorate, compenso maturato, modifica orari e cancellazione voci.</li>
+              <li><strong>Consuntivo PDF A4:</strong> Generazione anteprima o invio diretto del PDF ufficiale in chat Telegram.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- CAPITOLO 4 -->
+        <section id="man-sec-cap4" style="margin-bottom:24px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Capitolo 4</div>
+          <h2 style="font-size:16px;font-weight:800;margin:2px 0 8px 0;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:4px;">4. Sincronizzazione Google Calendar</h2>
+          <p>
+            Le convocazioni e gli orari lavorati vengono sincronizzati in background direttamente nella tua agenda dello smartphone:
+          </p>
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">
+            <div style="font-weight:700;margin-bottom:4px;">Nomenclatura Eventi Chiara:</div>
+            <div style="font-size:12px;margin-bottom:4px;">• <strong>Bologna Confermato:</strong> <span style="color:var(--success);font-weight:700;">Videorent</span></div>
+            <div style="font-size:12px;margin-bottom:4px;">• <strong>Bologna Da Confermare:</strong> <span style="color:var(--warning);font-weight:700;">Videorent [Da Conf.]</span></div>
+            <div style="font-size:12px;margin-bottom:4px;">• <strong>Trasferta Confermato:</strong> <span style="color:var(--success);font-weight:700;">Videorent Roma</span></div>
+            <div style="font-size:12px;">• <strong>Trasferta Da Confermare:</strong> <span style="color:var(--warning);font-weight:700;">Videorent Roma [Da Conf.]</span></div>
+          </div>
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
+            <div style="font-weight:700;margin-bottom:4px;">🎨 Personalizzazione 24 Colori:</div>
+            <p style="font-size:12px;margin:0 0 6px 0;">
+              Dalle <strong>⚙️ Impostazioni</strong> della Mini App puoi scegliere il colore con cui visualizzare sul calendario gli eventi confermati e quelli da confermare, scegliendo tra tutti i 24 colori ufficiali di Google Calendar.
+            </p>
+          </div>
+        </section>
+
+        <!-- CAPITOLO 5 -->
+        <section id="man-sec-cap5" style="margin-bottom:24px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Capitolo 5</div>
+          <h2 style="font-size:16px;font-weight:800;margin:2px 0 8px 0;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:4px;">5. Compilazione Gestionale: Cloud & PC</h2>
+          <p>
+            Puoi compilare orari e compensi sul portale Videorent (<code>g.videorent.it</code>) in due modalità:
+          </p>
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:10px;padding:12px;margin-bottom:10px;">
+            <div style="font-weight:700;color:var(--success);margin-bottom:4px;">☁️ 1. Videorent Cloud (Zero PC)</div>
+            <p style="font-size:12px;margin:0 0 6px 0;">
+              Inserisci le tue credenziali una sola volta. Il bot compila automaticamente gli slot orari e i compensi sul gestionale con 1 tocco direttamente dalla Home o dal bot Telegram.
+            </p>
+            <div style="font-size:11px;color:var(--text-muted);">
+              <strong>Notifica discreta una tantum:</strong> Se cambi la password sul portale Videorent, il bot invia un singolo avviso di cortesia per consentirti di aggiornarla senza notifiche ripetitive.
+            </div>
+          </div>
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
+            <div style="font-weight:700;color:var(--accent);margin-bottom:4px;">💻 2. Estensione Browser PC (Tampermonkey)</div>
+            <p style="font-size:12px;margin:0;">
+              Se usi il computer, puoi installare lo script con 1 clic (dalla sezione Impostazioni). Le card sul portale Videorent mostreranno badge con ore e compensi già calcolati e il tasto per compilare in un attimo.
+            </p>
+          </div>
+        </section>
+
+        <!-- CAPITOLO 6 -->
+        <section id="man-sec-cap6" style="margin-bottom:24px;">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">Capitolo 6</div>
+          <h2 style="font-size:16px;font-weight:800;margin:2px 0 8px 0;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:4px;">6. Domande Frequenti (FAQ)</h2>
+          
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+            <strong>❓ Come apro la Mini App?</strong><br>
+            <span style="font-size:12px;color:var(--text-muted);">Tocca il tasto nativo <em>"Menu / Apri App"</em> in basso a sinistra nella chat oppure invia il comando <code>/app</code>.</span>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+            <strong>❓ Ho dimenticato di aprire o chiudere il turno. Come rimedio?</strong><br>
+            <span style="font-size:12px;color:var(--text-muted);">Dalla Mini App tocca <em>"➕ Registra Giornata"</em> per inserire data e orari retroattivi. Dalla chat puoi usare il menu <em>"✏️ Modifica Giornate"</em> per correggere qualsiasi voce.</span>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+            <strong>❓ Come funziona la Tariffa Concordata Fissa?</strong><br>
+            <span style="font-size:12px;color:var(--text-muted);">Quando inserisci o modifichi una giornata nella Mini App, attiva il toggle <em>"Tariffa Concordata Fissa"</em> e inserisci l'importo concordato: verrà applicata quella cifra esatta scavalcando il calcolo orario standard.</span>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+            <strong>❓ Posso scaricare il consuntivo PDF del mese?</strong><br>
+            <span style="font-size:12px;color:var(--text-muted);">Sì! Invia <code>/pdf</code> nella chat Telegram oppure vai nella scheda Riepilogo della Mini App e premi <em>"Ricevi PDF"</em>: riceverai un documento formattato ed elegante pronto per la contabilità.</span>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+            <strong>❓ I miei dati contabili sono visibili agli altri?</strong><br>
+            <span style="font-size:12px;color:var(--text-muted);">No. Ogni collaboratore possiede un foglio Google isolato e dedicato sul cloud; i tuoi dati sono accessibili unicamente a te e all'amministratore (Simone).</span>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- FOOTER DEL LETTORE -->
+      <div class="pdf-footer">
+        <button class="btn btn-outline" style="flex:1;font-size:12px;" onclick="closeModal('modal-manual-reader')">Chiudi</button>
+        <button class="btn btn-primary" style="flex:2;font-size:12px;" onclick="openPdfDownloadFromManual()">📄 Scarica Manuale PDF</button>
       </div>
     </div>
   </div>
@@ -2761,7 +2986,42 @@
     }
 
     // Modal helpers con scroll lock dello sfondo
-    function openModal(id) {
+    
+    // LETTORE MANUALE UTENTE UFFICIALE
+    function openManualReader() {
+      openModal("modal-manual-reader");
+      scrollManualTo("all");
+    }
+
+    function scrollManualTo(sectionKey) {
+      // Aggiorna stile pillole
+      const pills = ["all", "cap1", "cap2", "cap3", "cap4", "cap5", "cap6"];
+      pills.forEach(k => {
+        const btn = document.getElementById("pill-man-" + k);
+        if (btn) {
+          btn.className = (k === sectionKey) ? "btn btn-primary btn-sm manual-nav-pill" : "btn btn-outline btn-sm manual-nav-pill";
+        }
+      });
+
+      const body = document.getElementById("manual-reader-body");
+      if (!body) return;
+
+      if (sectionKey === "all") {
+        body.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const target = document.getElementById("man-sec-" + sectionKey);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function openPdfDownloadFromManual() {
+      window.open("./Manuale_Utente_Videorent.pdf", "_blank");
+    }
+
+function openModal(id) {
       const el = document.getElementById(id);
       if (!el) return;
       el.classList.add("open");
