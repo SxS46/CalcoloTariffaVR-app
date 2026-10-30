@@ -1738,10 +1738,7 @@
       nameEl.textContent = u.name || u.first_name || "";
       const initials = (u.name || u.first_name || "VR").substring(0, 2).toUpperCase();
       avatarEl.textContent = initials;
-      if (appState.isAdmin) {
-        roleEl.textContent = "👑 Amministratore";
-        roleEl.style.display = "block";
-      } else {
+      if (roleEl) {
         roleEl.textContent = "";
         roleEl.style.display = "none";
       }
