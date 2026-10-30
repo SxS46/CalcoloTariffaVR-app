@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Videorent Tariffa</title>
   
   <!-- Telegram Web App SDK -->
@@ -1611,8 +1614,20 @@
       }
 
       showLoader("Caricamento dati...");
+      const timeoutId = setTimeout(() => {
+        const loaderEl = document.getElementById("loader");
+        if (loaderEl && loaderEl.style.display !== "none") {
+          const msgEl = document.getElementById("loader-msg");
+          if (msgEl) {
+            msgEl.innerHTML = `Connessione lenta o risposta in attesa...<br><br><button class="btn btn-outline btn-sm" style="margin:8px auto;display:inline-flex;" onclick="window.location.reload(true)">🔄 Ricarica Pagina</button>`;
+          }
+        }
+      }, 7000);
+
       try {
         const data = await callApi("miniapp_init");
+        clearTimeout(timeoutId);
+
         if (!data || !data.success) {
           alert("Errore caricamento: " + (data?.error || "Risposta non valida"));
           hideLoader();
@@ -1655,9 +1670,11 @@
 
         showScreen("dashboard");
       } catch (err) {
+        clearTimeout(timeoutId);
         console.error("Errore fetchDashboardData:", err);
         alert("Errore di connessione: " + err.message);
       } finally {
+        clearTimeout(timeoutId);
         hideLoader();
       }
     }
@@ -2922,8 +2939,8 @@
       }
     }
 
-    // Start App
-    window.addEventListener("DOMContentLoaded", () => {
+    // Start App (Esecuzione garantita sia con DOM in caricamento sia già pronto)
+    function startApp() {
       fetchDashboardData();
 
       // Blocca lo scroll dello sfondo opaco dei modali e gestisce chiusura su click overlay
@@ -2939,7 +2956,13 @@
           }
         });
       });
-    });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", startApp);
+    } else {
+      startApp();
+    }
   </script>
 </body>
 </html>
