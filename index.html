@@ -76,6 +76,8 @@
       font-size: 16px;
       color: white;
       box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+      overflow: hidden;
+      flex-shrink: 0;
     }
     .user-name {
       font-size: 16px;
@@ -1774,14 +1776,26 @@
     }
 
     function renderHeader() {
-      const u = appState.user || getTelegramUser();
+      const tgUser = getTelegramUser() || {};
+      const u = appState.user || tgUser;
       const nameEl = document.getElementById("user-name");
       const avatarEl = document.getElementById("user-avatar");
       const roleEl = document.getElementById("user-role");
 
       nameEl.textContent = u.name || u.first_name || "";
       const initials = (u.name || u.first_name || "VR").substring(0, 2).toUpperCase();
-      avatarEl.textContent = initials;
+      const photoUrl = tgUser.photo_url || u.photo_url;
+
+      if (photoUrl) {
+        avatarEl.innerHTML = `<img src="${photoUrl}" alt="${initials}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" onerror="this.onerror=null; this.parentElement.textContent='${initials}'; this.parentElement.style.background='linear-gradient(135deg, #0284c7, #38bdf8)';">`;
+        avatarEl.style.background = "transparent";
+        avatarEl.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.4)";
+      } else {
+        avatarEl.textContent = initials;
+        avatarEl.style.background = "linear-gradient(135deg, #0284c7, #38bdf8)";
+        avatarEl.style.boxShadow = "0 4px 12px rgba(2, 132, 199, 0.35)";
+      }
+
       if (roleEl) {
         roleEl.textContent = "";
         roleEl.style.display = "none";
