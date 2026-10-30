@@ -1047,7 +1047,7 @@
             <div class="setting-title">Stato Sincronizzazione</div>
             <div id="cal-status-desc" class="setting-desc">Disattivata</div>
           </div>
-          <button id="btn-toggle-cal" class="btn btn-outline btn-sm" onclick="toggleCalendarSync()">Attiva</button>
+          <button id="btn-toggle-cal" class="btn btn-outline btn-sm" style="flex-shrink:0;white-space:nowrap;min-width:76px;text-align:center;" onclick="toggleCalendarSync()">Attiva</button>
         </div>
 
         <div class="form-group">
@@ -1316,6 +1316,33 @@
         <label class="form-label">Extra (€)</label>
         <input type="number" id="manual-extra" class="form-input" placeholder="0" value="0">
       </div>
+
+      <!-- Tariffa Concordata / Forfait -->
+      <div class="card" style="padding:12px;margin:12px 0;background:rgba(255,255,255,0.02);border:1px dashed var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;">🏷️ Tariffa Concordata / Forfait</div>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-muted);">
+            <input type="checkbox" id="manual-is-fixed" onchange="toggleManualFixedPay(this.checked)">
+            <span>Attiva</span>
+          </label>
+        </div>
+        <div id="manual-fixed-container" style="display:none;">
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+            Compenso forfettario slegato dal calcolo ore. Gli orari rimarranno registrati nel foglio presenze.
+          </p>
+          <input type="number" id="manual-fixed-pay" class="form-input" placeholder="Importo concordato in €">
+          <div class="chip-row">
+            <button type="button" class="chip-btn" onclick="setManualFixedPayPreset(150)">150 €</button>
+            <button type="button" class="chip-btn" onclick="setManualFixedPayPreset(200)">200 €</button>
+            <button type="button" class="chip-btn" onclick="setManualFixedPayPreset(250)">250 €</button>
+            <button type="button" class="chip-btn" onclick="setManualFixedPayPreset(300)">300 €</button>
+          </div>
+        </div>
+        <div id="manual-auto-desc" style="font-size:11px;color:var(--text-muted);">
+          Calcolo automatico standard basato sulla tariffa base e straordinari orari.
+        </div>
+      </div>
+
       <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmManualEntry()">💾 Registra nel Foglio</button>
     </div>
   </div>
@@ -2222,9 +2249,21 @@
     }
 
     // Manual Entry Actions
+    function toggleManualFixedPay(checked) {
+      document.getElementById("manual-fixed-container").style.display = checked ? "block" : "none";
+      document.getElementById("manual-auto-desc").style.display = checked ? "none" : "block";
+    }
+
+    function setManualFixedPayPreset(val) {
+      document.getElementById("manual-fixed-pay").value = val;
+    }
+
     function openManualEntryModal() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById("manual-date").value = today;
+      document.getElementById("manual-is-fixed").checked = false;
+      document.getElementById("manual-fixed-pay").value = "";
+      toggleManualFixedPay(false);
       openModal("modal-manual-entry");
     }
 
@@ -2234,6 +2273,8 @@
       const start = document.getElementById("manual-start").value;
       const end = document.getElementById("manual-end").value;
       const extra = document.getElementById("manual-extra").value || "0";
+      const isFixed = document.getElementById("manual-is-fixed").checked;
+      const fixedPay = document.getElementById("manual-fixed-pay").value;
 
       if (!date || !start || !end) return alert("Compila data, orario di inizio e fine");
 
@@ -2241,13 +2282,19 @@
       showLoader("Registrazione giornata...");
 
       try {
-        const res = await callApi("miniapp_add_manual_entry", {
+        const payload = {
           date: date,
           type: type,
           start: start,
           end: end,
-          extra: extra
-        });
+          extra: extra,
+          isFixedRate: isFixed ? "true" : "false"
+        };
+        if (isFixed) {
+          payload.fixedPay = fixedPay || 0;
+        }
+
+        const res = await callApi("miniapp_add_manual_entry", payload);
         if (res.success) {
           appState.stats = res.stats;
           appState.entries = res.entries || [];
