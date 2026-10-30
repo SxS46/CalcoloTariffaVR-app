@@ -773,34 +773,22 @@
           <div class="action-desc">Inserisci un turno passato o retroattivo</div>
         </div>
 
-        <div class="action-card" onclick="showScreen('summary')">
-          <div class="action-icon" style="background:rgba(16,185,129,0.15);color:var(--success);">📊</div>
-          <div class="action-title">Riepilogo Mese</div>
-          <div class="action-desc">Guadagni, presenze e storico giornate</div>
-        </div>
-
-        <div class="action-card" onclick="triggerVrCompileAll()">
+        <div class="action-card" onclick="openCompileVrModal()">
           <div class="action-icon" style="background:rgba(245,158,11,0.15);color:var(--warning);">⚡</div>
           <div class="action-title">Compila Videorent</div>
-          <div class="action-desc">Registra orari e compensi a gestionale</div>
+          <div class="action-desc">Scegli ID e compila a gestionale</div>
         </div>
 
-        <div class="action-card" onclick="openAddGoogleCalendar()">
-          <div class="action-icon" style="background:rgba(56,189,248,0.15);color:var(--primary);">📅</div>
-          <div class="action-title">Google Calendar</div>
-          <div class="action-desc">Visualizza o aggiungi al tuo calendario</div>
-        </div>
-
-        <div class="action-card" onclick="openGoogleSheet()">
-          <div class="action-icon" style="background:rgba(16,185,129,0.15);color:var(--success);">📈</div>
-          <div class="action-title">Foglio Drive</div>
-          <div class="action-desc">Apri il tuo foglio di calcolo personale</div>
-        </div>
-
-        <div class="action-card" onclick="openMonthlyPdfPreview()">
+        <div class="action-card" onclick="openPdfOptionsModal()">
           <div class="action-icon" style="background:rgba(139,92,246,0.15);color:#a78bfa);">📄</div>
           <div class="action-title">Consuntivo PDF</div>
-          <div class="action-desc">Genera prospetto A4 o ricevi in chat</div>
+          <div class="action-desc">Scegli mese ed esporta prospetto A4</div>
+        </div>
+
+        <div class="action-card" onclick="showScreen('settings')">
+          <div class="action-icon" style="background:rgba(148,163,184,0.15);color:var(--text-muted);">⚙️</div>
+          <div class="action-title">Impostazioni</div>
+          <div class="action-desc">Tariffe, Calendar, Videorent e Drive</div>
         </div>
       </div>
 
@@ -941,17 +929,18 @@
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label">🟢 Eventi Confermati</label>
-              <select id="cfg-cal-color-confirmed" class="form-select" onchange="saveCalendarColors()">
+              <select id="cfg-cal-color-confirmed" class="form-select" onchange="onCalendarColorChange()">
                 <!-- Popolato dinamicamente -->
               </select>
             </div>
             <div class="form-group">
               <label class="form-label">🟡 Da Confermare</label>
-              <select id="cfg-cal-color-unconfirmed" class="form-select" onchange="saveCalendarColors()">
+              <select id="cfg-cal-color-unconfirmed" class="form-select" onchange="onCalendarColorChange()">
                 <!-- Popolato dinamicamente -->
               </select>
             </div>
           </div>
+          <button id="btn-save-cal-colors" class="btn btn-primary" style="display:none;width:100%;margin-top:12px;" onclick="saveCalendarColors()">💾 Applica Nuovi Colori</button>
         </div>
       </div>
 
@@ -979,15 +968,10 @@
               <input type="password" id="cfg-vr-pass" class="form-input" placeholder="••••••••">
             </div>
           </div>
-          <div class="btn-row" style="margin-top:4px;">
-            <button class="btn btn-primary" onclick="saveVrCloudCredentials()">💾 Salva Credenziali</button>
-          </div>
-
-          <div id="vr-cloud-connected-actions" style="display:none;margin-top:10px;">
-            <div class="btn-row">
-              <button class="btn btn-outline" style="border-color:rgba(14,165,233,0.4);" onclick="triggerVrCompileAll()">⚡ Compila Adesso</button>
-              <button class="btn btn-danger" style="flex:0.6;" onclick="disconnectVrCloud()">Disconnetti</button>
-            </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button id="btn-vr-edit-save" class="btn btn-primary" onclick="handleVrCredentialAction()">💾 Salva Credenziali</button>
+            <button id="btn-vr-cancel-edit" class="btn btn-outline" style="display:none;flex:0.4;" onclick="cancelVrCloudEdit()">Annulla</button>
+            <button id="btn-vr-disconnect" class="btn btn-danger" style="display:none;flex:0.5;" onclick="disconnectVrCloud()">Disconnetti</button>
           </div>
         </div>
 
@@ -1283,6 +1267,97 @@
       <div class="pdf-footer">
         <button class="btn btn-primary" onclick="printPdfPreview()">🖨️ Stampa / Salva</button>
         <button class="btn btn-success" onclick="sendPdfToTelegram()">📩 Ricevi su Telegram</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SOTTOMENU COMPILA VIDEORENT (SELEZIONE PER ID) -->
+  <div id="modal-compile-vr" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">⚡ Compila Gestionale Videorent</div>
+          <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;">Seleziona le commesse da registrare sul portale</div>
+        </div>
+        <button class="close-btn" onclick="closeModal('modal-compile-vr')">✕</button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="vr-uncompiled-loading" style="text-align:center;padding:24px 10px;color:var(--text-muted);">
+        <div class="spinner" style="margin:0 auto 10px auto;width:32px;height:32px;"></div>
+        <div>Verifica commesse pronte sul portale...</div>
+      </div>
+
+      <!-- Content Container -->
+      <div id="vr-uncompiled-container" style="display:none;">
+        <div id="vr-uncompiled-list" style="max-height:48vh;overflow-y:auto;margin-bottom:14px;padding-right:2px;">
+          <!-- Popolato dinamicamente -->
+        </div>
+
+        <div class="btn-row" id="vr-compile-actions-row">
+          <button class="btn btn-primary" onclick="confirmCompileSelectedVrJobs()">⚡ Compila Selezionate (<span id="vr-selected-count">0</span>)</button>
+          <button class="btn btn-outline" style="flex:0.6;" onclick="confirmCompileAllVrJobs()">⚡ Compila Tutto</button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="vr-empty-state" style="display:none;text-align:center;padding:24px 14px;">
+        <div style="font-size:36px;margin-bottom:10px;">✅</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Tutto allineato!</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">
+          Tutte le giornate registrate nel foglio risultano già regolarmente compilate su Videorent.
+        </div>
+        <button class="btn btn-outline" style="margin:0 auto;" onclick="openCompileVrModal()">🔄 Ricontrolla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SOTTOMENU CONSUNTIVO PDF (SCELTA MESE) -->
+  <div id="modal-pdf-options" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">📄 Consuntivo PDF</div>
+          <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;">Scegli il mese da elaborare</div>
+        </div>
+        <button class="close-btn" onclick="closeModal('modal-pdf-options')">✕</button>
+      </div>
+
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+        Genera il consuntivo contabile A4 ufficiale con il riepilogo delle giornate lavorate, tariffe ed extra.
+      </p>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Mese</label>
+          <select id="pdf-opt-month" class="form-select">
+            <option value="0">Gennaio</option>
+            <option value="1">Febbraio</option>
+            <option value="2">Marzo</option>
+            <option value="3">Aprile</option>
+            <option value="4">Maggio</option>
+            <option value="5">Giugno</option>
+            <option value="6">Luglio</option>
+            <option value="7">Agosto</option>
+            <option value="8">Settembre</option>
+            <option value="9">Ottobre</option>
+            <option value="10">Novembre</option>
+            <option value="11">Dicembre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Anno</label>
+          <select id="pdf-opt-year" class="form-select">
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="generatePdfPreviewFromOptions()">👁️ Anteprima A4</button>
+        <button class="btn btn-success" onclick="sendPdfToTelegramFromOptions()">📩 Invia su Telegram</button>
       </div>
     </div>
   </div>
@@ -1646,6 +1721,22 @@
         if (String(userColors.unconfirmed) === key) opt2.selected = true;
         selUnconf.appendChild(opt2);
       }
+
+      const btnSave = document.getElementById("btn-save-cal-colors");
+      if (btnSave) btnSave.style.display = "none";
+    }
+
+    function onCalendarColorChange() {
+      const userColors = appState.user?.calendarColors || { confirmed: "8", unconfirmed: "12" };
+      const curConf = document.getElementById("cfg-cal-color-confirmed").value;
+      const curUnconf = document.getElementById("cfg-cal-color-unconfirmed").value;
+      const btn = document.getElementById("btn-save-cal-colors");
+      if (!btn) return;
+      if (curConf !== String(userColors.confirmed) || curUnconf !== String(userColors.unconfirmed)) {
+        btn.style.display = "block";
+      } else {
+        btn.style.display = "none";
+      }
     }
 
     async function saveCalendarColors() {
@@ -1660,6 +1751,8 @@
         });
         if (res.success) {
           if (appState.user) appState.user.calendarColors = res.calendarColors;
+          const btnSave = document.getElementById("btn-save-cal-colors");
+          if (btnSave) btnSave.style.display = "none";
           showToast(`🎨 Colori aggiornati (${res.updatedCount || 0} eventi sincronizzati live)!`);
         }
       } catch (e) {
@@ -1667,6 +1760,101 @@
       } finally {
         hideLoader();
       }
+    }
+
+    let isVrCloudEditing = false;
+
+    function renderVrCloudState() {
+      const u = appState.user || {};
+      const isVrConn = Boolean(u.vrConnected || u.vrUsername);
+      const vrBadge = document.getElementById("vr-cloud-badge");
+      const vrDesc = document.getElementById("vr-cloud-desc");
+      const vrUserInput = document.getElementById("cfg-vr-user");
+      const vrPassInput = document.getElementById("cfg-vr-pass");
+      const btnEditSave = document.getElementById("btn-vr-edit-save");
+      const btnCancel = document.getElementById("btn-vr-cancel-edit");
+      const btnDisconnect = document.getElementById("btn-vr-disconnect");
+
+      if (!btnEditSave) return;
+
+      if (isVrConn && !isVrCloudEditing) {
+        // Connesso: Campi bloccati, pulsante Modifica
+        vrBadge.textContent = "🟢 Collegato";
+        vrBadge.style.color = "var(--success)";
+        vrBadge.style.background = "rgba(16,185,129,0.15)";
+        if (vrDesc) vrDesc.textContent = `Account connesso: ${u.vrUsername || ''} • Notifiche e compilazione abilitate`;
+
+        vrUserInput.value = u.vrUsername || "";
+        vrUserInput.disabled = true;
+        vrUserInput.style.opacity = "0.7";
+        vrUserInput.style.cursor = "not-allowed";
+
+        vrPassInput.value = "••••••••";
+        vrPassInput.disabled = true;
+        vrPassInput.style.opacity = "0.7";
+        vrPassInput.style.cursor = "not-allowed";
+
+        btnEditSave.className = "btn btn-outline";
+        btnEditSave.textContent = "✏️ Modifica Credenziali";
+        if (btnCancel) btnCancel.style.display = "none";
+        if (btnDisconnect) btnDisconnect.style.display = "block";
+      } else if (isVrConn && isVrCloudEditing) {
+        // Modalità modifica
+        vrUserInput.disabled = false;
+        vrUserInput.style.opacity = "1";
+        vrUserInput.style.cursor = "text";
+
+        vrPassInput.disabled = false;
+        vrPassInput.style.opacity = "1";
+        vrPassInput.style.cursor = "text";
+
+        btnEditSave.className = "btn btn-primary";
+        btnEditSave.textContent = "💾 Salva Nuove Credenziali";
+        if (btnCancel) btnCancel.style.display = "block";
+        if (btnDisconnect) btnDisconnect.style.display = "none";
+      } else {
+        // Non connesso
+        vrBadge.textContent = "🔴 Non Collegato";
+        vrBadge.style.color = "var(--danger)";
+        vrBadge.style.background = "rgba(239,68,68,0.15)";
+        if (vrDesc) vrDesc.textContent = "Collega il tuo account Videorent per ricevere notifiche e compilare gli orari da telefono.";
+
+        vrUserInput.value = "";
+        vrUserInput.disabled = false;
+        vrUserInput.style.opacity = "1";
+        vrUserInput.style.cursor = "text";
+
+        vrPassInput.value = "";
+        vrPassInput.disabled = false;
+        vrPassInput.style.opacity = "1";
+        vrPassInput.style.cursor = "text";
+
+        btnEditSave.className = "btn btn-primary";
+        btnEditSave.textContent = "💾 Salva Credenziali";
+        if (btnCancel) btnCancel.style.display = "none";
+        if (btnDisconnect) btnDisconnect.style.display = "none";
+      }
+    }
+
+    function handleVrCredentialAction() {
+      const u = appState.user || {};
+      const isVrConn = Boolean(u.vrConnected || u.vrUsername);
+      if (isVrConn && !isVrCloudEditing) {
+        isVrCloudEditing = true;
+        renderVrCloudState();
+        const pInput = document.getElementById("cfg-vr-pass");
+        if (pInput) {
+          pInput.value = "";
+          pInput.focus();
+        }
+      } else {
+        saveVrCloudCredentials();
+      }
+    }
+
+    function cancelVrCloudEdit() {
+      isVrCloudEditing = false;
+      renderVrCloudState();
     }
 
     function populateSettingsInputs() {
@@ -1719,25 +1907,7 @@
       populateCalendarColorPickers();
 
       // Videorent Cloud
-      const isVrConn = Boolean(u.vrConnected);
-      const vrBadge = document.getElementById("vr-cloud-badge");
-      const vrDesc = document.getElementById("vr-cloud-desc");
-      const vrConnActions = document.getElementById("vr-cloud-connected-actions");
-
-      if (isVrConn) {
-        vrBadge.textContent = "🟢 Collegato";
-        vrBadge.style.color = "var(--success)";
-        vrBadge.style.background = "rgba(16,185,129,0.15)";
-        if (vrDesc) vrDesc.textContent = `Account connesso: ${u.vrUsername || ''} • Notifiche e compilazione abilitate`;
-        if (vrConnActions) vrConnActions.style.display = "block";
-      } else {
-        vrBadge.textContent = "🔴 Non Collegato";
-        vrBadge.style.color = "var(--danger)";
-        vrBadge.style.background = "rgba(239,68,68,0.15)";
-        if (vrDesc) vrDesc.textContent = "Collega il tuo account Videorent per ricevere notifiche e compilare gli orari da telefono.";
-        if (vrConnActions) vrConnActions.style.display = "none";
-      }
-      document.getElementById("cfg-vr-user").value = u.vrUsername || "";
+      renderVrCloudState();
     }
 
     // Gestione Schermate
@@ -2136,6 +2306,7 @@
             appState.user.vrUsername = res.vrUsername;
             appState.user.vrConnected = res.vrConnected;
           }
+          isVrCloudEditing = false;
           populateSettingsInputs();
           showToast("☁️ Credenziali salvate con successo!");
         } else {
@@ -2149,7 +2320,7 @@
     }
 
     async function disconnectVrCloud() {
-      if (!confirm("Sei sicuro di voler disconnettere l'account Videorent Cloud?")) return;
+      if (!confirm("⚠️ Sei sicuro di voler disconnettere l'account Videorent Cloud?\n\nNon riceverai più notifiche automatiche di nuove commesse e la compilazione remota verrà disabilitata.")) return;
       showLoader("Disconnessione in corso...");
       try {
         const res = await callApi("miniapp_disconnect_vr_cloud");
@@ -2158,6 +2329,7 @@
             appState.user.vrUsername = "";
             appState.user.vrConnected = false;
           }
+          isVrCloudEditing = false;
           populateSettingsInputs();
           showToast("Account Videorent disconnesso.");
         }
@@ -2168,14 +2340,208 @@
       }
     }
 
-    async function triggerVrCompileAll() {
-      showLoader("Compilazione su Videorent in corso...");
+    // GESTIONE SOTTOMENU COMPILAZIONE VIDEORENT (SCELTA PER ID)
+    let vrUncompiledJobs = [];
+
+    async function openCompileVrModal() {
+      openModal("modal-compile-vr");
+      const loadingEl = document.getElementById("vr-uncompiled-loading");
+      const containerEl = document.getElementById("vr-uncompiled-container");
+      const emptyEl = document.getElementById("vr-empty-state");
+
+      if (loadingEl) loadingEl.style.display = "block";
+      if (containerEl) containerEl.style.display = "none";
+      if (emptyEl) emptyEl.style.display = "none";
+
+      try {
+        const res = await callApi("miniapp_get_uncompiled_jobs");
+        if (loadingEl) loadingEl.style.display = "none";
+
+        if (res.success && res.uncompiled && res.uncompiled.length > 0) {
+          vrUncompiledJobs = res.uncompiled;
+          renderVrUncompiledList();
+          if (containerEl) containerEl.style.display = "block";
+        } else {
+          if (emptyEl) emptyEl.style.display = "block";
+        }
+      } catch (e) {
+        if (loadingEl) loadingEl.style.display = "none";
+        if (emptyEl) emptyEl.style.display = "block";
+      }
+    }
+
+    function renderVrUncompiledList() {
+      const container = document.getElementById("vr-uncompiled-list");
+      if (!container) return;
+      container.innerHTML = "";
+
+      vrUncompiledJobs.forEach((j) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.style.padding = "12px 14px";
+        div.style.marginBottom = "10px";
+        div.style.background = "rgba(255, 255, 255, 0.03)";
+
+        const datesSummary = j.entries ? j.entries.map(e => e.dateStr || e.date).join(", ") : "";
+        const isComplete = Boolean(j.isFullyCovered);
+        const badgeColor = isComplete ? "var(--success)" : "var(--warning)";
+        const badgeBg = isComplete ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)";
+        const badgeText = isComplete ? "Completa ✅" : `Parziale ⏳ (${j.entries?.length || 1}/${j.requiredDatesCount || 1} gg)`;
+
+        div.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;">
+              <input type="checkbox" class="vr-job-check" data-job-id="${j.jobId}" checked onchange="updateVrSelectedCount()">
+              <div>
+                <div style="font-weight:700;font-size:14px;color:var(--text);">
+                  #${j.jobId} <span style="font-size:12px;color:var(--accent);font-weight:600;">• ${j.vrTitle || j.fullHeading || ''}</span>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
+                  📅 ${datesSummary}
+                </div>
+              </div>
+            </label>
+            <span class="status-badge" style="background:${badgeBg};color:${badgeColor};font-size:10px;flex-shrink:0;">
+              ${badgeText}
+            </span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+            <div style="font-size:14px;font-weight:800;color:var(--success);">
+              ${Number(j.totalPay || 0).toFixed(2)} €
+            </div>
+            <button class="btn btn-outline" style="padding:4px 10px;font-size:11px;flex:0 0 auto;" onclick="confirmCompileSingleVrJob('${j.jobId}')">
+              ⚡ Compila #${j.jobId}
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      updateVrSelectedCount();
+    }
+
+    function updateVrSelectedCount() {
+      const checks = document.querySelectorAll(".vr-job-check:checked");
+      const countEl = document.getElementById("vr-selected-count");
+      if (countEl) countEl.textContent = checks.length;
+    }
+
+    async function confirmCompileSelectedVrJobs() {
+      const checks = document.querySelectorAll(".vr-job-check:checked");
+      if (checks.length === 0) return alert("Seleziona almeno una commessa da compilare.");
+
+      const selectedIds = Array.from(checks).map(c => c.getAttribute("data-job-id"));
+      closeModal("modal-compile-vr");
+      showLoader(`Compilazione di ${selectedIds.length} commesse su Videorent...`);
+
+      try {
+        const res = await callApi("miniapp_compile_vr_all", { jobIds: JSON.stringify(selectedIds) });
+        if (res.success) {
+          showToast(`⚡ ${res.message || 'Compilazione completata!'}`);
+        } else {
+          alert("Errore compilazione: " + (res.error || "Operazione non riuscita"));
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function confirmCompileSingleVrJob(jobId) {
+      closeModal("modal-compile-vr");
+      showLoader(`Compilazione commessa #${jobId} su Videorent...`);
+
+      try {
+        const res = await callApi("miniapp_compile_vr_all", { jobId: String(jobId) });
+        if (res.success) {
+          showToast(`⚡ Commessa #${jobId} compilata con successo!`);
+        } else {
+          alert("Errore: " + (res.error || "Operazione non riuscita"));
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function confirmCompileAllVrJobs() {
+      closeModal("modal-compile-vr");
+      showLoader("Compilazione di tutte le commesse pronte...");
+
       try {
         const res = await callApi("miniapp_compile_vr_all");
         if (res.success) {
-          alert(res.message);
+          showToast(`⚡ ${res.message || 'Tutte le commesse sono state compilate!'}`);
         } else {
-          alert("Esito: " + res.error);
+          alert("Errore: " + (res.error || "Operazione non riuscita"));
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // GESTIONE SOTTOMENU CONSUNTIVO PDF (SCELTA MESE)
+    function openPdfOptionsModal() {
+      const curMonth = appState.selectedDate ? appState.selectedDate.getMonth() : new Date().getMonth();
+      const curYear = appState.selectedDate ? appState.selectedDate.getFullYear() : new Date().getFullYear();
+
+      const selMonth = document.getElementById("pdf-opt-month");
+      const selYear = document.getElementById("pdf-opt-year");
+      if (selMonth) selMonth.value = String(curMonth);
+      if (selYear) selYear.value = String(curYear);
+
+      openModal("modal-pdf-options");
+    }
+
+    async function generatePdfPreviewFromOptions() {
+      const m = parseInt(document.getElementById("pdf-opt-month").value, 10);
+      const y = parseInt(document.getElementById("pdf-opt-year").value, 10);
+
+      closeModal("modal-pdf-options");
+      showLoader("Generazione consuntivo A4...");
+
+      try {
+        const res = await callApi("miniapp_get_pdf", {
+          format: "json",
+          year: y,
+          month: m
+        });
+
+        if (res.success && res.html) {
+          document.getElementById("pdf-preview-title").textContent = `Consuntivo ${res.monthName || ''} ${res.year || y}`;
+          const iframe = document.getElementById("pdf-preview-frame");
+          if (iframe) iframe.srcdoc = res.html;
+          openModal("modal-pdf-preview");
+        } else {
+          alert("Impossibile generare l'anteprima del consuntivo.");
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    async function sendPdfToTelegramFromOptions() {
+      const m = parseInt(document.getElementById("pdf-opt-month").value, 10);
+      const y = parseInt(document.getElementById("pdf-opt-year").value, 10);
+
+      closeModal("modal-pdf-options");
+      showLoader("Invio consuntivo PDF su Telegram...");
+
+      try {
+        const res = await callApi("miniapp_send_pdf_telegram", {
+          year: y,
+          month: m
+        });
+        if (res.success) {
+          showToast("📩 Consuntivo PDF inviato nella tua chat Telegram!");
+        } else {
+          alert("Errore: " + (res.error || "Invio non riuscito"));
         }
       } catch (e) {
         alert("Errore: " + e.message);
