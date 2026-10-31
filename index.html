@@ -3424,7 +3424,7 @@ function openModal(id) {
         const res = await callApi("miniapp_end_shift", { end: end, extra: extra });
         hideLoader();
 
-        if (res.success) {
+        if (res.success && res.shiftSummary) {
           appState.activeShift = null;
           appState.stats = res.stats;
           appState.entries = res.entries || [];
@@ -3432,18 +3432,8 @@ function openModal(id) {
           renderStats();
           renderEntries();
 
-          // Dati del riepilogo con fallback sicuro
-          const s = res.shiftSummary || {
-            type: (shiftBackup && shiftBackup.type) || "CASA",
-            typeLabel: ((shiftBackup && shiftBackup.type) === "CASA") ? "🏠 Casa" : "🚗 Trasferta",
-            date: (shiftBackup && shiftBackup.date) || "",
-            start: (shiftBackup && shiftBackup.start) || "08:00",
-            end: end,
-            hours: 0,
-            basePay: 0,
-            extra: Number(extra) || 0,
-            totalPay: 0
-          };
+          // Dati reali confermati e scritti sul foglio Google
+          const s = res.shiftSummary;
 
           const typeEl = document.getElementById("summary-shift-type");
           if (typeEl) typeEl.textContent = s.typeLabel || ((s.type === "CASA") ? "🏠 Casa" : "🚗 Trasferta");
@@ -3451,37 +3441,14 @@ function openModal(id) {
           const dateEl = document.getElementById("summary-shift-date");
           if (dateEl) dateEl.textContent = s.date || "";
 
-          let hNum = Number(s.hours || 0);
-          if (hNum <= 0 && s.start && s.end) {
-            const startParts = s.start.replace(".", ":").split(":");
-            const endParts = s.end.replace(".", ":").split(":");
-            let sH = Number(startParts[0]) + (Number(startParts[1]) || 0) / 60;
-            let eH = Number(endParts[0]) + (Number(endParts[1]) || 0) / 60;
-            if (eH < sH) eH += 24;
-            hNum = Math.round((eH - sH) * 10) / 10;
-          }
-
           const hoursEl = document.getElementById("summary-shift-hours");
-          if (hoursEl) hoursEl.textContent = `${s.start} - ${s.end}${hNum > 0 ? " (" + hNum.toFixed(1) + "h)" : ""}`;
-
-          let basePayVal = Number(s.basePay || 0);
-          const extraTotal = Number(s.extra !== undefined ? s.extra : (extra || 0));
-
-          if (basePayVal <= 0 && appState.rates) {
-            const isCasa = (s.type === "CASA");
-            const rBase = isCasa ? (appState.rates.casaBase || 220) : (appState.rates.trasfertaBase || 250);
-            const rStraord = isCasa ? (appState.rates.casaStraord || 25) : (appState.rates.trasfertaStraord || 30);
-            if (hNum <= 9) {
-              basePayVal = rBase;
-            } else {
-              const extraHalf = Math.ceil((hNum - 9) * 2);
-              basePayVal = rBase + (extraHalf * (rStraord / 2));
-            }
-          }
+          const hNum = Number(s.hours || 0);
+          if (hoursEl) hoursEl.textContent = `${s.start} - ${s.end} (${hNum.toFixed(1)}h)`;
 
           const baseEl = document.getElementById("summary-shift-base");
-          if (baseEl) baseEl.textContent = `${basePayVal} €`;
+          if (baseEl) baseEl.textContent = `${s.basePay} €`;
 
+          const extraTotal = Number(s.extra || 0);
           const extraRow = document.getElementById("summary-shift-extra-row");
           const extraEl = document.getElementById("summary-shift-extra");
           if (extraRow && extraEl) {
@@ -3493,20 +3460,15 @@ function openModal(id) {
             }
           }
 
-          let totalPayVal = Number(s.totalPay || 0);
-          if (totalPayVal <= 0) {
-            totalPayVal = basePayVal + extraTotal;
-          }
-
           const totalEl = document.getElementById("summary-shift-total");
-          if (totalEl) totalEl.textContent = `${totalPayVal} €`;
+          if (totalEl) totalEl.textContent = `${s.totalPay} €`;
 
-          // Apri sempre il modal nativo
+          // Apri il modal di riepilogo con i dati ufficiali del foglio
           openModal("modal-shift-summary");
 
           if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
-          alert("Errore: " + (res.error || res.message || "Impossibile salvare il turno"));
+          alert("Errore nella registrazione sul foglio: " + (res.error || res.message || "Risposta non valida"));
         }
       } catch (e) {
         hideLoader();
