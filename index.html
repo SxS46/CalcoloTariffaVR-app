@@ -2366,6 +2366,10 @@
       } finally {
         clearTimeout(timeoutId);
         hideLoader();
+        // Prefetch silenzioso in background della scheda lavoro odierna (a schermo già pronto)
+        if (appState.user && appState.user.status === "ACTIVE") {
+          setTimeout(prefetchTodayEventDetail, 400);
+        }
       }
     }
 
@@ -4426,6 +4430,83 @@ function openModal(id) {
       el.style.display = "flex";
       if (ico) ico.textContent = icon;
       txt.textContent = text;
+    }
+
+    // =========================================================================
+    // BACKGROUND PREFETCH SCHEDA LAVORO ODIERNA (Zero-Wait sul campo)
+    // =========================================================================
+    async function prefetchTodayEventDetail() {
+      try {
+        // 1. Data odierna in formato YYYY-MM-DD
+        const now = new Date();
+        const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+        // 2. Recupera elenco eventi (da memoria, da cache o da API silenziosa)
+        let upcoming = vrEventsState.upcoming;
+        let past = vrEventsState.past;
+
+        if (!vrEventsState.loaded || (upcoming.length === 0 && past.length === 0)) {
+          const cached = readEventsLocalCache(getEventsCacheKey("events"));
+          if (cached && cached.data) {
+            upcoming = cached.data.upcoming || [];
+            past = cached.data.past || [];
+            vrEventsState.upcoming = upcoming;
+            vrEventsState.past = past;
+            vrEventsState.loaded = true;
+          }
+        }
+
+        const eventsCache = readEventsLocalCache(getEventsCacheKey("events"));
+        const needsFreshList = !eventsCache || !eventsCache.timestamp || (Date.now() - eventsCache.timestamp > 15 * 60 * 1000);
+
+        if (needsFreshList) {
+          const res = await callApi("miniapp_get_vr_events");
+          if (res && res.success && Array.isArray(res.upcoming)) {
+            upcoming = res.upcoming || [];
+            past = res.past || [];
+            vrEventsState.upcoming = upcoming;
+            vrEventsState.past = past;
+            vrEventsState.loaded = true;
+            writeEventsLocalCache(getEventsCacheKey("events"), { upcoming, past });
+          }
+        }
+
+        // 3. Verifica se oggi c'è una commessa in svolgimento (anche multi-giorno)
+        const allEvents = [...upcoming, ...past];
+        const todayEvent = allEvents.find(ev => {
+          if (!ev || !ev.start) return false;
+          const sIso = String(ev.start).split("T")[0].split(" ")[0];
+          const eIso = ev.end ? String(ev.end).split("T")[0].split(" ")[0] : sIso;
+          return todayIso >= sIso && todayIso <= eIso;
+        });
+
+        if (!todayEvent || !todayEvent.id) {
+          return; // Nessun evento in calendario per oggi
+        }
+
+        // 4. Controlla se la scheda dettaglio è già recente in memoria locale (< 15 min)
+        const detailKey = getEventsCacheKey("detail_" + todayEvent.id);
+        const cachedDet = readEventsLocalCache(detailKey);
+        const isDetailFresh = cachedDet && cachedDet.timestamp && (Date.now() - cachedDet.timestamp < 15 * 60 * 1000);
+
+        if (isDetailFresh) {
+          return; // Già pronta in cache
+        }
+
+        // 5. Scarica silenziosamente materiali, scheda tecnica e note del lavoro odierno
+        const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: todayEvent.id });
+        if (detRes && detRes.success) {
+          writeEventsLocalCache(detailKey, {
+            preventivo: detRes.preventivo,
+            notes: detRes.notes,
+            current_user_id: detRes.current_user_id
+          });
+          console.log(`[VR Prefetch] Scheda lavoro odierna #${todayEvent.id} precaricata in cache locale.`);
+        }
+      } catch (err) {
+        // Silenzioso: nessun alert o disturbo se offline
+        console.warn("[VR Prefetch] Ignorato errore background:", err);
+      }
     }
 
     function formatEventDates(startStr, endStr) {
