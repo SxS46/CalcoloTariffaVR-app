@@ -3459,20 +3459,30 @@ function openModal(id) {
     }
 
     function computeEndTimeSuggestions(startTime, isLiveClosing) {
-      if (!isLiveClosing && startTime) {
-        const norm = normalizeInputTime(startTime);
-        const parts = norm.split(":");
-        const sH = parseInt(parts[0], 10);
-        const sM = parseInt(parts[1], 10) || 0;
-        if (!isNaN(sH)) {
-          return [
-            formatOffsetTimeColon(sH, sM, 8 * 60),
-            formatOffsetTimeColon(sH, sM, 8.5 * 60),
-            formatOffsetTimeColon(sH, sM, 9 * 60),
-            formatOffsetTimeColon(sH, sM, 9.5 * 60),
-            formatOffsetTimeColon(sH, sM, 10 * 60)
-          ];
+      if (!isLiveClosing) {
+        let baseH = 17;
+        let baseM = 0;
+        if (startTime) {
+          const norm = normalizeInputTime(startTime);
+          const parts = norm.split(":");
+          const sH = parseInt(parts[0], 10);
+          const sM = parseInt(parts[1], 10) || 0;
+          if (!isNaN(sH)) {
+            // La giornata intera standard è di 9 ore: se l'inizio + 9h supera le 17:00, parte dalla fine standard
+            const endStdMin = sH * 60 + sM + 9 * 60;
+            if (endStdMin > 17 * 60) {
+              baseH = Math.floor(endStdMin / 60);
+              baseM = endStdMin % 60;
+            }
+          }
         }
+        return [
+          formatOffsetTimeColon(baseH, baseM, 0),
+          formatOffsetTimeColon(baseH, baseM, 30),
+          formatOffsetTimeColon(baseH, baseM, 60),
+          formatOffsetTimeColon(baseH, baseM, 90),
+          formatOffsetTimeColon(baseH, baseM, 120)
+        ];
       }
 
       const now = new Date();
@@ -3690,14 +3700,14 @@ function openModal(id) {
       toggleManualFixedPay(false);
       document.getElementById("manual-extra").value = "0";
 
-      const startSuggs = ["07:00", "08:00", "08:30", "09:00", "14:00"];
+      const startSuggs = ["07:00", "07:30", "08:00", "08:30", "09:00"];
       renderTimePillSuggestions("manual-start-suggestions", "manual-start", startSuggs, "08:00");
 
       const updateManualEndSuggs = () => {
         const sVal = document.getElementById("manual-start").value || "08:00";
         const endSuggs = computeEndTimeSuggestions(sVal, false);
         const curEnd = document.getElementById("manual-end").value;
-        const defEnd = curEnd ? normalizeInputTime(curEnd) : endSuggs[2];
+        const defEnd = curEnd ? normalizeInputTime(curEnd) : endSuggs[0];
         renderTimePillSuggestions("manual-end-suggestions", "manual-end", endSuggs, defEnd);
       };
 
@@ -3792,7 +3802,7 @@ function openModal(id) {
       toggleEditFixedPay(isFixed);
       document.getElementById("edit-fixed-pay").value = isFixed ? (entry.fixedPay || entry.dayPay || "") : "";
 
-      const startSuggs = ["07:00", "08:00", "08:30", "09:00", "14:00"];
+      const startSuggs = ["07:00", "07:30", "08:00", "08:30", "09:00"];
       const initStart = entry.start ? normalizeInputTime(entry.start) : "08:00";
       renderTimePillSuggestions("edit-start-suggestions", "edit-start", startSuggs, initStart);
 
@@ -3800,7 +3810,7 @@ function openModal(id) {
         const sVal = document.getElementById("edit-start").value || "08:00";
         const endSuggs = computeEndTimeSuggestions(sVal, false);
         const curEnd = document.getElementById("edit-end").value || entry.end;
-        const defEnd = curEnd ? normalizeInputTime(curEnd) : endSuggs[2];
+        const defEnd = curEnd ? normalizeInputTime(curEnd) : endSuggs[0];
         renderTimePillSuggestions("edit-end-suggestions", "edit-end", endSuggs, defEnd);
       };
 
