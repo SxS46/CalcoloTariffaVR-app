@@ -380,6 +380,35 @@
       color: white;
     }
 
+    .time-pills-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .time-pill {
+      flex: 1;
+      min-width: 52px;
+      padding: 7px 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .time-pill:active, .time-pill.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
     /* Month Stats Widget */
     .stats-grid {
       display: grid;
@@ -1675,7 +1704,8 @@
       </div>
       <div class="form-group">
         <label class="form-label">Orario di Inizio</label>
-        <input type="time" id="start-modal-time" class="form-input">
+        <div id="start-modal-suggestions" class="time-pills-row"></div>
+        <input type="text" id="start-modal-time" class="form-input" inputmode="decimal" placeholder="es. 08:00 o 8.30">
       </div>
       <input type="hidden" id="start-modal-type">
       <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmStartShift()">🟢 Avvia Turno</button>
@@ -1691,7 +1721,8 @@
       </div>
       <div class="form-group">
         <label class="form-label">Orario di Fine</label>
-        <input type="time" id="end-modal-time" class="form-input">
+        <div id="end-modal-suggestions" class="time-pills-row"></div>
+        <input type="text" id="end-modal-time" class="form-input" inputmode="decimal" placeholder="es. 18:00 o 18.30">
       </div>
       <div class="form-group">
         <label class="form-label">Extra / Rimborsi (€)</label>
@@ -1758,15 +1789,15 @@
           <option value="TRASFERTA">🚗 Trasferta</option>
         </select>
       </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Inizio</label>
-          <input type="time" id="manual-start" class="form-input" value="08:00">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Fine</label>
-          <input type="time" id="manual-end" class="form-input" value="17:00">
-        </div>
+      <div class="form-group">
+        <label class="form-label">Orario Inizio</label>
+        <div id="manual-start-suggestions" class="time-pills-row"></div>
+        <input type="text" id="manual-start" class="form-input" inputmode="decimal" placeholder="es. 08:00 o 8.30" value="08:00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Orario Fine</label>
+        <div id="manual-end-suggestions" class="time-pills-row"></div>
+        <input type="text" id="manual-end" class="form-input" inputmode="decimal" placeholder="es. 17:00 o 17.30" value="17:00">
       </div>
       <div class="form-group">
         <label class="form-label">Extra (€)</label>
@@ -1827,15 +1858,15 @@
       </div>
 
       <!-- Orari Inizio e Fine -->
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Inizio</label>
-          <input type="time" id="edit-start" class="form-input">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Fine</label>
-          <input type="time" id="edit-end" class="form-input">
-        </div>
+      <div class="form-group">
+        <label class="form-label">Orario Inizio</label>
+        <div id="edit-start-suggestions" class="time-pills-row"></div>
+        <input type="text" id="edit-start" class="form-input" inputmode="decimal" placeholder="es. 08:00 o 8.30">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Orario Fine</label>
+        <div id="edit-end-suggestions" class="time-pills-row"></div>
+        <input type="text" id="edit-end" class="form-input" inputmode="decimal" placeholder="es. 18:00 o 18.30">
       </div>
 
       <!-- Extra -->
@@ -3365,21 +3396,168 @@ function openModal(id) {
       }
     }
 
+    // =========================================================================
+    // HELPER INPUT ORARI & PILL SUGGERIMENTI (Zero orologio a disco, input rapido)
+    // =========================================================================
+    function normalizeInputTime(str) {
+      if (!str) return "";
+      str = String(str).trim().toLowerCase();
+      str = str.replace(/(\d+)\s*(?:h|ore|ora)$/, "$1");
+      str = str.replace(/[:;,]/g, ".");
+      str = str.replace(/^(\d{1,2})\s+(\d{2})$/, "$1.$2");
+
+      if (/^\d{1,2}$/.test(str)) {
+        const h = parseInt(str, 10);
+        if (h >= 0 && h <= 23) {
+          return (h < 10 ? "0" + h : "" + h) + ":00";
+        }
+      }
+
+      if (/^\d{3,4}$/.test(str)) {
+        const h = parseInt(str.slice(0, -2), 10);
+        const m = parseInt(str.slice(-2), 10);
+        if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+          return (h < 10 ? "0" + h : "" + h) + ":" + (m < 10 ? "0" + m : "" + m);
+        }
+      }
+
+      const parts = str.split(".");
+      if (parts.length === 2) {
+        const h = parseInt(parts[0], 10);
+        let mStr = parts[1].trim();
+        if (mStr.length === 1) mStr = mStr + "0";
+        const m = parseInt(mStr, 10);
+        if (!isNaN(h) && !isNaN(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+          return (h < 10 ? "0" + h : "" + h) + ":" + (m < 10 ? "0" + m : "" + m);
+        }
+      }
+      return str;
+    }
+
+    function formatOffsetTimeColon(h, m, offsetMin) {
+      let totalMin = h * 60 + m + offsetMin;
+      while (totalMin < 0) totalMin += 24 * 60;
+      totalMin = totalMin % (24 * 60);
+      const outH = Math.floor(totalMin / 60);
+      const outM = totalMin % 60;
+      return (outH < 10 ? "0" + outH : "" + outH) + ":" + (outM < 10 ? "0" + outM : "" + outM);
+    }
+
+    function computeStartTimeSuggestions() {
+      const now = new Date();
+      const m = now.getMinutes();
+      const h = now.getHours();
+      const roundedM = (m < 15) ? 0 : (m < 45) ? 30 : 0;
+      const roundedH = (m >= 45) ? (h + 1) % 24 : h;
+      return [
+        formatOffsetTimeColon(roundedH, roundedM, -90),
+        formatOffsetTimeColon(roundedH, roundedM, -60),
+        formatOffsetTimeColon(roundedH, roundedM, -30),
+        formatOffsetTimeColon(roundedH, roundedM, 0),
+        formatOffsetTimeColon(roundedH, roundedM, 30)
+      ];
+    }
+
+    function computeEndTimeSuggestions(startTime, isLiveClosing) {
+      if (!isLiveClosing && startTime) {
+        const norm = normalizeInputTime(startTime);
+        const parts = norm.split(":");
+        const sH = parseInt(parts[0], 10);
+        const sM = parseInt(parts[1], 10) || 0;
+        if (!isNaN(sH)) {
+          return [
+            formatOffsetTimeColon(sH, sM, 8 * 60),
+            formatOffsetTimeColon(sH, sM, 8.5 * 60),
+            formatOffsetTimeColon(sH, sM, 9 * 60),
+            formatOffsetTimeColon(sH, sM, 9.5 * 60),
+            formatOffsetTimeColon(sH, sM, 10 * 60)
+          ];
+        }
+      }
+
+      const now = new Date();
+      const m = now.getMinutes();
+      const h = now.getHours();
+      const roundedM = (m < 15) ? 0 : (m < 45) ? 30 : 0;
+      const roundedH = (m >= 45) ? (h + 1) % 24 : h;
+      return [
+        formatOffsetTimeColon(roundedH, roundedM, -30),
+        formatOffsetTimeColon(roundedH, roundedM, 0),
+        formatOffsetTimeColon(roundedH, roundedM, 30),
+        formatOffsetTimeColon(roundedH, roundedM, 60),
+        formatOffsetTimeColon(roundedH, roundedM, 90)
+      ];
+    }
+
+    function renderTimePillSuggestions(containerId, inputId, suggestions, defaultVal) {
+      const container = document.getElementById(containerId);
+      const input = document.getElementById(inputId);
+      if (!container || !input) return;
+
+      container.innerHTML = "";
+      if (defaultVal !== undefined && defaultVal !== null && defaultVal !== "") {
+        input.value = normalizeInputTime(defaultVal);
+      }
+
+      const activeVal = input.value ? normalizeInputTime(input.value) : "";
+
+      suggestions.forEach(timeStr => {
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = "time-pill" + (timeStr === activeVal ? " selected" : "");
+        pill.textContent = timeStr;
+        pill.onclick = () => {
+          input.value = timeStr;
+          container.querySelectorAll(".time-pill").forEach(p => p.classList.remove("selected"));
+          pill.classList.add("selected");
+          input.dispatchEvent(new Event("input"));
+          input.dispatchEvent(new Event("change"));
+        };
+        container.appendChild(pill);
+      });
+
+      input.oninput = () => {
+        const norm = normalizeInputTime(input.value);
+        container.querySelectorAll(".time-pill").forEach(p => {
+          if (p.textContent === norm || p.textContent === input.value.trim()) {
+            p.classList.add("selected");
+          } else {
+            p.classList.remove("selected");
+          }
+        });
+      };
+
+      input.onblur = () => {
+        if (input.value.trim()) {
+          input.value = normalizeInputTime(input.value);
+          const norm = input.value;
+          container.querySelectorAll(".time-pill").forEach(p => {
+            if (p.textContent === norm) {
+              p.classList.add("selected");
+            } else {
+              p.classList.remove("selected");
+            }
+          });
+          input.dispatchEvent(new Event("change"));
+        }
+      };
+    }
+
     // Live Shift Actions
     function openStartShiftModal(type) {
       document.getElementById("start-modal-type").value = type;
       document.getElementById("start-modal-title").textContent = (type === "CASA") ? "🏠 Inizia Turno Casa" : "🚗 Inizia Turno Trasferta";
       
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById("start-modal-time").value = `${hh}:${mm}`;
+      const suggs = computeStartTimeSuggestions();
+      const defaultTime = suggs[3]; // curr
+      renderTimePillSuggestions("start-modal-suggestions", "start-modal-time", suggs, defaultTime);
       openModal("modal-start-shift");
     }
 
     async function confirmStartShift() {
       const type = document.getElementById("start-modal-type").value;
-      const start = document.getElementById("start-modal-time").value;
+      const rawStart = document.getElementById("start-modal-time").value;
+      const start = normalizeInputTime(rawStart);
       if (!start) return alert("Inserisci un orario di inizio");
 
       closeModal("modal-start-shift");
@@ -3403,16 +3581,16 @@ function openModal(id) {
     }
 
     function openEndShiftModal() {
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById("end-modal-time").value = `${hh}:${mm}`;
+      const suggs = computeEndTimeSuggestions(null, true);
+      const defaultTime = suggs[1]; // curr (indice 1)
+      renderTimePillSuggestions("end-modal-suggestions", "end-modal-time", suggs, defaultTime);
       document.getElementById("end-modal-extra").value = "0";
       openModal("modal-end-shift");
     }
 
     async function confirmEndShift() {
-      const end = document.getElementById("end-modal-time").value;
+      const rawEnd = document.getElementById("end-modal-time").value;
+      const end = normalizeInputTime(rawEnd);
       const extra = document.getElementById("end-modal-extra").value || "0";
       if (!end) return alert("Inserisci un orario di fine");
 
@@ -3510,14 +3688,31 @@ function openModal(id) {
       document.getElementById("manual-is-fixed").checked = false;
       document.getElementById("manual-fixed-pay").value = "";
       toggleManualFixedPay(false);
+      document.getElementById("manual-extra").value = "0";
+
+      const startSuggs = ["07:00", "08:00", "08:30", "09:00", "14:00"];
+      renderTimePillSuggestions("manual-start-suggestions", "manual-start", startSuggs, "08:00");
+
+      const updateManualEndSuggs = () => {
+        const sVal = document.getElementById("manual-start").value || "08:00";
+        const endSuggs = computeEndTimeSuggestions(sVal, false);
+        const curEnd = document.getElementById("manual-end").value;
+        const defEnd = curEnd ? normalizeInputTime(curEnd) : endSuggs[2];
+        renderTimePillSuggestions("manual-end-suggestions", "manual-end", endSuggs, defEnd);
+      };
+
+      const manualStartInput = document.getElementById("manual-start");
+      manualStartInput.onchange = updateManualEndSuggs;
+      updateManualEndSuggs();
+
       openModal("modal-manual-entry");
     }
 
     async function confirmManualEntry() {
       const date = document.getElementById("manual-date").value;
       const type = document.getElementById("manual-type").value;
-      const start = document.getElementById("manual-start").value;
-      const end = document.getElementById("manual-end").value;
+      const start = normalizeInputTime(document.getElementById("manual-start").value);
+      const end = normalizeInputTime(document.getElementById("manual-end").value);
       const extra = document.getElementById("manual-extra").value || "0";
       const isFixed = document.getElementById("manual-is-fixed").checked;
       const fixedPay = document.getElementById("manual-fixed-pay").value;
@@ -3587,8 +3782,6 @@ function openModal(id) {
       document.getElementById("edit-row").value = entry.row;
       document.getElementById("edit-sheet-name").value = entry.sheetName || "";
       document.getElementById("edit-modal-date").textContent = entry.date || "";
-      document.getElementById("edit-start").value = entry.start || "";
-      document.getElementById("edit-end").value = entry.end || "";
       document.getElementById("edit-extra").value = entry.extra || "0";
 
       const eType = (entry.type === "TRASFERTA") ? "TRASFERTA" : "CASA";
@@ -3599,6 +3792,22 @@ function openModal(id) {
       toggleEditFixedPay(isFixed);
       document.getElementById("edit-fixed-pay").value = isFixed ? (entry.fixedPay || entry.dayPay || "") : "";
 
+      const startSuggs = ["07:00", "08:00", "08:30", "09:00", "14:00"];
+      const initStart = entry.start ? normalizeInputTime(entry.start) : "08:00";
+      renderTimePillSuggestions("edit-start-suggestions", "edit-start", startSuggs, initStart);
+
+      const updateEditEndSuggs = () => {
+        const sVal = document.getElementById("edit-start").value || "08:00";
+        const endSuggs = computeEndTimeSuggestions(sVal, false);
+        const curEnd = document.getElementById("edit-end").value || entry.end;
+        const defEnd = curEnd ? normalizeInputTime(curEnd) : endSuggs[2];
+        renderTimePillSuggestions("edit-end-suggestions", "edit-end", endSuggs, defEnd);
+      };
+
+      const editStartInput = document.getElementById("edit-start");
+      editStartInput.onchange = updateEditEndSuggs;
+      updateEditEndSuggs();
+
       openModal("modal-edit-entry");
     }
 
@@ -3606,8 +3815,8 @@ function openModal(id) {
       const row = document.getElementById("edit-row").value;
       const sheetName = document.getElementById("edit-sheet-name").value;
       const type = document.getElementById("edit-type-val").value;
-      const start = document.getElementById("edit-start").value;
-      const end = document.getElementById("edit-end").value;
+      const start = normalizeInputTime(document.getElementById("edit-start").value);
+      const end = normalizeInputTime(document.getElementById("edit-end").value);
       const extra = document.getElementById("edit-extra").value;
       const isFixed = document.getElementById("edit-is-fixed").checked;
       const fixedPay = document.getElementById("edit-fixed-pay").value;
