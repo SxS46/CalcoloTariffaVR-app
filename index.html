@@ -1736,7 +1736,7 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" style="width:100%;font-weight:600;" onclick="closeModal('modal-shift-summary')">Ottimo</button>
+      <button class="btn btn-primary" style="width:100%;font-weight:600;" onclick="closeModal('modal-shift-summary')">OK</button>
     </div>
   </div>
 
@@ -3451,14 +3451,37 @@ function openModal(id) {
           const dateEl = document.getElementById("summary-shift-date");
           if (dateEl) dateEl.textContent = s.date || "";
 
+          let hNum = Number(s.hours || 0);
+          if (hNum <= 0 && s.start && s.end) {
+            const startParts = s.start.replace(".", ":").split(":");
+            const endParts = s.end.replace(".", ":").split(":");
+            let sH = Number(startParts[0]) + (Number(startParts[1]) || 0) / 60;
+            let eH = Number(endParts[0]) + (Number(endParts[1]) || 0) / 60;
+            if (eH < sH) eH += 24;
+            hNum = Math.round((eH - sH) * 10) / 10;
+          }
+
           const hoursEl = document.getElementById("summary-shift-hours");
-          const hNum = Number(s.hours || 0);
           if (hoursEl) hoursEl.textContent = `${s.start} - ${s.end}${hNum > 0 ? " (" + hNum.toFixed(1) + "h)" : ""}`;
 
-          const baseEl = document.getElementById("summary-shift-base");
-          if (baseEl) baseEl.textContent = `${s.basePay} €`;
+          let basePayVal = Number(s.basePay || 0);
+          const extraTotal = Number(s.extra !== undefined ? s.extra : (extra || 0));
 
-          const extraTotal = Number(s.extra || 0);
+          if (basePayVal <= 0 && appState.rates) {
+            const isCasa = (s.type === "CASA");
+            const rBase = isCasa ? (appState.rates.casaBase || 220) : (appState.rates.trasfertaBase || 250);
+            const rStraord = isCasa ? (appState.rates.casaStraord || 25) : (appState.rates.trasfertaStraord || 30);
+            if (hNum <= 9) {
+              basePayVal = rBase;
+            } else {
+              const extraHalf = Math.ceil((hNum - 9) * 2);
+              basePayVal = rBase + (extraHalf * (rStraord / 2));
+            }
+          }
+
+          const baseEl = document.getElementById("summary-shift-base");
+          if (baseEl) baseEl.textContent = `${basePayVal} €`;
+
           const extraRow = document.getElementById("summary-shift-extra-row");
           const extraEl = document.getElementById("summary-shift-extra");
           if (extraRow && extraEl) {
@@ -3470,8 +3493,13 @@ function openModal(id) {
             }
           }
 
+          let totalPayVal = Number(s.totalPay || 0);
+          if (totalPayVal <= 0) {
+            totalPayVal = basePayVal + extraTotal;
+          }
+
           const totalEl = document.getElementById("summary-shift-total");
-          if (totalEl) totalEl.textContent = `${s.totalPay} €`;
+          if (totalEl) totalEl.textContent = `${totalPayVal} €`;
 
           // Apri sempre il modal nativo
           openModal("modal-shift-summary");
