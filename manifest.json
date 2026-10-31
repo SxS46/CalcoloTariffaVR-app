@@ -1,0 +1,9 @@
+{
+  "name": "Calcolo Tariffa VR",
+  "short_name": "Tariffa VR",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "description": "Applicazione per collaboratori Videorent: turni live, tariffe, Google Calendar ed eventi."
+}

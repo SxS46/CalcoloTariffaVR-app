@@ -8,10 +8,17 @@
   <meta http-equiv="Expires" content="0">
   <title>Videorent Tariffa</title>
   
+  <!-- PWA & Offline Support -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0b132b">
+
   <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
+    @keyframes vrSpin { 100% { transform: rotate(360deg); } }
+    .spin-icon { animation: vrSpin 0.9s linear infinite; display: inline-block; }
+
     :root {
       --bg: var(--tg-theme-bg-color, #0b132b);
       --card-bg: var(--tg-theme-secondary-bg-color, #1c2541);
@@ -891,8 +898,12 @@
           <div id="user-role" class="user-role" style="display:none;"></div>
         </div>
       </div>
-      <div class="header-actions">
-        <button class="icon-btn" onclick="fetchDashboardData()" title="Aggiorna dati">🔄</button>
+      <div class="header-actions" style="display:flex;align-items:center;gap:6px;">
+        <div id="sync-indicator" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px;background:rgba(14,165,233,0.12);color:var(--accent);border:1px solid rgba(14,165,233,0.25);">
+          <span id="sync-icon" class="spin-icon">🔄</span>
+          <span id="sync-text">Aggiornamento...</span>
+        </div>
+        <button id="btn-refresh" class="icon-btn" onclick="fetchDashboardData(true)" title="Aggiorna dati">🔄</button>
         <button id="btn-admin" class="icon-btn" style="display:none;" onclick="toggleAdminScreen()" title="Pannello Colleghi">👥</button>
       </div>
     </header>
@@ -2206,6 +2217,65 @@
         .replace(/'/g, "&#039;");
     }
 
+    // =========================================================================
+    // STORAGE LOCALE PERSISTENTE & INDICATORE DI BACKGROUND (Offline & 0 ms)
+    // =========================================================================
+    function getAppStorage() {
+      try {
+        if (typeof localStorage !== "undefined") return localStorage;
+      } catch (e) {}
+      return null;
+    }
+
+    function readAppLocalCache(key) {
+      const storage = getAppStorage();
+      if (!storage) return null;
+      try {
+        const raw = storage.getItem(key);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function writeAppLocalCache(key, data) {
+      const storage = getAppStorage();
+      if (!storage) return;
+      try {
+        storage.setItem(key, JSON.stringify({
+          timestamp: Date.now(),
+          data: data
+        }));
+      } catch (e) {
+        console.warn("Storage pieno o non disponibile:", e);
+      }
+    }
+
+    // Helper per l'indicatore visivo di sincronizzazione in background
+    function showBackgroundSyncIndicator(visible, text = "Aggiornamento...", icon = "🔄") {
+      const el = document.getElementById("sync-indicator");
+      const iconEl = document.getElementById("sync-icon");
+      const textEl = document.getElementById("sync-text");
+      if (!el) return;
+      if (!visible) {
+        el.style.display = "none";
+        return;
+      }
+      el.style.display = "flex";
+      if (iconEl) {
+        iconEl.textContent = icon;
+        if (icon === "🔄") {
+          iconEl.classList.add("spin-icon");
+        } else {
+          iconEl.classList.remove("spin-icon");
+        }
+      }
+      if (textEl) {
+        textEl.textContent = text;
+      }
+    }
+
     // Estrai dati utente da Telegram SDK
     function getTelegramUser() {
       if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
@@ -2285,8 +2355,8 @@
       });
     }
 
-    // Inizializzazione Dashboard
-    async function fetchDashboardData() {
+    // Inizializzazione Dashboard (Stale-While-Revalidate / 0 ms / Offline-First)
+    async function fetchDashboardData(forceRefresh = false) {
       const appStartTime = Date.now();
       const tgUser = getTelegramUser();
       if (!tgUser || !tgUser.id) {
@@ -2298,7 +2368,41 @@
         return;
       }
 
-      showLoader("Caricamento dati...");
+      const dashCacheKey = "vr_dashboard_cache_" + tgUser.id;
+      const cachedDash = readAppLocalCache(dashCacheKey);
+      let hasRenderedCache = false;
+
+      // 1. Lettura istantanea da Cache Locale (0 ms)
+      if (cachedDash && cachedDash.data && cachedDash.data.user && !forceRefresh) {
+        const d = cachedDash.data;
+        appState.isAdmin = Boolean(d.isAdmin);
+        appState.user = d.user;
+        appState.rates = d.rates;
+        appState.activeShift = d.activeShift;
+        appState.stats = d.stats;
+        appState.entries = d.entries || [];
+        appState.monthName = d.monthName || "";
+        appState.calendarPalette = d.calendarPalette || null;
+
+        renderHeader();
+        renderActiveShift();
+        renderStats();
+        renderEntries();
+        populateSettingsInputs();
+
+        if (appState.isAdmin) {
+          document.getElementById("btn-admin").style.display = "flex";
+        }
+
+        showScreen("dashboard");
+        hideLoader();
+        hasRenderedCache = true;
+        // Mostra icona di aggiornamento in background ben visibile
+        showBackgroundSyncIndicator(true, "Aggiornamento in corso...", "🔄");
+      } else {
+        showLoader("Caricamento dati...");
+      }
+
       const timeoutId = setTimeout(() => {
         const loaderEl = document.getElementById("loader");
         if (loaderEl && loaderEl.style.display !== "none") {
@@ -2314,9 +2418,19 @@
         clearTimeout(timeoutId);
 
         if (!data || !data.success) {
-          alert("Errore caricamento: " + (data?.error || "Risposta non valida"));
-          hideLoader();
+          if (hasRenderedCache) {
+            showBackgroundSyncIndicator(true, "Offline (dati salvati)", "📶");
+            showToast("⚠️ Connessione assente: mostro dati salvati in locale");
+          } else {
+            alert("Errore caricamento: " + (data?.error || "Risposta non valida"));
+            hideLoader();
+          }
           return;
+        }
+
+        // Salva stato aggiornato in cache per il prossimo avvio a 0 ms
+        if (data.status === "ACTIVE") {
+          writeAppLocalCache(dashCacheKey, data);
         }
 
         appState.isAdmin = Boolean(data.isAdmin);
@@ -2325,16 +2439,18 @@
         if (data.status === "PENDING_APPROVAL") {
           showScreen("pending");
           hideLoader();
+          showBackgroundSyncIndicator(false);
           return;
         }
 
         if (data.status === "APPROVED_PENDING_WIZARD") {
           showScreen("wizard");
           hideLoader();
+          showBackgroundSyncIndicator(false);
           return;
         }
 
-        // Utente Attivo
+        // Utente Attivo: renderizza i dati freschi
         appState.user = data.user;
         appState.rates = data.rates;
         appState.activeShift = data.activeShift;
@@ -2354,15 +2470,30 @@
         }
 
         showScreen("dashboard");
-        // Garantisce che il logo splash venga visualizzato fluidamente all'apertura
-        const elapsed = Date.now() - appStartTime;
-        if (elapsed < 850) {
-          await new Promise(r => setTimeout(r, 850 - elapsed));
+
+        if (!hasRenderedCache) {
+          // Garantisce che il logo splash venga visualizzato fluidamente all'apertura se non in cache
+          const elapsed = Date.now() - appStartTime;
+          if (elapsed < 850) {
+            await new Promise(r => setTimeout(r, 850 - elapsed));
+          }
         }
+
+        // Icona di successo: mostra che il lavoro in background è terminato
+        showBackgroundSyncIndicator(true, "Aggiornato", "✅");
+        setTimeout(() => {
+          showBackgroundSyncIndicator(false);
+        }, 2500);
+
       } catch (err) {
         clearTimeout(timeoutId);
         console.error("Errore fetchDashboardData:", err);
-        alert("Errore di connessione: " + err.message);
+        if (hasRenderedCache) {
+          showBackgroundSyncIndicator(true, "Modalità offline", "📶");
+          showToast("⚠️ Modalità offline: dati salvati in memoria");
+        } else {
+          alert("Errore di connessione: " + err.message);
+        }
       } finally {
         clearTimeout(timeoutId);
         hideLoader();
@@ -5061,6 +5192,13 @@ function openModal(id) {
       document.addEventListener("DOMContentLoaded", startApp);
     } else {
       startApp();
+    }
+
+    // Registrazione Service Worker per supporto PWA Offline
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(e => console.warn("SW registration error:", e));
+      });
     }
   </script>
 </body>
