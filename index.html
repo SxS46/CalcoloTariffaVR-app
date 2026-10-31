@@ -977,6 +977,12 @@
         <button class="icon-btn" style="width:36px;height:36px;flex-shrink:0;" onclick="loadEventsScreen(true)" title="Aggiorna da Videorent">🔄</button>
       </div>
 
+      <!-- Status Cache / Offline -->
+      <div id="events-cache-status" style="display:none;font-size:11px;color:var(--text-muted);margin:-8px 0 10px 4px;align-items:center;gap:4px;">
+        <span id="events-cache-icon">💾</span>
+        <span id="events-cache-text">Dati salvati in cache</span>
+      </div>
+
       <!-- Container Not Configured -->
       <div id="events-not-configured" class="card" style="display:none;text-align:center;padding:24px 16px;">
         <div style="font-size:32px;margin-bottom:8px;">☁️</div>
@@ -2187,6 +2193,17 @@
       t.textContent = msg;
       t.classList.add("show");
       setTimeout(() => t.classList.remove("show"), 3000);
+    }
+
+    // Escape HTML Helper sicuro per rendering stringhe
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     // Estrai dati utente da Telegram SDK
@@ -4346,6 +4363,71 @@ function openModal(id) {
       currentEventDetail: null
     };
 
+    // =========================================================================
+    // CACHE LOCALE PERSISTENTE EVENTI (Stale-While-Revalidate / Offline-First)
+    // =========================================================================
+    function getEventsStorage() {
+      try {
+        if (typeof localStorage !== "undefined") return localStorage;
+      } catch (e) {}
+      return null;
+    }
+
+    function getEventsCacheKey(subKey = "events") {
+      const uId = appState.user?.id || (tg?.initDataUnsafe?.user?.id) || "user";
+      return `vr_cache_${uId}_${subKey}`;
+    }
+
+    function readEventsLocalCache(key) {
+      const storage = getEventsStorage();
+      if (!storage) return null;
+      try {
+        const raw = storage.getItem(key);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function writeEventsLocalCache(key, data) {
+      const storage = getEventsStorage();
+      if (!storage) return;
+      try {
+        storage.setItem(key, JSON.stringify({
+          timestamp: Date.now(),
+          data: data
+        }));
+      } catch (e) {
+        console.warn("Storage pieno o non disponibile:", e);
+      }
+    }
+
+    function formatCacheTimeAgo(ts) {
+      if (!ts) return "recenti";
+      const diffMin = Math.round((Date.now() - ts) / 60000);
+      if (diffMin <= 0) return "adesso";
+      if (diffMin === 1) return "1 min fa";
+      if (diffMin < 60) return `${diffMin} min fa`;
+      const diffH = Math.floor(diffMin / 60);
+      if (diffH === 1) return "1 ora fa";
+      return `${diffH} ore fa`;
+    }
+
+    function updateEventsCacheBanner(text, icon = "💾", isVisible = true) {
+      const el = document.getElementById("events-cache-status");
+      const txt = document.getElementById("events-cache-text");
+      const ico = document.getElementById("events-cache-icon");
+      if (!el || !txt) return;
+      if (!isVisible) {
+        el.style.display = "none";
+        return;
+      }
+      el.style.display = "flex";
+      if (ico) ico.textContent = icon;
+      txt.textContent = text;
+    }
+
     function formatEventDates(startStr, endStr) {
       if (!startStr) return "";
       const dStart = new Date(startStr);
@@ -4381,35 +4463,70 @@ function openModal(id) {
     }
 
     async function loadEventsScreen(forceRefresh = false) {
-      if (vrEventsState.loaded && !forceRefresh) {
-        renderEventsList();
-        return;
-      }
-
       const listEl = document.getElementById("events-list");
       const loadingEl = document.getElementById("events-loading");
       const notCfgEl = document.getElementById("events-not-configured");
 
-      if (loadingEl) loadingEl.style.display = "block";
-      if (listEl) listEl.style.display = "none";
-      if (notCfgEl) notCfgEl.style.display = "none";
+      const cacheKey = getEventsCacheKey("events");
+      const cached = readEventsLocalCache(cacheKey);
+      let hasRenderedCache = false;
 
+      // 1. Lettura istantanea da Cache (0 ms)
+      if (cached && cached.data && Array.isArray(cached.data.upcoming)) {
+        vrEventsState.upcoming = cached.data.upcoming || [];
+        vrEventsState.past = cached.data.past || [];
+        vrEventsState.loaded = true;
+        if (loadingEl) loadingEl.style.display = "none";
+        if (notCfgEl) notCfgEl.style.display = "none";
+        if (listEl) listEl.style.display = "block";
+        renderEventsList();
+        hasRenderedCache = true;
+        updateEventsCacheBanner(`Dati in cache (${formatCacheTimeAgo(cached.timestamp)})`, "💾", true);
+
+        // Se la cache ha meno di 60s e non è richiesto forceRefresh, non serve rifare la chiamata di rete
+        const ageSec = (Date.now() - cached.timestamp) / 1000;
+        if (!forceRefresh && ageSec < 60) {
+          return;
+        }
+      } else {
+        // Nessuna cache precedente: mostra loader
+        if (!vrEventsState.loaded || forceRefresh) {
+          if (loadingEl) loadingEl.style.display = "block";
+          if (listEl) listEl.style.display = "none";
+          if (notCfgEl) notCfgEl.style.display = "none";
+        }
+      }
+
+      // 2. Chiamata API di sincronizzazione (Background se già in cache, Foreground se primo avvio)
       try {
         const res = await callApi("miniapp_get_vr_events");
         if (loadingEl) loadingEl.style.display = "none";
 
         if (!res || !res.success) {
-          if (listEl) {
-            listEl.style.display = "block";
-            listEl.innerHTML = `<div class="card" style="text-align:center;color:var(--danger);padding:18px;">${res?.error || "Errore di connessione a Videorent"}</div>`;
+          if (hasRenderedCache) {
+            updateEventsCacheBanner("Offline: visualizzazione eventi salvati in memoria", "📶", true);
+            showToast("⚠️ Connessione assente: mostro eventi salvati in locale");
+          } else {
+            if (listEl) {
+              listEl.style.display = "block";
+              listEl.innerHTML = `<div class="card" style="text-align:center;color:var(--danger);padding:18px;">${res?.error || "Errore di connessione a Videorent"}</div>`;
+            }
           }
           return;
         }
 
         if (res.notConfigured) {
           if (notCfgEl) notCfgEl.style.display = "block";
+          if (listEl) listEl.style.display = "none";
+          updateEventsCacheBanner("", "", false);
           return;
         }
+
+        // Salva in cache persistente
+        writeEventsLocalCache(cacheKey, {
+          upcoming: res.upcoming || [],
+          past: res.past || []
+        });
 
         vrEventsState.upcoming = res.upcoming || [];
         vrEventsState.past = res.past || [];
@@ -4417,12 +4534,21 @@ function openModal(id) {
 
         if (listEl) listEl.style.display = "block";
         renderEventsList();
+        updateEventsCacheBanner("Aggiornato ora", "✅", true);
+        setTimeout(() => {
+          updateEventsCacheBanner("", "", false);
+        }, 4000);
 
       } catch (err) {
         if (loadingEl) loadingEl.style.display = "none";
-        if (listEl) {
-          listEl.style.display = "block";
-          listEl.innerHTML = `<div class="card" style="text-align:center;color:var(--danger);padding:18px;">Errore: ${err.message || String(err)}</div>`;
+        if (hasRenderedCache) {
+          updateEventsCacheBanner("Modalità offline (dati salvati in memoria)", "📶", true);
+          showToast("⚠️ Connessione assente: visualizzazione offline");
+        } else {
+          if (listEl) {
+            listEl.style.display = "block";
+            listEl.innerHTML = `<div class="card" style="text-align:center;color:var(--danger);padding:18px;">Errore: ${err.message || String(err)}</div>`;
+          }
         }
       }
     }
@@ -4589,18 +4715,52 @@ function openModal(id) {
       // Reset Sezioni Dinamiche (Materiali & Note Tecnico)
       const matLoading = document.getElementById("ev-materials-loading");
       const matList = document.getElementById("ev-materials-list");
-      if (matLoading) matLoading.style.display = "block";
-      if (matList) { matList.style.display = "none"; matList.innerHTML = ""; }
-
       const techNotesList = document.getElementById("ev-tech-notes-list");
-      if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Caricamento note...</div>`;
 
       openModal("modal-event-detail");
 
-      // Fetch Dettagli da API
+      // 1. Lettura istantanea da Cache Dettaglio Locale (0 ms / Offline)
+      const detailCacheKey = getEventsCacheKey("detail_" + ev.id);
+      const cachedDetail = readEventsLocalCache(detailCacheKey);
+      let hasRenderedCachedDetail = false;
+
+      if (cachedDetail && cachedDetail.data) {
+        const d = cachedDetail.data;
+        if (d.preventivo) {
+          renderMaterials(d.preventivo);
+          if (d.preventivo.noteSchedaLavoro && !noteText) {
+            if (noteProdCard && noteProdEl) {
+              noteProdCard.style.display = "block";
+              noteProdEl.textContent = d.preventivo.noteSchedaLavoro.trim();
+            }
+          }
+          if (d.preventivo.evento && d.preventivo.evento.drive_tech_folder_link && !ev.drive_link) {
+            if (driveRow && driveLink) {
+              driveRow.style.display = "block";
+              driveLink.href = d.preventivo.evento.drive_tech_folder_link;
+            }
+          }
+        }
+        if (Array.isArray(d.notes)) {
+          renderTechNotes(d.notes, d.current_user_id);
+        }
+        hasRenderedCachedDetail = true;
+      } else {
+        if (matLoading) matLoading.style.display = "block";
+        if (matList) { matList.style.display = "none"; matList.innerHTML = ""; }
+        if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Caricamento note...</div>`;
+      }
+
+      // 2. Fetch Aggiornamento da API (Network)
       try {
         const res = await callApi("miniapp_get_vr_event_detail", { eventId: ev.id });
         if (res && res.success) {
+          writeEventsLocalCache(detailCacheKey, {
+            preventivo: res.preventivo,
+            notes: res.notes,
+            current_user_id: res.current_user_id
+          });
+
           renderMaterials(res.preventivo);
           renderTechNotes(res.notes, res.current_user_id);
           if (res.preventivo && res.preventivo.noteSchedaLavoro && !noteText) {
@@ -4616,12 +4776,16 @@ function openModal(id) {
             }
           }
         } else {
-          if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Nessuna lista materiali disponibile per questa commessa.</span>`;
-          if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Nessuna nota presente.</div>`;
+          if (!hasRenderedCachedDetail) {
+            if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Nessuna lista materiali disponibile per questa commessa.</span>`;
+            if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Nessuna nota presente.</div>`;
+          }
         }
       } catch (errDet) {
-        if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Dettagli materiali non disponibili.</span>`;
-        if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Impossibile recuperare le note.</div>`;
+        if (!hasRenderedCachedDetail) {
+          if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Dettagli materiali non disponibili offline.</span>`;
+          if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Impossibile recuperare le note offline.</div>`;
+        }
       }
     }
 
@@ -4701,9 +4865,14 @@ function openModal(id) {
         hideLoader();
         if (res && res.success) {
           input.value = "";
-          // Ricarica le note
+          // Ricarica le note e aggiorna la cache locale
           const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: eventId });
           if (detRes && detRes.success) {
+            writeEventsLocalCache(getEventsCacheKey("detail_" + eventId), {
+              preventivo: detRes.preventivo,
+              notes: detRes.notes,
+              current_user_id: detRes.current_user_id
+            });
             renderTechNotes(detRes.notes, detRes.current_user_id);
           }
         } else {
@@ -4725,8 +4894,14 @@ function openModal(id) {
         hideLoader();
         if (res && res.success) {
           if (vrEventsState.currentEventDetail) {
-            const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: vrEventsState.currentEventDetail.id });
+            const eventId = vrEventsState.currentEventDetail.id;
+            const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: eventId });
             if (detRes && detRes.success) {
+              writeEventsLocalCache(getEventsCacheKey("detail_" + eventId), {
+                preventivo: detRes.preventivo,
+                notes: detRes.notes,
+                current_user_id: detRes.current_user_id
+              });
               renderTechNotes(detRes.notes, detRes.current_user_id);
             }
           }
@@ -4754,6 +4929,11 @@ function openModal(id) {
             ev.presenza_confirmed = 1;
             ev.isTechnicianConfirmed = true;
           }
+          // Salva lo stato confermato anche nella cache locale persistente
+          writeEventsLocalCache(getEventsCacheKey("events"), {
+            upcoming: vrEventsState.upcoming,
+            past: vrEventsState.past
+          });
           renderEventsList();
         } else {
           alert("Errore conferma presenza: " + (res?.error || "Operazione non riuscita"));
