@@ -524,7 +524,7 @@
       bottom: 0;
       background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(4px);
-      z-index: 100;
+      z-index: 10000;
       display: none;
       align-items: flex-end;
       touch-action: none;
@@ -831,7 +831,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+      z-index: 10050;
       gap: 16px;
       transition: opacity 0.35s ease, visibility 0.35s ease;
     }
@@ -3420,7 +3420,10 @@ function openModal(id) {
       showLoader("Salvataggio e calcolo tariffa...");
 
       try {
+        const shiftBackup = appState.activeShift ? JSON.parse(JSON.stringify(appState.activeShift)) : null;
         const res = await callApi("miniapp_end_shift", { end: end, extra: extra });
+        hideLoader();
+
         if (res.success) {
           appState.activeShift = null;
           appState.stats = res.stats;
@@ -3429,36 +3432,57 @@ function openModal(id) {
           renderStats();
           renderEntries();
 
-          if (res.shiftSummary) {
-            const s = res.shiftSummary;
-            document.getElementById("summary-shift-type").textContent = s.typeLabel || ((s.type === "CASA") ? "🏠 Casa" : "🚗 Trasferta");
-            document.getElementById("summary-shift-date").textContent = s.date || "";
-            const hNum = Number(s.hours || 0);
-            document.getElementById("summary-shift-hours").textContent = `${s.start} - ${s.end} (${hNum.toFixed(1)}h)`;
-            document.getElementById("summary-shift-base").textContent = `${s.basePay} €`;
+          // Dati del riepilogo con fallback sicuro
+          const s = res.shiftSummary || {
+            type: (shiftBackup && shiftBackup.type) || "CASA",
+            typeLabel: ((shiftBackup && shiftBackup.type) === "CASA") ? "🏠 Casa" : "🚗 Trasferta",
+            date: (shiftBackup && shiftBackup.date) || "",
+            start: (shiftBackup && shiftBackup.start) || "08:00",
+            end: end,
+            hours: 0,
+            basePay: 0,
+            extra: Number(extra) || 0,
+            totalPay: 0
+          };
 
-            const extraTotal = Number(s.extra || 0);
-            const extraRow = document.getElementById("summary-shift-extra-row");
+          const typeEl = document.getElementById("summary-shift-type");
+          if (typeEl) typeEl.textContent = s.typeLabel || ((s.type === "CASA") ? "🏠 Casa" : "🚗 Trasferta");
+
+          const dateEl = document.getElementById("summary-shift-date");
+          if (dateEl) dateEl.textContent = s.date || "";
+
+          const hoursEl = document.getElementById("summary-shift-hours");
+          const hNum = Number(s.hours || 0);
+          if (hoursEl) hoursEl.textContent = `${s.start} - ${s.end}${hNum > 0 ? " (" + hNum.toFixed(1) + "h)" : ""}`;
+
+          const baseEl = document.getElementById("summary-shift-base");
+          if (baseEl) baseEl.textContent = `${s.basePay} €`;
+
+          const extraTotal = Number(s.extra || 0);
+          const extraRow = document.getElementById("summary-shift-extra-row");
+          const extraEl = document.getElementById("summary-shift-extra");
+          if (extraRow && extraEl) {
             if (extraTotal > 0) {
               extraRow.style.display = "flex";
-              document.getElementById("summary-shift-extra").textContent = `+${extraTotal} €`;
+              extraEl.textContent = `+${extraTotal} €`;
             } else {
               extraRow.style.display = "none";
             }
-            document.getElementById("summary-shift-total").textContent = `${s.totalPay} €`;
-            openModal("modal-shift-summary");
-          } else {
-            showToast("✅ Turno concluso e registrato!");
           }
+
+          const totalEl = document.getElementById("summary-shift-total");
+          if (totalEl) totalEl.textContent = `${s.totalPay} €`;
+
+          // Apri sempre il modal nativo
+          openModal("modal-shift-summary");
 
           if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
-          alert("Errore: " + res.error);
+          alert("Errore: " + (res.error || res.message || "Impossibile salvare il turno"));
         }
       } catch (e) {
-        alert("Errore: " + e.message);
-      } finally {
         hideLoader();
+        alert("Errore: " + e.message);
       }
     }
 
