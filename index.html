@@ -994,7 +994,7 @@
         <div class="action-card" onclick="showScreen('events')">
           <div class="action-icon" style="background:rgba(56,189,248,0.15);color:var(--accent);">📋</div>
           <div class="action-title">Eventi Videorent</div>
-          <div class="action-desc">Note, materiali e prossime commesse</div>
+          <div class="action-desc">Note, materiali e prossimi lavori</div>
         </div>
 
         <div class="action-card" onclick="showScreen('settings')">
@@ -1006,7 +1006,7 @@
 
     </main>
 
-    <!-- SCREEN: EVENTI / COMMESSE VIDEORENT -->
+    <!-- SCREEN: EVENTI / LAVORI VIDEORENT -->
     <main id="screen-events" class="view-screen">
       <!-- Header con switcher tab Prossimi / Storico e refresh -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;">
@@ -1150,7 +1150,7 @@
       <div class="card">
         <div class="shift-title" style="margin-bottom:12px;">📅 Sincronizzazione Google Calendar</div>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.35;">
-          Sincronizza automaticamente turni e commesse confermate con l'agenda Google del tuo smartphone.
+          Sincronizza automaticamente turni e lavori confermati con l'agenda Google del tuo smartphone.
         </p>
 
         <div class="setting-row">
@@ -1173,9 +1173,9 @@
 
         <!-- Colori Google Calendar (24 Colori) -->
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
-          <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🎨 Colori Commesse su Google Calendar</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🎨 Colori Lavori su Google Calendar</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
-            Scegli il colore con cui visualizzare le commesse nel tuo Google Calendar:
+            Scegli il colore con cui visualizzare i lavori nel tuo Google Calendar:
           </p>
           <div class="form-grid">
             <div class="form-group">
@@ -1637,7 +1637,7 @@
             <div style="margin-top:4px;">📍 <strong>Luogo:</strong> <span id="ev-detail-location">—</span></div>
           </div>
           <div id="ev-detail-maps-row" style="margin-top:10px;display:none;">
-            <a id="ev-detail-maps-link" href="#" target="_blank" class="btn btn-outline" style="width:100%;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px;">
+            <a id="ev-detail-maps-link" href="#" target="_blank" class="btn btn-primary" style="width:100%;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px;">
               🗺️ Apri Posizione su Google Maps
             </a>
           </div>
@@ -1657,6 +1657,10 @@
               📁 Apri Cartella Drive Materiali
             </a>
           </div>
+          <div id="ev-materials-search-container" style="display:none;margin-bottom:10px;position:relative;">
+            <input type="text" id="ev-materials-search-input" class="form-input" placeholder="🔍 Cerca materiale o sala..." style="min-height:36px;height:36px;font-size:12px;padding:6px 30px 6px 10px;background:rgba(255,255,255,0.04);border-radius:8px;" oninput="filterMaterials(this.value)">
+            <button type="button" id="ev-materials-search-clear" onclick="clearMaterialsSearch()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:4px;line-height:1;" title="Cancella ricerca">✕</button>
+          </div>
           <div id="ev-materials-loading" style="text-align:center;padding:12px;font-size:12px;color:var(--text-muted);">
             Caricamento lista materiali...
           </div>
@@ -1669,7 +1673,7 @@
         <div class="card" style="margin-bottom:10px;">
           <div class="shift-title" style="margin-bottom:8px;">💬 Note del Tecnico</div>
           <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
-            Annotazioni visibili a Videorent e ai colleghi di commessa.
+            Annotazioni visibili a Videorent e ai colleghi di lavoro.
           </p>
           <div id="ev-tech-notes-list" style="margin-bottom:10px;">
             <!-- Popolato dinamicamente -->
@@ -1684,13 +1688,39 @@
         <div id="ev-presence-action-card" class="card" style="display:none;">
           <div class="shift-title" style="margin-bottom:6px;">✋ Conferma Presenza</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
-            Risulti assegnato a questa commessa in attesa di conferma.
+            Risulti assegnato a questo lavoro in attesa di conferma.
           </p>
-          <button id="btn-confirm-presence-modal" class="btn btn-success" style="width:100%;" onclick="confirmPresenceFromModal()">
-            ✅ Conferma la tua Presenza su Videorent
-          </button>
+          <div style="display:flex;gap:8px;flex-direction:column;">
+            <button id="btn-confirm-presence-modal" class="btn btn-success" style="width:100%;" onclick="confirmPresenceFromModal()">
+              ✅ Conferma la tua Presenza su Videorent
+            </button>
+            <button id="btn-reject-presence-modal" class="btn btn-danger" style="width:100%;" onclick="rejectPresenceFromModal()">
+              ❌ Rifiuta Lavoro
+            </button>
+          </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RIFIUTA LAVORO -->
+  <div id="modal-reject-work" class="modal-overlay">
+    <div class="modal-sheet" style="max-height:85vh;">
+      <div class="modal-header">
+        <div class="modal-title" style="color:var(--danger);" id="reject-modal-title">❌ Rifiuta Lavoro</div>
+        <button class="close-btn" onclick="closeModal('modal-reject-work')">✕</button>
+      </div>
+      <p id="reject-modal-desc" style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+        Sei sicuro di voler rifiutare questo lavoro su Videorent? La logistica riceverà una notifica ufficiale.
+      </p>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label class="form-label">Motivo del rifiuto (facoltativo)</label>
+        <textarea id="input-reject-motivo" class="form-input" rows="3" placeholder="Es. Sovrapposizione impegni, motivi personali..." style="resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('modal-reject-work')">Annulla</button>
+        <button class="btn btn-danger" style="flex:1;" onclick="submitRejectWorkFromModal()">Conferma Rifiuto</button>
       </div>
     </div>
   </div>
@@ -1931,7 +1961,7 @@
       <div class="modal-header">
         <div>
           <div class="modal-title">⚡ Compila Gestionale Videorent</div>
-          <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;">Seleziona le commesse da registrare sul portale</div>
+          <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;">Seleziona i lavori da registrare sul portale</div>
         </div>
         <button class="close-btn" onclick="closeModal('modal-compile-vr')">✕</button>
       </div>
@@ -1939,7 +1969,7 @@
       <!-- Loading State -->
       <div id="vr-uncompiled-loading" style="text-align:center;padding:24px 10px;color:var(--text-muted);">
         <div class="spinner" style="margin:0 auto 10px auto;width:32px;height:32px;"></div>
-        <div>Verifica commesse pronte sul portale...</div>
+        <div>Verifica lavori pronti sul portale...</div>
       </div>
 
       <!-- Content Container -->
@@ -2022,7 +2052,7 @@
       <div class="modal-header">
         <div>
           <div id="aud-modal-title" class="modal-title">Scheda Collega</div>
-          <div id="aud-modal-sub" style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;">Dettagli e permessi collaboratore</div>
+          <div id="aud-modal-sub" style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;">Dettagli e permessi tecnico</div>
         </div>
         <button class="close-btn" onclick="closeModal('modal-admin-user-detail')">✕</button>
       </div>
@@ -2041,7 +2071,7 @@
           <span style="font-size:20px;">📖</span>
           <div>
             <div class="modal-title" style="font-size:15px;line-height:1.2;">Manuale Utente Videorent</div>
-            <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Guida collaboratori • v3.20</div>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Guida tecnici • v3.20</div>
           </div>
         </div>
         <button class="close-btn" onclick="closeModal('modal-manual-reader')">✕</button>
@@ -2063,7 +2093,7 @@
         
         <!-- INTRO -->
         <div style="background:linear-gradient(135deg, rgba(14,165,233,0.15) 0%, rgba(99,102,241,0.15) 100%);border:1px solid var(--accent);border-radius:12px;padding:14px;margin-bottom:16px;">
-          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Guida Ufficiale Collaboratori • v3.20</div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Guida Ufficiale Tecnici • v3.20</div>
           <h1 style="font-size:18px;font-weight:800;color:var(--text);margin:0 0 6px 0;">Videorent Bot & Telegram Mini App</h1>
           <p style="font-size:12px;color:var(--text-muted);margin:0;">
             Sistema integrato per la gestione oraria dei turni, il calcolo automatico dei compensi e la sincronizzazione con il portale Videorent direttamente dallo smartphone.
@@ -2228,7 +2258,7 @@
 
           <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
             <strong>❓ I miei dati contabili sono visibili agli altri?</strong><br>
-            <span style="font-size:12px;color:var(--text-muted);">No. Ogni collaboratore possiede un foglio Google isolato e dedicato sul cloud; i tuoi dati sono accessibili unicamente a te e all'amministratore (Simone).</span>
+            <span style="font-size:12px;color:var(--text-muted);">No. Ogni tecnico possiede un foglio Google isolato e dedicato sul cloud; i tuoi dati sono accessibili unicamente a te e all'amministratore (Simone).</span>
           </div>
         </section>
 
@@ -4020,7 +4050,7 @@ function openModal(id) {
     }
 
     async function disconnectVrCloud() {
-      const ok = await askConfirmation("⚠️ Sei sicuro di voler disconnettere l'account Videorent Cloud?\n\nNon riceverai più notifiche automatiche di nuove commesse e la compilazione remota verrà disabilitata.");
+      const ok = await askConfirmation("⚠️ Sei sicuro di voler disconnettere l'account Videorent Cloud?\n\nNon riceverai più notifiche automatiche di nuovi lavori e la compilazione remota verrà disabilitata.");
       if (!ok) return;
       showLoader("Disconnessione in corso...");
       try {
@@ -4129,11 +4159,11 @@ function openModal(id) {
 
     async function confirmCompileSelectedVrJobs() {
       const checks = document.querySelectorAll(".vr-job-check:checked");
-      if (checks.length === 0) return alert("Seleziona almeno una commessa da compilare.");
+      if (checks.length === 0) return alert("Seleziona almeno un lavoro da compilare.");
 
       const selectedIds = Array.from(checks).map(c => c.getAttribute("data-job-id"));
       closeModal("modal-compile-vr");
-      showLoader(`Compilazione di ${selectedIds.length} commesse su Videorent...`);
+      showLoader(`Compilazione di ${selectedIds.length} lavori su Videorent...`);
 
       try {
         const res = await callApi("miniapp_compile_vr_all", { jobIds: JSON.stringify(selectedIds) });
@@ -4151,12 +4181,12 @@ function openModal(id) {
 
     async function confirmCompileSingleVrJob(jobId) {
       closeModal("modal-compile-vr");
-      showLoader(`Compilazione commessa #${jobId} su Videorent...`);
+      showLoader(`Compilazione lavoro #${jobId} su Videorent...`);
 
       try {
         const res = await callApi("miniapp_compile_vr_all", { jobId: String(jobId) });
         if (res.success) {
-          showToast(`⚡ Commessa #${jobId} compilata con successo!`);
+          showToast(`⚡ Lavoro #${jobId} compilato con successo!`);
         } else {
           alert("Errore: " + (res.error || "Operazione non riuscita"));
         }
@@ -4169,12 +4199,12 @@ function openModal(id) {
 
     async function confirmCompileAllVrJobs() {
       closeModal("modal-compile-vr");
-      showLoader("Compilazione di tutte le commesse pronte...");
+      showLoader("Compilazione di tutti i lavori pronti...");
 
       try {
         const res = await callApi("miniapp_compile_vr_all");
         if (res.success) {
-          showToast(`⚡ ${res.message || 'Tutte le commesse sono state compilate!'}`);
+          showToast(`⚡ ${res.message || 'Tutti i lavori sono stati compilati!'}`);
         } else {
           alert("Errore: " + (res.error || "Operazione non riuscita"));
         }
@@ -4345,7 +4375,7 @@ function openModal(id) {
     // Wizard Submission
     async function submitWizard() {
       if (appState.isWizardTestMode) {
-        alert("🎉 Prova Wizard completata con successo!\n\nHai provato tutti i 6 passaggi del wizard esattamente come appaiono a un nuovo collaboratore:\n• Tariffe, Durata e Mezza Giornata Casa\n• Tariffe, Durata e Mezza Giornata Trasferta\n• Regola Weekend e Festivi\n• Collegamento Videorent Cloud\n• Google Calendar\n• Riepilogo e Attivazione\n\nLe tue tariffe personali e il tuo turno di oggi sono rimasti intatti al 100%.");
+        alert("🎉 Prova Wizard completata con successo!\n\nHai provato tutti i 6 passaggi del wizard esattamente come appaiono a un nuovo tecnico:\n• Tariffe, Durata e Mezza Giornata Casa\n• Tariffe, Durata e Mezza Giornata Trasferta\n• Regola Weekend e Festivi\n• Collegamento Videorent Cloud\n• Google Calendar\n• Riepilogo e Attivazione\n\nLe tue tariffe personali e il tuo turno di oggi sono rimasti intatti al 100%.");
         exitWizardTestMode();
         return;
       }
@@ -4399,7 +4429,7 @@ function openModal(id) {
       }
     }
 
-    // Admin Panel: Elenco Collaboratori
+    // Admin Panel: Elenco Tecnici
     let adminCachedUsers = [];
 
     async function fetchAdminUsers() {
@@ -4782,7 +4812,7 @@ function openModal(id) {
     }
 
     // =========================================================================
-    // SEZIONE EVENTI / COMMESSE VIDEORENT
+    // SEZIONE EVENTI / LAVORI VIDEORENT
     // =========================================================================
     const vrEventsState = {
       activeTab: 'upcoming', // 'upcoming' | 'past'
@@ -4896,7 +4926,7 @@ function openModal(id) {
           }
         }
 
-        // 3. Verifica se oggi c'è una commessa in svolgimento (anche multi-giorno)
+        // 3. Verifica se oggi c'è un lavoro in svolgimento (anche multi-giorno)
         const allEvents = [...upcoming, ...past];
         const todayEvent = allEvents.find(ev => {
           if (!ev || !ev.start) return false;
@@ -5117,7 +5147,7 @@ function openModal(id) {
             </div>
 
             <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;line-height:1.3;">
-              ${escapeHtml(ev.title || ev.fullHeading || "Commessa #" + ev.id)}
+              ${escapeHtml(ev.title || ev.fullHeading || "Lavoro #" + ev.id)}
             </div>
 
             <div style="font-size:12px;color:var(--text-muted);line-height:1.4;">
@@ -5127,9 +5157,12 @@ function openModal(id) {
             </div>
 
             ${isPending ? `
-              <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;">
+              <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;gap:8px;">
+                <button class="btn btn-danger btn-sm" style="font-size:11px;padding:5px 12px;" onclick="event.stopPropagation(); rejectPresenceDirect('${ev.id}')">
+                  ❌ Rifiuta
+                </button>
                 <button class="btn btn-success btn-sm" style="font-size:11px;padding:5px 12px;" onclick="event.stopPropagation(); confirmPresenceDirect('${ev.id}')">
-                  ✅ Conferma Presenza
+                  ✅ Conferma
                 </button>
               </div>
             ` : ''}
@@ -5222,6 +5255,13 @@ function openModal(id) {
       const matLoading = document.getElementById("ev-materials-loading");
       const matList = document.getElementById("ev-materials-list");
       const techNotesList = document.getElementById("ev-tech-notes-list");
+      const searchContainer = document.getElementById("ev-materials-search-container");
+      const searchInput = document.getElementById("ev-materials-search-input");
+      const searchClear = document.getElementById("ev-materials-search-clear");
+      if (searchContainer) searchContainer.style.display = "none";
+      if (searchInput) searchInput.value = "";
+      if (searchClear) searchClear.style.display = "none";
+      currentMaterialsData = null;
 
       openModal("modal-event-detail");
 
@@ -5283,7 +5323,7 @@ function openModal(id) {
           }
         } else {
           if (!hasRenderedCachedDetail) {
-            if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Nessuna lista materiali disponibile per questa commessa.</span>`;
+            if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Nessuna lista materiali disponibile per questo lavoro.</span>`;
             if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Nessuna nota presente.</div>`;
           }
         }
@@ -5295,43 +5335,130 @@ function openModal(id) {
       }
     }
 
+    let currentMaterialsData = null;
+
     function renderMaterials(prev) {
       const matLoading = document.getElementById("ev-materials-loading");
       const matList = document.getElementById("ev-materials-list");
+      const searchContainer = document.getElementById("ev-materials-search-container");
+      const searchInput = document.getElementById("ev-materials-search-input");
+      const searchClear = document.getElementById("ev-materials-search-clear");
+
       if (matLoading) matLoading.style.display = "none";
       if (!matList) return;
 
+      if (searchInput) searchInput.value = "";
+      if (searchClear) searchClear.style.display = "none";
+
       if (!prev || !Array.isArray(prev.rows) || prev.rows.length === 0) {
+        if (searchContainer) searchContainer.style.display = "none";
         matList.style.display = "block";
         matList.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding:8px;">Nessun articolo assegnato in scheda lavoro.</div>`;
+        currentMaterialsData = null;
         return;
       }
 
-      let html = "";
-      let currentGroup = "";
+      const groups = [];
+      let currentGroup = null;
+
       prev.rows.forEach(r => {
         if (r.tipo === "hdr") {
-          currentGroup = r.descr || "Generale";
-          html += `
-            <div style="font-weight:700;color:var(--accent);font-size:12px;margin-top:10px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid rgba(255,255,255,0.06);">
-              🏷️ ${escapeHtml(currentGroup)}
-            </div>
-          `;
+          currentGroup = {
+            header: r,
+            title: r.descr || "Generale",
+            items: []
+          };
+          groups.push(currentGroup);
         } else {
-          const qtyStr = r.qty ? `<span class="status-badge" style="background:rgba(255,255,255,0.06);font-size:11px;font-weight:700;margin-right:6px;">${r.qty}x</span>` : '';
-          const noteStr = r.note ? `<span style="color:var(--warning);font-size:10px;margin-left:4px;">(${escapeHtml(r.note)})</span>` : '';
-          html += `
-            <div style="display:flex;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
-              ${qtyStr}
-              <span style="color:var(--text);flex:1;">${escapeHtml(r.descr || 'Articolo')}</span>
-              ${noteStr}
-            </div>
-          `;
+          if (!currentGroup) {
+            currentGroup = {
+              header: { tipo: "hdr", descr: "Generale" },
+              title: "Generale",
+              items: []
+            };
+            groups.push(currentGroup);
+          }
+          currentGroup.items.push(r);
         }
       });
 
+      currentMaterialsData = groups;
+      if (searchContainer) searchContainer.style.display = "block";
       matList.style.display = "block";
+
+      renderMaterialsHtml(groups, "");
+    }
+
+    function renderMaterialsHtml(groups, query) {
+      const matList = document.getElementById("ev-materials-list");
+      if (!matList || !groups) return;
+
+      const q = (query || "").trim().toLowerCase();
+      let html = "";
+      let totalVisible = 0;
+
+      groups.forEach(group => {
+        const roomName = (group.title || "").toLowerCase();
+        const roomMatches = q && roomName.includes(q);
+
+        let visibleItems = [];
+        if (!q || roomMatches) {
+          visibleItems = group.items;
+        } else {
+          visibleItems = group.items.filter(it => {
+            const descr = (it.descr || "").toLowerCase();
+            const note = (it.note || "").toLowerCase();
+            return descr.includes(q) || note.includes(q);
+          });
+        }
+
+        if (visibleItems.length > 0 || (roomMatches && group.items.length === 0)) {
+          totalVisible += (visibleItems.length || 1);
+          html += `
+            <div style="font-weight:700;color:var(--accent);font-size:12px;margin-top:10px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid rgba(255,255,255,0.06);">
+              🏷️ ${escapeHtml(group.title)}
+            </div>
+          `;
+          visibleItems.forEach(r => {
+            const qtyStr = r.qty ? `<span class="status-badge" style="background:rgba(255,255,255,0.06);font-size:11px;font-weight:700;margin-right:6px;">${r.qty}x</span>` : '';
+            const noteStr = r.note ? `<span style="color:var(--warning);font-size:10px;margin-left:4px;">(${escapeHtml(r.note)})</span>` : '';
+            html += `
+              <div style="display:flex;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
+                ${qtyStr}
+                <span style="color:var(--text);flex:1;">${escapeHtml(r.descr || 'Articolo')}</span>
+                ${noteStr}
+              </div>
+            `;
+          });
+        }
+      });
+
+      if (q && totalVisible === 0) {
+        html = `<div style="color:var(--text-muted);text-align:center;padding:12px 8px;font-size:12px;">Nessun materiale o sala corrispondente.</div>`;
+      }
+
       matList.innerHTML = html;
+    }
+
+    function filterMaterials(val) {
+      const clearBtn = document.getElementById("ev-materials-search-clear");
+      if (clearBtn) clearBtn.style.display = (val && val.trim().length > 0) ? "block" : "none";
+      if (currentMaterialsData) {
+        renderMaterialsHtml(currentMaterialsData, val);
+      }
+    }
+
+    function clearMaterialsSearch() {
+      const searchInput = document.getElementById("ev-materials-search-input");
+      const clearBtn = document.getElementById("ev-materials-search-clear");
+      if (searchInput) {
+        searchInput.value = "";
+        searchInput.focus();
+      }
+      if (clearBtn) clearBtn.style.display = "none";
+      if (currentMaterialsData) {
+        renderMaterialsHtml(currentMaterialsData, "");
+      }
     }
 
     function renderTechNotes(notes, currentUserId) {
@@ -5421,7 +5548,7 @@ function openModal(id) {
     }
 
     async function confirmPresenceDirect(eventId) {
-      const ok = await askConfirmation(`Vuoi confermare la tua presenza su Videorent per la commessa #${eventId}?`);
+      const ok = await askConfirmation(`Vuoi confermare la tua presenza su Videorent per il lavoro #${eventId}?`);
       if (!ok) return;
 
       showLoader("Conferma presenza...");
@@ -5463,6 +5590,61 @@ function openModal(id) {
       }
     }
 
+    let currentRejectEventId = null;
+
+    function openRejectModal(eventId) {
+      currentRejectEventId = String(eventId);
+      const titleEl = document.getElementById("reject-modal-title");
+      if (titleEl) titleEl.textContent = "❌ Rifiuta Lavoro #" + currentRejectEventId;
+      const inputEl = document.getElementById("input-reject-motivo");
+      if (inputEl) inputEl.value = "";
+      openModal("modal-reject-work");
+    }
+
+    function rejectPresenceDirect(eventId) {
+      openRejectModal(eventId);
+    }
+
+    function rejectPresenceFromModal() {
+      if (!vrEventsState.currentEventDetail) return;
+      openRejectModal(vrEventsState.currentEventDetail.id);
+    }
+
+    async function submitRejectWorkFromModal() {
+      if (!currentRejectEventId) return;
+      const motivo = (document.getElementById("input-reject-motivo")?.value || "").trim();
+      closeModal("modal-reject-work");
+
+      showLoader("Invio rifiuto a Videorent...");
+      try {
+        const res = await callApi("miniapp_reject_vr_work", { eventId: currentRejectEventId, motivo: motivo });
+        hideLoader();
+        if (res && res.success) {
+          showToast("❌ Lavoro rifiutato su Videorent!");
+          const all = [...vrEventsState.upcoming, ...vrEventsState.past];
+          const ev = all.find(e => String(e.id) === String(currentRejectEventId));
+          if (ev) {
+            ev.isCancelled = true;
+            ev.isTechnicianConfirmed = false;
+            ev.presenza_confirmed = 0;
+            ev.status = "rifiutato";
+          }
+          vrEventsState.upcoming = vrEventsState.upcoming.filter(e => String(e.id) !== String(currentRejectEventId));
+          writeEventsLocalCache(getEventsCacheKey("events"), {
+            upcoming: vrEventsState.upcoming,
+            past: vrEventsState.past
+          });
+          renderEventsList();
+          closeModal("modal-event-detail");
+        } else {
+          alert("Errore rifiuto: " + (res?.error || "Operazione non riuscita"));
+        }
+      } catch (e) {
+        hideLoader();
+        alert("Errore: " + (e.message || String(e)));
+      }
+    }
+
     // Start App (Esecuzione garantita sia con DOM in caricamento sia già pronto)
     function startApp() {
       fetchDashboardData();
@@ -5491,7 +5673,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=6").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
