@@ -1661,6 +1661,12 @@
             <input type="text" id="ev-materials-search-input" class="form-input" placeholder="🔍 Cerca materiale o sala..." style="min-height:36px;height:36px;font-size:12px;padding:6px 30px 6px 10px;background:rgba(255,255,255,0.04);border-radius:8px;" oninput="filterMaterials(this.value)">
             <button type="button" id="ev-materials-search-clear" onclick="clearMaterialsSearch()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:4px;line-height:1;" title="Cancella ricerca">✕</button>
           </div>
+          <div id="ev-materials-toggle-row" style="display:none;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 2px;">
+            <span id="ev-materials-count-badge" style="font-size:11px;color:var(--text-muted);"></span>
+            <button type="button" id="btn-toggle-all-materials" onclick="toggleAllMaterialsRooms()" style="background:none;border:none;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:4px;">
+              <span id="btn-toggle-all-text">▼ Espandi tutto</span>
+            </button>
+          </div>
           <div id="ev-materials-loading" style="text-align:center;padding:12px;font-size:12px;color:var(--text-muted);">
             Caricamento lista materiali...
           </div>
@@ -5258,10 +5264,13 @@ function openModal(id) {
       const searchContainer = document.getElementById("ev-materials-search-container");
       const searchInput = document.getElementById("ev-materials-search-input");
       const searchClear = document.getElementById("ev-materials-search-clear");
+      const toggleRow = document.getElementById("ev-materials-toggle-row");
       if (searchContainer) searchContainer.style.display = "none";
+      if (toggleRow) toggleRow.style.display = "none";
       if (searchInput) searchInput.value = "";
       if (searchClear) searchClear.style.display = "none";
       currentMaterialsData = null;
+      currentMaterialsQuery = "";
 
       openModal("modal-event-detail");
 
@@ -5336,6 +5345,7 @@ function openModal(id) {
     }
 
     let currentMaterialsData = null;
+    let currentMaterialsQuery = "";
 
     function renderMaterials(prev) {
       const matLoading = document.getElementById("ev-materials-loading");
@@ -5343,15 +5353,18 @@ function openModal(id) {
       const searchContainer = document.getElementById("ev-materials-search-container");
       const searchInput = document.getElementById("ev-materials-search-input");
       const searchClear = document.getElementById("ev-materials-search-clear");
+      const toggleRow = document.getElementById("ev-materials-toggle-row");
 
       if (matLoading) matLoading.style.display = "none";
       if (!matList) return;
 
       if (searchInput) searchInput.value = "";
       if (searchClear) searchClear.style.display = "none";
+      currentMaterialsQuery = "";
 
       if (!prev || !Array.isArray(prev.rows) || prev.rows.length === 0) {
         if (searchContainer) searchContainer.style.display = "none";
+        if (toggleRow) toggleRow.style.display = "none";
         matList.style.display = "block";
         matList.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding:8px;">Nessun articolo assegnato in scheda lavoro.</div>`;
         currentMaterialsData = null;
@@ -5360,13 +5373,15 @@ function openModal(id) {
 
       const groups = [];
       let currentGroup = null;
+      let totalItemCount = 0;
 
       prev.rows.forEach(r => {
         if (r.tipo === "hdr") {
           currentGroup = {
             header: r,
             title: r.descr || "Generale",
-            items: []
+            items: [],
+            collapsed: false
           };
           groups.push(currentGroup);
         } else {
@@ -5374,16 +5389,31 @@ function openModal(id) {
             currentGroup = {
               header: { tipo: "hdr", descr: "Generale" },
               title: "Generale",
-              items: []
+              items: [],
+              collapsed: false
             };
             groups.push(currentGroup);
           }
           currentGroup.items.push(r);
+          totalItemCount++;
         }
+      });
+
+      // Se ci sono più di 6 articoli e più di 1 sala, la prima sala parte aperta e le successive collassate
+      const shouldCollapse = (totalItemCount > 6 && groups.length > 1);
+      groups.forEach((g, idx) => {
+        g.collapsed = shouldCollapse ? (idx > 0) : false;
       });
 
       currentMaterialsData = groups;
       if (searchContainer) searchContainer.style.display = "block";
+      if (toggleRow) {
+        toggleRow.style.display = groups.length > 1 ? "flex" : "none";
+        const badge = document.getElementById("ev-materials-count-badge");
+        if (badge) {
+          badge.textContent = `${totalItemCount} articoli in ${groups.length} ${groups.length === 1 ? 'sala' : 'sale'}`;
+        }
+      }
       matList.style.display = "block";
 
       renderMaterialsHtml(groups, "");
@@ -5394,10 +5424,11 @@ function openModal(id) {
       if (!matList || !groups) return;
 
       const q = (query || "").trim().toLowerCase();
+      currentMaterialsQuery = q;
       let html = "";
       let totalVisible = 0;
 
-      groups.forEach(group => {
+      groups.forEach((group, gIdx) => {
         const roomName = (group.title || "").toLowerCase();
         const roomMatches = q && roomName.includes(q);
 
@@ -5414,11 +5445,20 @@ function openModal(id) {
 
         if (visibleItems.length > 0 || (roomMatches && group.items.length === 0)) {
           totalVisible += (visibleItems.length || 1);
+          const isCollapsed = q ? false : Boolean(group.collapsed);
+
           html += `
-            <div style="font-weight:700;color:var(--accent);font-size:12px;margin-top:10px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid rgba(255,255,255,0.06);">
-              🏷️ ${escapeHtml(group.title)}
+            <div onclick="toggleMaterialsRoom(${gIdx})" style="font-weight:700;color:var(--accent);font-size:12px;margin-top:10px;margin-bottom:4px;padding:6px 6px;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;background:rgba(255,255,255,0.02);border-radius:6px;" title="Tocca per espandere o comprimere">
+              <span style="display:flex;align-items:center;gap:6px;">
+                <span>🏷️</span>
+                <span>${escapeHtml(group.title)}</span>
+                <span style="font-size:10px;font-weight:600;color:var(--text-muted);background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:10px;">${visibleItems.length}</span>
+              </span>
+              <span style="font-size:10px;color:var(--text-muted);padding:0 2px;">${isCollapsed ? '▶' : '▼'}</span>
             </div>
+            <div id="mat-group-${gIdx}" style="display:${isCollapsed ? 'none' : 'block'};">
           `;
+
           visibleItems.forEach(r => {
             const qtyStr = r.qty ? `<span class="status-badge" style="background:rgba(255,255,255,0.06);font-size:11px;font-weight:700;margin-right:6px;">${r.qty}x</span>` : '';
             const noteStr = r.note ? `<span style="color:var(--warning);font-size:10px;margin-left:4px;">(${escapeHtml(r.note)})</span>` : '';
@@ -5430,6 +5470,8 @@ function openModal(id) {
               </div>
             `;
           });
+
+          html += `</div>`;
         }
       });
 
@@ -5438,6 +5480,29 @@ function openModal(id) {
       }
 
       matList.innerHTML = html;
+      updateToggleAllButtonText();
+    }
+
+    function toggleMaterialsRoom(gIdx) {
+      if (!currentMaterialsData || !currentMaterialsData[gIdx]) return;
+      currentMaterialsData[gIdx].collapsed = !currentMaterialsData[gIdx].collapsed;
+      renderMaterialsHtml(currentMaterialsData, currentMaterialsQuery);
+    }
+
+    function updateToggleAllButtonText() {
+      const btnText = document.getElementById("btn-toggle-all-text");
+      if (!btnText || !currentMaterialsData || currentMaterialsData.length === 0) return;
+      const anyCollapsed = currentMaterialsData.some(g => g.collapsed);
+      btnText.textContent = anyCollapsed ? "▼ Espandi tutto" : "▲ Comprimi tutto";
+    }
+
+    function toggleAllMaterialsRooms() {
+      if (!currentMaterialsData || currentMaterialsData.length === 0) return;
+      const anyCollapsed = currentMaterialsData.some(g => g.collapsed);
+      currentMaterialsData.forEach(g => {
+        g.collapsed = !anyCollapsed;
+      });
+      renderMaterialsHtml(currentMaterialsData, currentMaterialsQuery);
     }
 
     function filterMaterials(val) {
@@ -5673,7 +5738,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=6").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=7").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
