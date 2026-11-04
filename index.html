@@ -2282,12 +2282,96 @@
     // CONFIGURAZIONE ENDPOINT GOOGLE APPS SCRIPT
     const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbxZZMRCEy3OmmuQht3ABI3_o4YOFfrITiWRnQxQz4hL9rU5LG2zT6HXLmgmVOwQMw/exec";
 
-    // Telegram Web App Init
+    // Telegram Web App Init & Native Back Navigation Manager
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
       tg.expand();
       try { tg.disableClosingConfirmation(); } catch (e) {}
+    }
+
+    const navState = {
+      modalStack: [],
+      screenHistory: ["dashboard"]
+    };
+
+    function updateBackButton() {
+      // Sincronizza lo stack dei modali con lo stato effettivo degli overlay aperti nel DOM
+      const openModalEls = Array.from(document.querySelectorAll(".modal-overlay.open"));
+      if (openModalEls.length === 0) {
+        navState.modalStack = [];
+      } else {
+        const openIds = new Set(openModalEls.map(el => el.id));
+        navState.modalStack = navState.modalStack.filter(id => openIds.has(id));
+        openModalEls.forEach(el => {
+          if (!navState.modalStack.includes(el.id)) {
+            navState.modalStack.push(el.id);
+          }
+        });
+      }
+
+      const canGoBack = navState.modalStack.length > 0 || navState.screenHistory.length > 1;
+      if (tg?.BackButton) {
+        try {
+          if (canGoBack) {
+            tg.BackButton.show();
+          } else {
+            tg.BackButton.hide();
+          }
+        } catch (e) {
+          console.warn("BackButton update error:", e);
+        }
+      }
+    }
+
+    function handleBackNavigation() {
+      // 1. Chiude il modale più recente se presente nello stack
+      if (navState.modalStack.length > 0) {
+        const topModal = navState.modalStack[navState.modalStack.length - 1];
+        closeModal(topModal);
+        return true;
+      }
+
+      // 1b. Fallback di sicurezza: qualsiasi modale rimasto aperto nel DOM
+      const openOverlays = document.querySelectorAll(".modal-overlay.open");
+      if (openOverlays.length > 0) {
+        const lastOverlay = openOverlays[openOverlays.length - 1];
+        closeModal(lastOverlay.id);
+        return true;
+      }
+
+      // 2. Se in modalità prova del wizard, esce e torna al pannello admin
+      if (appState.isWizardTestMode && appState.currentScreen === "wizard") {
+        exitWizardTestMode();
+        return true;
+      }
+
+      // 3. Se siamo in una sotto pagina / schermata secondaria, torna alla precedente
+      if (navState.screenHistory.length > 1) {
+        navState.screenHistory.pop(); // Rimuove la schermata corrente
+        const prevScreen = navState.screenHistory[navState.screenHistory.length - 1] || "dashboard";
+        showScreen(prevScreen, true); // true = navigazione a ritroso (non reinserisce nello stack)
+        return true;
+      }
+
+      return false;
+    }
+
+    // Registra listener nativo BackButton una sola volta
+    if (tg?.BackButton) {
+      try {
+        tg.BackButton.offClick(handleBackNavigation);
+        tg.BackButton.onClick(handleBackNavigation);
+      } catch (e) {
+        console.warn("BackButton listener registration error:", e);
+      }
+    }
+
+    // Esposizione globale per test e debug
+    if (typeof window !== "undefined") {
+      window.navState = navState;
+      window.handleBackNavigation = handleBackNavigation;
+      window.updateBackButton = updateBackButton;
     }
 
     // State
@@ -3036,7 +3120,7 @@
     }
 
     // Gestione Schermate
-    function showScreen(name) {
+    function showScreen(name, isBackNavigation = false) {
       appState.currentScreen = name;
       document.querySelectorAll(".view-screen").forEach(s => s.classList.remove("active"));
       const target = document.getElementById(`screen-${name}`);
@@ -3047,6 +3131,21 @@
       if (name === "events") document.querySelectorAll(".nav-item")[1]?.classList.add("active");
       if (name === "summary") document.querySelectorAll(".nav-item")[2]?.classList.add("active");
       if (name === "settings") document.querySelectorAll(".nav-item")[3]?.classList.add("active");
+
+      // Aggiorna lo stack della cronologia schermate
+      if (!isBackNavigation) {
+        if (name === "dashboard" || name === "pending" || name === "not-telegram") {
+          navState.screenHistory = ["dashboard"];
+        } else {
+          const existingIdx = navState.screenHistory.indexOf(name);
+          if (existingIdx !== -1) {
+            navState.screenHistory = navState.screenHistory.slice(0, existingIdx + 1);
+          } else {
+            navState.screenHistory.push(name);
+          }
+        }
+      }
+      updateBackButton();
 
       // Aggiorna l'icona Admin nell'header: casa se siamo in admin, colleghi se altrove
       const btnAdmin = document.getElementById("btn-admin");
@@ -3415,11 +3514,15 @@ function openModal(id) {
       el.classList.add("open");
       document.body.classList.add("modal-open");
       document.body.style.overflow = "hidden";
+
+      // Traccia modale nello stack e aggiorna il pulsante Indietro nativo
+      navState.modalStack = navState.modalStack.filter(m => m !== id);
+      navState.modalStack.push(id);
+      updateBackButton();
     }
     function closeModal(id) {
       const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.remove("open");
+      if (el) el.classList.remove("open");
       if (id === "modal-pdf-preview") {
         const iframe = document.getElementById("pdf-preview-frame");
         if (iframe) iframe.srcdoc = "";
@@ -3430,6 +3533,10 @@ function openModal(id) {
         document.body.classList.remove("modal-open");
         document.body.style.overflow = "";
       }
+
+      // Rimuove dallo stack e aggiorna il pulsante Indietro nativo
+      navState.modalStack = navState.modalStack.filter(m => m !== id);
+      updateBackButton();
     }
 
     // =========================================================================
@@ -5738,7 +5845,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=7").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=8").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
