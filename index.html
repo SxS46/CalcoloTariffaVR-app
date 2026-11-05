@@ -2640,7 +2640,26 @@
           return;
         }
 
-        // Utente Attivo: renderizza i dati freschi
+        // Utente Attivo: verifica se i dati sono cambiati rispetto a quelli renderizzati da cache
+        const currentDataSig = JSON.stringify({
+          rates: appState.rates,
+          activeShift: appState.activeShift,
+          stats: appState.stats,
+          entries: appState.entries,
+          status: appState.user?.status,
+          isAdmin: appState.isAdmin
+        });
+        const newDataSig = JSON.stringify({
+          rates: data.rates,
+          activeShift: data.activeShift,
+          stats: data.stats,
+          entries: data.entries,
+          status: data.user?.status,
+          isAdmin: Boolean(data.isAdmin)
+        });
+
+        const hasDataChanged = (currentDataSig !== newDataSig);
+
         appState.user = data.user;
         appState.rates = data.rates;
         appState.activeShift = data.activeShift;
@@ -2649,31 +2668,44 @@
         appState.monthName = data.monthName || "";
         appState.calendarPalette = data.calendarPalette || null;
 
-        renderHeader();
-        renderActiveShift();
-        renderStats();
-        renderEntries();
-        populateSettingsInputs();
-
         if (appState.isAdmin) {
           document.getElementById("btn-admin").style.display = "flex";
         }
 
-        showScreen("dashboard");
-
         if (!hasRenderedCache) {
-          // Garantisce che il logo splash venga visualizzato fluidamente all'apertura se non in cache
+          renderHeader();
+          renderActiveShift();
+          renderStats();
+          renderEntries();
+          populateSettingsInputs();
+          showScreen(appState.currentScreen || "dashboard");
+
           const elapsed = Date.now() - appStartTime;
           if (elapsed < 850) {
             await new Promise(r => setTimeout(r, 850 - elapsed));
           }
+        } else if (hasDataChanged) {
+          renderHeader();
+          renderActiveShift();
+          renderStats();
+          renderEntries();
+
+          const isEditingSettings = appState.currentScreen === "settings" && 
+            document.activeElement && 
+            (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "SELECT");
+          if (!isEditingSettings) {
+            populateSettingsInputs();
+          }
+          console.log("[MiniApp Revalidation] Dati aggiornati dal server. Schermata preservata:", appState.currentScreen || "dashboard");
+        } else {
+          console.log("[MiniApp Revalidation] Dati identici alla cache: nessun re-render eseguito.");
         }
 
         // Icona di successo: mostra che il lavoro in background è terminato
         showBackgroundSyncIndicator(true, "Aggiornato", "✅");
         setTimeout(() => {
           showBackgroundSyncIndicator(false);
-        }, 2500);
+        }, 2000);
 
       } catch (err) {
         clearTimeout(timeoutId);
@@ -5171,6 +5203,9 @@ function openModal(id) {
           return;
         }
 
+        const oldEventsSig = JSON.stringify({ upcoming: vrEventsState.upcoming, past: vrEventsState.past });
+        const newEventsSig = JSON.stringify({ upcoming: res.upcoming || [], past: res.past || [] });
+
         // Salva in cache persistente
         writeEventsLocalCache(cacheKey, {
           upcoming: res.upcoming || [],
@@ -5181,12 +5216,21 @@ function openModal(id) {
         vrEventsState.past = res.past || [];
         vrEventsState.loaded = true;
 
+        // Se i dati non sono cambiati rispetto a quelli a video, NON ri-renderizzare la lista
+        if (hasRenderedCache && oldEventsSig === newEventsSig) {
+          updateEventsCacheBanner("Aggiornato", "✅", true);
+          setTimeout(() => {
+            updateEventsCacheBanner("", "", false);
+          }, 2500);
+          return;
+        }
+
         if (listEl) listEl.style.display = "block";
         renderEventsList();
         updateEventsCacheBanner("Aggiornato ora", "✅", true);
         setTimeout(() => {
           updateEventsCacheBanner("", "", false);
-        }, 4000);
+        }, 3000);
 
       } catch (err) {
         if (loadingEl) loadingEl.style.display = "none";
@@ -5407,6 +5451,12 @@ function openModal(id) {
           renderTechNotes(d.notes, d.current_user_id);
         }
         hasRenderedCachedDetail = true;
+
+        // Se la cache ha meno di 3 minuti, considerala già freschissima ed evita chiamate di rete ridondanti
+        const detailAgeSec = (Date.now() - (cachedDetail.timestamp || 0)) / 1000;
+        if (detailAgeSec < 180) {
+          return;
+        }
       } else {
         if (matLoading) matLoading.style.display = "block";
         if (matList) { matList.style.display = "none"; matList.innerHTML = ""; }
@@ -5417,14 +5467,48 @@ function openModal(id) {
       try {
         const res = await callApi("miniapp_get_vr_event_detail", { eventId: ev.id });
         if (res && res.success) {
+          // Verifica se materiali e note sono effettivamente cambiati rispetto a quelli a video
+          const oldPrevSig = JSON.stringify(cachedDetail?.data?.preventivo || null);
+          const newPrevSig = JSON.stringify(res.preventivo || null);
+          const oldNotesSig = JSON.stringify(cachedDetail?.data?.notes || null);
+          const newNotesSig = JSON.stringify(res.notes || null);
+
+          const hasDetailChanged = (!hasRenderedCachedDetail) || (oldPrevSig !== newPrevSig) || (oldNotesSig !== newNotesSig);
+
           writeEventsLocalCache(detailCacheKey, {
             preventivo: res.preventivo,
             notes: res.notes,
             current_user_id: res.current_user_id
           });
 
+          // SE I DATI NON SONO CAMBIATI: non toccare assolutamente il DOM della scheda materiale né delle note!
+          if (!hasDetailChanged) {
+            console.log(`[VR Event Detail] Commessa #${ev.id}: dati identici alla cache, nessun re-render eseguito.`);
+            return;
+          }
+
+          // Salva eventuale testo e focus che l'utente sta digitando per non perderli MAI
+          const noteInput = document.getElementById("input-new-tech-note");
+          const typingNoteText = noteInput ? noteInput.value : "";
+          const noteHasFocus = noteInput && document.activeElement === noteInput;
+
+          const searchInputEl = document.getElementById("ev-materials-search-input");
+          const typingSearchText = searchInputEl ? searchInputEl.value : "";
+          const searchHasFocus = searchInputEl && document.activeElement === searchInputEl;
+
           renderMaterials(res.preventivo);
           renderTechNotes(res.notes, res.current_user_id);
+
+          if (noteInput && typingNoteText) {
+            noteInput.value = typingNoteText;
+            if (noteHasFocus) noteInput.focus();
+          }
+
+          if (searchInputEl && typingSearchText) {
+            searchInputEl.value = typingSearchText;
+            if (searchHasFocus) searchInputEl.focus();
+            if (typeof filterMaterials === "function") filterMaterials();
+          }
           if (res.preventivo && res.preventivo.noteSchedaLavoro && !noteText) {
             if (noteProdCard && noteProdEl) {
               noteProdCard.style.display = "block";
@@ -5465,9 +5549,15 @@ function openModal(id) {
       if (matLoading) matLoading.style.display = "none";
       if (!matList) return;
 
-      if (searchInput) searchInput.value = "";
-      if (searchClear) searchClear.style.display = "none";
-      currentMaterialsQuery = "";
+      const isSearchActive = searchInput && (searchInput.value.trim() !== "" || document.activeElement === searchInput);
+      if (!isSearchActive) {
+        if (searchInput) searchInput.value = "";
+        if (searchClear) searchClear.style.display = "none";
+        currentMaterialsQuery = "";
+      } else {
+        currentMaterialsQuery = searchInput.value.toLowerCase().trim();
+        if (searchClear) searchClear.style.display = currentMaterialsQuery ? "block" : "none";
+      }
 
       if (!prev || !Array.isArray(prev.rows) || prev.rows.length === 0) {
         if (searchContainer) searchContainer.style.display = "none";
