@@ -17,6 +17,16 @@
 
   <style>
     @keyframes vrSpin { 100% { transform: rotate(360deg); } }
+    @keyframes vrShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-shimmer {
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: vrShimmer 1.4s ease-in-out infinite;
+      border-radius: 8px;
+    }
     .spin-icon { animation: vrSpin 0.9s linear infinite; display: inline-block; }
 
     :root {
@@ -955,6 +965,17 @@
           <div id="shift-elapsed-tag" class="shift-elapsed" style="display:none;">0h 00m</div>
         </div>
 
+        <!-- Barra Avanzamento Ore Turno (Ordinario 9h vs Straordinario) -->
+        <div id="shift-progress-container" style="display:none;margin-top:10px;margin-bottom:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;margin-bottom:5px;">
+            <span id="shift-progress-label" style="color:var(--text-muted);">Turno base (0 / 9h)</span>
+            <span id="shift-progress-percent" style="color:var(--accent);">0%</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.08);border-radius:10px;height:7px;overflow:hidden;position:relative;">
+            <div id="shift-progress-bar" style="width:0%;height:100%;border-radius:10px;background:linear-gradient(90deg, #0284c7, #10b981);transition:width 0.4s ease, background 0.4s ease;"></div>
+          </div>
+        </div>
+
         <!-- Buttons when shift is closed -->
         <div id="shift-closed-actions" class="btn-row">
           <button class="btn btn-primary" onclick="openStartShiftModal('CASA')">🏠 Inizia Casa</button>
@@ -1596,7 +1617,10 @@
       <span>Home</span>
     </button>
     <button class="nav-item" onclick="showScreen('events')">
-      <span class="nav-icon">📋</span>
+      <span class="nav-icon" style="position:relative;display:inline-block;">
+        📋
+        <span id="nav-events-badge" style="display:none;position:absolute;top:-4px;right:-10px;background:#f59e0b;color:#000;font-size:10px;font-weight:900;border-radius:10px;padding:1px 5px;min-width:14px;line-height:1.2;box-shadow:0 0 6px rgba(245,158,11,0.6);">0</span>
+      </span>
       <span>Eventi</span>
     </button>
     <button class="nav-item" onclick="showScreen('summary')">
@@ -1637,9 +1661,14 @@
             <div style="margin-top:4px;">📍 <strong>Luogo:</strong> <span id="ev-detail-location">—</span></div>
           </div>
           <div id="ev-detail-maps-row" style="margin-top:10px;display:none;">
-            <a id="ev-detail-maps-link" href="#" target="_blank" class="btn btn-primary" style="width:100%;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px;">
-              🗺️ Apri Posizione su Google Maps
-            </a>
+            <div style="display:flex;gap:6px;">
+              <button id="ev-detail-nav-btn" class="btn btn-primary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px;" onclick="startNavigationForCurrentEvent()">
+                🧭 Avvia Navigatore
+              </button>
+              <button class="btn btn-outline" style="flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;padding:8px 12px;" onclick="copyEventLocation()" title="Copia Indirizzo">
+                📋 Copia
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1667,8 +1696,12 @@
               <span id="btn-toggle-all-text">▼ Espandi tutto</span>
             </button>
           </div>
-          <div id="ev-materials-loading" style="text-align:center;padding:12px;font-size:12px;color:var(--text-muted);">
-            Caricamento lista materiali...
+          <div id="ev-materials-loading" style="padding:8px 2px;">
+            <div class="skeleton-shimmer" style="height:20px;width:40%;margin-bottom:8px;"></div>
+            <div class="skeleton-shimmer" style="height:15px;width:92%;margin-bottom:6px;"></div>
+            <div class="skeleton-shimmer" style="height:15px;width:78%;margin-bottom:12px;"></div>
+            <div class="skeleton-shimmer" style="height:20px;width:35%;margin-bottom:8px;"></div>
+            <div class="skeleton-shimmer" style="height:15px;width:86%;margin-bottom:6px;"></div>
           </div>
           <div id="ev-materials-list" style="display:none;font-size:12px;">
             <!-- Raggruppato per sala/categoria -->
@@ -1684,9 +1717,9 @@
           <div id="ev-tech-notes-list" style="margin-bottom:10px;">
             <!-- Popolato dinamicamente -->
           </div>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="input-new-tech-note" class="form-input" placeholder="Scrivi una nota per il set..." style="font-size:12px;padding:8px 10px;">
-            <button class="btn btn-primary" style="flex:0 0 auto;font-size:12px;padding:8px 14px;" onclick="submitTechNote()">Invia</button>
+          <div style="display:flex;gap:6px;align-items:flex-end;">
+            <textarea id="input-new-tech-note" class="form-input" placeholder="Scrivi una nota per il set... (Invio per inviare)" rows="1" style="font-size:12px;padding:8px 10px;resize:none;overflow-y:hidden;line-height:1.4;flex:1;max-height:120px;" oninput="handleNoteTextareaInput(this)" onkeydown="handleNoteTextareaKeydown(event)"></textarea>
+            <button class="btn btn-primary" style="flex:0 0 auto;font-size:12px;padding:8px 14px;height:36px;display:flex;align-items:center;justify-content:center;" onclick="submitTechNote()">Invia</button>
           </div>
         </div>
 
@@ -2815,6 +2848,8 @@
         elapsedTag.style.display = "none";
         closedActions.style.display = "flex";
         openActions.style.display = "none";
+        const progContainer = document.getElementById("shift-progress-container");
+        if (progContainer) progContainer.style.display = "none";
       }
     }
 
@@ -2837,6 +2872,37 @@
       const h = Math.floor(diffMinutes / 60);
       const m = diffMinutes % 60;
       document.getElementById("shift-elapsed-tag").textContent = `${h}h ${m < 10 ? '0' : ''}${m}m`;
+
+      // Aggiornamento Barra di Avanzamento Dinamica (9 ore ordinarie)
+      const baseMinutes = 9 * 60;
+      const progContainer = document.getElementById("shift-progress-container");
+      const progBar = document.getElementById("shift-progress-bar");
+      const progLabel = document.getElementById("shift-progress-label");
+      const progPercent = document.getElementById("shift-progress-percent");
+
+      if (progContainer && progBar) {
+        progContainer.style.display = "block";
+        const percent = Math.min(100, Math.round((diffMinutes / baseMinutes) * 100));
+        progBar.style.width = `${percent}%`;
+
+        if (diffMinutes <= baseMinutes) {
+          progBar.style.background = "linear-gradient(90deg, #0284c7, #10b981)";
+          progBar.style.boxShadow = "none";
+          progLabel.textContent = `Turno base (${(diffMinutes / 60).toFixed(1)} / 9.0h)`;
+          progLabel.style.color = "var(--text-muted)";
+          progPercent.textContent = `${percent}%`;
+          progPercent.style.color = "var(--accent)";
+        } else {
+          const extraMin = diffMinutes - baseMinutes;
+          const extraH = Math.floor(extraMin / 60);
+          const extraM = extraMin % 60;
+          progBar.style.background = "linear-gradient(90deg, #f59e0b, #ef4444)";
+          progBar.style.boxShadow = "0 0 10px rgba(245, 158, 11, 0.6)";
+          progLabel.innerHTML = `🔥 <strong style="color:var(--warning);">In Straordinario (+${extraH}h ${extraM}m)</strong>`;
+          progPercent.textContent = "100%+";
+          progPercent.style.color = "var(--warning)";
+        }
+      }
     }
 
     function renderStats() {
@@ -3730,6 +3796,7 @@ function openModal(id) {
 
     // Live Shift Actions
     function openStartShiftModal(type) {
+      haptic.medium();
       document.getElementById("start-modal-type").value = type;
       document.getElementById("start-modal-title").textContent = (type === "CASA") ? "🏠 Inizia Turno Casa" : "🚗 Inizia Turno Trasferta";
       
@@ -3766,6 +3833,7 @@ function openModal(id) {
     }
 
     function openEndShiftModal() {
+      haptic.medium();
       const suggs = computeEndTimeSuggestions(null, true);
       const defaultTime = suggs[1]; // curr (indice 1)
       renderTimePillSuggestions("end-modal-suggestions", "end-modal-time", suggs, defaultTime);
@@ -5328,6 +5396,7 @@ function openModal(id) {
       });
 
       container.innerHTML = html;
+      updateEventsNavBadge();
     }
 
     async function openEventDetail(eventId) {
@@ -5424,6 +5493,16 @@ function openModal(id) {
       currentMaterialsQuery = "";
 
       openModal("modal-event-detail");
+      haptic.light();
+      // Ripristina eventuale bozza non inviata per questa commessa
+      const noteInputEl = document.getElementById("input-new-tech-note");
+      if (noteInputEl) {
+        try {
+          noteInputEl.value = localStorage.getItem('vr_draft_note_' + ev.id) || '';
+          noteInputEl.style.height = 'auto';
+          if (noteInputEl.value) noteInputEl.style.height = Math.min(noteInputEl.scrollHeight, 120) + 'px';
+        } catch(e) {}
+      }
 
       // 1. Lettura istantanea da Cache Dettaglio Locale (0 ms / Offline)
       const detailCacheKey = getEventsCacheKey("detail_" + ev.id);
@@ -5760,6 +5839,9 @@ function openModal(id) {
         hideLoader();
         if (res && res.success) {
           input.value = "";
+          input.style.height = 'auto';
+          haptic.success();
+          try { localStorage.removeItem('vr_draft_note_' + eventId); } catch(e) {}
           // Ricarica le note e aggiorna la cache locale
           const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: eventId });
           if (detRes && detRes.success) {
