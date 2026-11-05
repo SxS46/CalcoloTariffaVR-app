@@ -2323,6 +2323,17 @@
       try { tg.disableClosingConfirmation(); } catch (e) {}
     }
 
+    // Telegram Haptic Feedback Wrapper sicuro
+    const haptic = {
+      light: () => { try { tg?.HapticFeedback?.impactOccurred("light"); } catch(e) {} },
+      medium: () => { try { tg?.HapticFeedback?.impactOccurred("medium"); } catch(e) {} },
+      heavy: () => { try { tg?.HapticFeedback?.impactOccurred("heavy"); } catch(e) {} },
+      success: () => { try { tg?.HapticFeedback?.notificationOccurred("success"); } catch(e) {} },
+      warning: () => { try { tg?.HapticFeedback?.notificationOccurred("warning"); } catch(e) {} },
+      error: () => { try { tg?.HapticFeedback?.notificationOccurred("error"); } catch(e) {} },
+      selection: () => { try { tg?.HapticFeedback?.selectionChanged(); } catch(e) {} }
+    };
+
     const navState = {
       modalStack: [],
       screenHistory: ["dashboard"]
@@ -6036,7 +6047,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=13").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=14").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
