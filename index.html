@@ -2873,16 +2873,22 @@
       const m = diffMinutes % 60;
       document.getElementById("shift-elapsed-tag").textContent = `${h}h ${m < 10 ? '0' : ''}${m}m`;
 
-      // Aggiornamento Barra di Avanzamento Dinamica (tarata sulle ore base personali del tecnico)
+      // Aggiornamento Barra di Avanzamento Dinamica (tarata ESCLUSIVAMENTE sulle ore base personali configurate dal tecnico)
       const r = appState.rates || {};
       const isCasa = (!appState.activeShift.type || String(appState.activeShift.type).toUpperCase() === "CASA");
       let configuredHours = isCasa 
-        ? Number(r.casaFullHours || 9)
-        : Number(r.trasfertaFullHours !== undefined ? r.trasfertaFullHours : (r.trasfFullHours || 9));
-      if (!configuredHours || configuredHours <= 0) configuredHours = 9;
+        ? Number(r.casaFullHours)
+        : Number(r.trasfertaFullHours !== undefined ? r.trasfertaFullHours : r.trasfFullHours);
+
+      const progContainer = document.getElementById("shift-progress-container");
+
+      // Se per qualsiasi motivo il valore non è definito o non è valido, non mostrare la barra (zero assunzioni)
+      if (!configuredHours || isNaN(configuredHours) || configuredHours <= 0) {
+        if (progContainer) progContainer.style.display = "none";
+        return;
+      }
 
       const baseMinutes = configuredHours * 60;
-      const progContainer = document.getElementById("shift-progress-container");
       const progBar = document.getElementById("shift-progress-bar");
       const progLabel = document.getElementById("shift-progress-label");
       const progPercent = document.getElementById("shift-progress-percent");
