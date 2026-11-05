@@ -5522,44 +5522,41 @@ function openModal(id) {
       const cachedDetail = readEventsLocalCache(detailCacheKey);
       let hasRenderedCachedDetail = false;
 
-      if (cachedDetail && cachedDetail.data) {
+      if (cachedDetail && cachedDetail.data && cachedDetail.data.preventivo) {
         const d = cachedDetail.data;
-        if (d.preventivo) {
-          renderMaterials(d.preventivo);
-          if (d.preventivo.noteSchedaLavoro && !noteText) {
-            if (noteProdCard && noteProdEl) {
-              noteProdCard.style.display = "block";
-              noteProdEl.textContent = d.preventivo.noteSchedaLavoro.trim();
-            }
-          }
-          if (d.preventivo.evento && d.preventivo.evento.drive_tech_folder_link && !ev.drive_link) {
-            if (driveRow && driveLink) {
-              driveRow.style.display = "block";
-              driveLink.href = d.preventivo.evento.drive_tech_folder_link;
-            }
-          }
-        }
+        renderMaterials(d.preventivo);
         if (Array.isArray(d.notes)) {
           renderTechNotes(d.notes, d.current_user_id);
         }
-        hasRenderedCachedDetail = true;
-
-        // Se la cache ha meno di 3 minuti, considerala già freschissima ed evita chiamate di rete ridondanti
-        const detailAgeSec = (Date.now() - (cachedDetail.timestamp || 0)) / 1000;
-        if (detailAgeSec < 180) {
-          return;
+        if (d.preventivo.noteSchedaLavoro && !noteText) {
+          if (noteProdCard && noteProdEl) {
+            noteProdCard.style.display = "block";
+            noteProdEl.textContent = d.preventivo.noteSchedaLavoro.trim();
+          }
         }
+        if (d.preventivo.evento && d.preventivo.evento.drive_tech_folder_link && !ev.drive_link) {
+          if (driveRow && driveLink) {
+            driveRow.style.display = "block";
+            driveLink.href = d.preventivo.evento.drive_tech_folder_link;
+          }
+        }
+        hasRenderedCachedDetail = true;
+        if (matLoading) matLoading.style.display = "none";
+        if (matList) matList.style.display = "block";
       } else {
         if (matLoading) matLoading.style.display = "block";
         if (matList) { matList.style.display = "none"; matList.innerHTML = ""; }
-        if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Caricamento note...</div>`;
+        if (techNotesList) techNotesList.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Caricamento note...</div>';
       }
 
       // 2. Fetch Aggiornamento da API (Network)
       try {
         const res = await callApi("miniapp_get_vr_event_detail", { eventId: ev.id });
+        // Nascondi SEMPRE il loading quando la risposta arriva
+        if (matLoading) matLoading.style.display = "none";
+        if (matList) matList.style.display = "block";
+
         if (res && res.success) {
-          // Verifica se materiali e note sono effettivamente cambiati rispetto a quelli a video
           const oldPrevSig = JSON.stringify(cachedDetail?.data?.preventivo || null);
           const newPrevSig = JSON.stringify(res.preventivo || null);
           const oldNotesSig = JSON.stringify(cachedDetail?.data?.notes || null);
@@ -5573,13 +5570,12 @@ function openModal(id) {
             current_user_id: res.current_user_id
           });
 
-          // SE I DATI NON SONO CAMBIATI: non toccare assolutamente il DOM della scheda materiale né delle note!
+          // Se i dati erano già a video e non sono cambiati, non fare nulla (zero reflow / zero interruzioni)
           if (!hasDetailChanged) {
-            console.log(`[VR Event Detail] Commessa #${ev.id}: dati identici alla cache, nessun re-render eseguito.`);
             return;
           }
 
-          // Salva eventuale testo e focus che l'utente sta digitando per non perderli MAI
+          // Salva eventuale testo di ricerca o nota che l'utente sta digitando
           const noteInput = document.getElementById("input-new-tech-note");
           const typingNoteText = noteInput ? noteInput.value : "";
           const noteHasFocus = noteInput && document.activeElement === noteInput;
@@ -5615,14 +5611,24 @@ function openModal(id) {
           }
         } else {
           if (!hasRenderedCachedDetail) {
-            if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Nessuna lista materiali disponibile per questo lavoro.</span>`;
-            if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Nessuna nota presente.</div>`;
+            if (matList) {
+              matList.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:12px;">Nessuna lista materiali disponibile per questo lavoro.</div>';
+            }
+            if (techNotesList) {
+              techNotesList.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Nessuna nota presente.</div>';
+            }
           }
         }
       } catch (errDet) {
+        if (matLoading) matLoading.style.display = "none";
+        if (matList) matList.style.display = "block";
         if (!hasRenderedCachedDetail) {
-          if (matLoading) matLoading.innerHTML = `<span style="color:var(--text-muted);">Dettagli materiali non disponibili offline.</span>`;
-          if (techNotesList) techNotesList.innerHTML = `<div style="color:var(--text-muted);font-size:12px;">Impossibile recuperare le note offline.</div>`;
+          if (matList) {
+            matList.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:12px;">Dettagli materiali non disponibili offline.</div>';
+          }
+          if (techNotesList) {
+            techNotesList.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Impossibile recuperare le note offline.</div>';
+          }
         }
       }
     }
