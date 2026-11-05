@@ -5705,10 +5705,9 @@ function openModal(id) {
         }
       });
 
-      // Se ci sono più di 6 articoli e più di 1 sala, la prima sala parte aperta e le successive collassate
-      const shouldCollapse = (totalItemCount > 6 && groups.length > 1);
-      groups.forEach((g, idx) => {
-        g.collapsed = shouldCollapse ? (idx > 0) : false;
+      // Di default tutte le sale e categorie partono espanse
+      groups.forEach((g) => {
+        g.collapsed = false;
       });
 
       currentMaterialsData = groups;
@@ -6047,7 +6046,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=14").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=15").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
