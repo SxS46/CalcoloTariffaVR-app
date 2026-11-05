@@ -6036,7 +6036,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=8").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=13").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
