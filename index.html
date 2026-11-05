@@ -2873,8 +2873,15 @@
       const m = diffMinutes % 60;
       document.getElementById("shift-elapsed-tag").textContent = `${h}h ${m < 10 ? '0' : ''}${m}m`;
 
-      // Aggiornamento Barra di Avanzamento Dinamica (9 ore ordinarie)
-      const baseMinutes = 9 * 60;
+      // Aggiornamento Barra di Avanzamento Dinamica (tarata sulle ore base personali del tecnico)
+      const r = appState.rates || {};
+      const isCasa = (!appState.activeShift.type || String(appState.activeShift.type).toUpperCase() === "CASA");
+      let configuredHours = isCasa 
+        ? Number(r.casaFullHours || 9)
+        : Number(r.trasfertaFullHours !== undefined ? r.trasfertaFullHours : (r.trasfFullHours || 9));
+      if (!configuredHours || configuredHours <= 0) configuredHours = 9;
+
+      const baseMinutes = configuredHours * 60;
       const progContainer = document.getElementById("shift-progress-container");
       const progBar = document.getElementById("shift-progress-bar");
       const progLabel = document.getElementById("shift-progress-label");
@@ -2888,7 +2895,7 @@
         if (diffMinutes <= baseMinutes) {
           progBar.style.background = "linear-gradient(90deg, #0284c7, #10b981)";
           progBar.style.boxShadow = "none";
-          progLabel.textContent = `Turno base (${(diffMinutes / 60).toFixed(1)} / 9.0h)`;
+          progLabel.textContent = `Turno base (${(diffMinutes / 60).toFixed(1)} / ${configuredHours}.0h)`;
           progLabel.style.color = "var(--text-muted)";
           progPercent.textContent = `${percent}%`;
           progPercent.style.color = "var(--accent)";
