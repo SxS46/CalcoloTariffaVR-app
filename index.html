@@ -1168,7 +1168,7 @@
       <!-- Status Cache / Offline -->
       <div id="events-cache-status" style="display:none;font-size:11px;color:var(--text-muted);margin:-8px 0 10px 4px;align-items:center;gap:4px;">
         <span id="events-cache-icon">💾</span>
-        <span id="events-cache-text">Dati salvati in cache</span>
+        <span id="events-cache-text">Disponibile offline</span>
       </div>
 
       <!-- Container Not Configured -->
@@ -2026,7 +2026,7 @@
     <div class="modal-sheet" style="text-align:center;">
       <div style="font-size:38px;margin-bottom:8px;">✅</div>
       <div class="modal-title" style="font-size:18px;font-weight:700;margin-bottom:4px;">Turno Registrato con Successo!</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">I dati sono stati salvati sul tuo foglio di calcolo</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Turno registrato con successo</div>
 
       <div style="background:var(--card-bg, rgba(255,255,255,0.05));border:1px solid var(--border-color, rgba(255,255,255,0.1));border-radius:14px;padding:14px;text-align:left;margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
@@ -2133,7 +2133,7 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmManualEntry()">💾 Registra nel Foglio</button>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmManualEntry()">💾 Salva Giornata</button>
     </div>
   </div>
 
@@ -4744,7 +4744,7 @@ function openModal(id) {
 
           if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
-          alert("Errore nella registrazione sul foglio: " + (res.error || res.message || "Risposta non valida"));
+          alert("Impossibile salvare il turno: " + (res.error || res.message || "Riprova tra poco"));
         }
       } catch (e) {
         hideLoader();
@@ -5125,7 +5125,7 @@ function openModal(id) {
           appState.entries = res.entries || [];
           renderStats();
           renderEntries();
-          showToast("🗑️ Riga eliminata!");
+          showToast("🗑️ Giornata eliminata!");
         } else {
           alert("Errore: " + res.error);
         }
@@ -6237,7 +6237,7 @@ function openModal(id) {
         if (listEl) listEl.style.display = "block";
         renderEventsList();
         hasRenderedCache = true;
-        updateEventsCacheBanner(`Dati in cache (${formatCacheTimeAgo(cached.timestamp)})`, "💾", true);
+        updateEventsCacheBanner(`Ultimo aggiornamento: ${formatCacheTimeAgo(cached.timestamp)}`, "💾", true);
 
         // Se la cache ha meno di 60s e non è richiesto forceRefresh, non serve rifare la chiamata di rete
         const ageSec = (Date.now() - cached.timestamp) / 1000;
@@ -7133,7 +7133,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=18").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=19").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
