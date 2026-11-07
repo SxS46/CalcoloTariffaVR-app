@@ -509,7 +509,9 @@
       position: relative;
       display: inline-block;
       width: 48px;
+      min-width: 48px;
       height: 26px;
+      min-height: 26px;
       flex-shrink: 0;
       cursor: pointer;
     }
@@ -1302,7 +1304,7 @@
 
         <!-- Badge Informativo Weekend / Festivo per Turno in Corso -->
         <div id="shift-weekend-badge" style="display:none;align-items:center;gap:6px;font-size:12px;color:#38bdf8;background:rgba(2,132,199,0.12);padding:6px 10px;border-radius:8px;margin-top:8px;border:1px solid rgba(56,189,248,0.25);">
-          <span>🚗</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
           <span id="shift-weekend-badge-text"><b>Weekend:</b> tariffa Trasferta</span>
         </div>
 
@@ -1318,7 +1320,7 @@
             <!-- Riga 1: Header con ID pulito e Link Dettagli -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
               <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">
-                <span style="font-size:13px;">📋</span>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/></svg>
                 <span>Lavoro di Oggi</span>
                 <span id="today-event-quick-id" style="background:rgba(14,165,233,0.15);padding:1px 6px;border-radius:8px;font-size:11px;font-weight:700;">#—</span>
               </div>
@@ -1361,7 +1363,7 @@
 
       <!-- Quick Actions (Comandi versione chat) -->
       <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin:16px 0 8px 4px;letter-spacing:0.5px;">
-        ⚡ Azioni Rapide
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Azioni Rapide
       </div>
       <div class="quick-actions-grid">
         <div class="action-card" onclick="openManualEntryModal()">
@@ -1408,12 +1410,12 @@
       <!-- Header Schermata Attività & Turni con Indietro e switcher Settimana / Mese -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <button class="icon-btn" onclick="showScreen('dashboard')" title="Torna alla Home" style="width:34px;height:34px;flex-shrink:0;">🔙</button>
-          <div style="font-size:16px;font-weight:700;color:var(--text);margin:0;">📅 Attività e Turni</div>
+          <button class="icon-btn" onclick="showScreen('dashboard')" title="Torna alla Home" style="width:34px;height:34px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
+          <div style="font-size:16px;font-weight:700;color:var(--text);margin:0;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Attività e Turni</div>
         </div>
         <div class="segmented-control" style="max-width:180px;padding:2px;margin:0;">
-          <button type="button" id="btn-dash-view-week" class="segmented-btn active" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('week')">📅 Settimana</button>
-          <button type="button" id="btn-dash-view-month" class="segmented-btn" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('month')">🗓️ Mese</button>
+          <button type="button" id="btn-dash-view-week" class="segmented-btn active" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('week')"><svg class="btn-svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>Settimana</button>
+          <button type="button" id="btn-dash-view-month" class="segmented-btn" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('month')"><svg class="btn-svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>Mese</button>
         </div>
       </div>
 
@@ -1476,7 +1478,7 @@
           <!-- Popolato dinamicamente -->
         </div>
         <button class="btn btn-outline" style="width:100%;margin-top:8px;font-size:12px;padding:7px;" onclick="showScreen('summary')">
-          📊 Apri Riepilogo Completo Mese ➔
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>Apri Riepilogo Completo Mese <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-left:4px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </button>
       </div>
     </main>
@@ -1496,18 +1498,18 @@
 
       <!-- Status Cache / Offline -->
       <div id="events-cache-status" style="display:none;font-size:11px;color:var(--text-muted);margin:-8px 0 10px 4px;align-items:center;gap:4px;">
-        <span id="events-cache-icon">💾</span>
+        <span id="events-cache-icon"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
         <span id="events-cache-text">Disponibile offline</span>
       </div>
 
       <!-- Container Not Configured -->
       <div id="events-not-configured" class="card" style="display:none;text-align:center;padding:24px 16px;">
-        <div style="font-size:32px;margin-bottom:8px;">☁️</div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px;"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg></div>
         <div class="shift-title" style="margin-bottom:6px;">Connetti Videorent Cloud</div>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
           Inserisci username e password del portale nelle Impostazioni per visualizzare la lista eventi, le note di produzione e i materiali.
         </p>
-        <button class="btn btn-primary" style="width:100%;" onclick="showScreen('settings')">⚙️ Vai a Impostazioni</button>
+        <button class="btn btn-primary" style="width:100%;" onclick="showScreen('settings')"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="14" y2="14"/><line x1="4" x2="20" y1="7" y2="7"/><circle cx="14" cy="21" r="2"/><circle cx="8" cy="14" r="2"/><circle cx="16" cy="7" r="2"/></svg>Vai a Impostazioni</button>
       </div>
 
       <!-- Container Loading Spinner -->
@@ -1528,7 +1530,7 @@
       <!-- Month Summary Card with Navigation -->
       <div class="card">
         <div class="shift-header">
-          <div class="shift-title">📊 Riepilogo del Mese</div>
+          <div class="shift-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>Riepilogo del Mese</div>
           <div style="display:flex;align-items:center;gap:6px;">
             <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(-1)" title="Mese precedente">◀️</button>
             <span id="stats-month-name" class="status-badge" style="background:rgba(56,189,248,0.15);color:var(--accent);font-size:11px;">Mese</span>
@@ -1558,7 +1560,7 @@
       <!-- Month Navigation & Entries (Decrescente: recenti in alto) -->
       <div class="month-nav">
         <div class="month-title">
-          <span>📅 Giornate Registrate</span>
+          <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>Giornate Registrate</span>
         </div>
         <button class="btn btn-outline" style="padding: 6px 12px; font-size:12px;" onclick="openManualEntryModal()">+ Aggiungi Giorno</button>
       </div>
@@ -1596,7 +1598,7 @@
         <div class="toggle-section-card">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div style="font-size:12.5px;font-weight:600;">⏱️ Mezza Giornata Casa</div>
+              <div style="font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>Mezza Giornata Casa</div>
               <div style="font-size:11px;color:var(--text-muted);">Accordo tariffario fino a soglia ore</div>
             </div>
             <label class="switch" style="margin:0;">
@@ -1639,7 +1641,7 @@
         <div class="toggle-section-card">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
-              <div style="font-size:12.5px;font-weight:600;">⏱️ Mezza Giornata Trasferta</div>
+              <div style="font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>Mezza Giornata Trasferta</div>
               <div style="font-size:11px;color:var(--text-muted);">Accordo tariffario fino a soglia ore</div>
             </div>
             <label class="switch" style="margin:0;">
@@ -1662,7 +1664,7 @@
         </div>
 
         <div class="form-group" style="margin-top:14px;">
-          <label class="form-label">🎉 Maggiorazione Weekend & Festivi</label>
+          <label class="form-label" style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/><polygon points="12 13 13 15 15 15 13.5 16.5 14 18.5 12 17 10 18.5 10.5 16.5 9 15 11 15 12 13"/></svg>Maggiorazione Weekend & Festivi</label>
           <select id="cfg-weekend-rule" class="form-select">
             <option value="ALL">Sabato, Domenica e Festivi (Tariffa Trasferta)</option>
             <option value="SUNDAY_AND_HOLIDAYS">Solo Domenica e Festivi</option>
@@ -1670,7 +1672,7 @@
           </select>
         </div>
 
-        <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveRatesSettings()">💾 Salva Tariffe</button>
+        <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="saveRatesSettings()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salva Tariffe</button>
       </div>
 
       <!-- SUBSECTION 2: GOOGLE CALENDAR -->
@@ -1696,29 +1698,29 @@
           </div>
         </div>
 
-        <button id="btn-add-cal" class="btn btn-outline" style="width:100%;margin-top:6px;font-size:13px;" onclick="openAddGoogleCalendar()">➕ Aggiungi al mio Google Calendar</button>
+        <button id="btn-add-cal" class="btn btn-outline" style="width:100%;margin-top:6px;font-size:13px;" onclick="openAddGoogleCalendar()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Aggiungi al mio Google Calendar</button>
 
         <!-- Colori Google Calendar (24 Colori) -->
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
-          <div style="font-size:13px;font-weight:700;margin-bottom:6px;">🎨 Colori Lavori su Google Calendar</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>Colori Lavori su Google Calendar</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
             Scegli il colore con cui visualizzare i lavori nel tuo Google Calendar:
           </p>
           <div class="form-grid">
             <div class="form-group">
-              <label class="form-label">🟢 Eventi Confermati</label>
+              <label class="form-label" style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#10b981;"></span>Eventi Confermati</label>
               <select id="cfg-cal-color-confirmed" class="form-select" onchange="onCalendarColorChange()">
                 <!-- Popolato dinamicamente -->
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">🟡 Da Confermare</label>
+              <label class="form-label" style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;"></span>Da Confermare</label>
               <select id="cfg-cal-color-unconfirmed" class="form-select" onchange="onCalendarColorChange()">
                 <!-- Popolato dinamicamente -->
               </select>
             </div>
           </div>
-          <button id="btn-save-cal-colors" class="btn btn-primary" style="display:none;width:100%;margin-top:12px;" onclick="saveCalendarColors()">💾 Applica Nuovi Colori</button>
+          <button id="btn-save-cal-colors" class="btn btn-primary" style="display:none;width:100%;margin-top:12px;" onclick="saveCalendarColors()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Applica Nuovi Colori</button>
         </div>
       </div>
 
@@ -1729,7 +1731,7 @@
         <!-- Videorent Cloud -->
         <div class="setting-card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
-            <div style="font-weight:700;font-size:14px;min-width:0;flex:1;">☁️ Videorent Cloud</div>
+            <div style="font-weight:700;font-size:14px;min-width:0;flex:1;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>Videorent Cloud</div>
             <span id="vr-cloud-badge" class="status-badge" style="background:rgba(239,68,68,0.15);color:var(--danger);flex:0 0 auto;">Non Collegato</span>
           </div>
           <p id="vr-cloud-desc" style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.35;">
@@ -1747,7 +1749,7 @@
             </div>
           </div>
           <div class="btn-row" style="margin-top:8px;">
-            <button id="btn-vr-edit-save" class="btn btn-primary" onclick="handleVrCredentialAction()">💾 Salva Credenziali</button>
+            <button id="btn-vr-edit-save" class="btn btn-primary" onclick="handleVrCredentialAction()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salva Credenziali</button>
             <button id="btn-vr-cancel-edit" class="btn btn-outline" style="display:none;flex:0.4;" onclick="cancelVrCloudEdit()">Annulla</button>
             <button id="btn-vr-disconnect" class="btn btn-danger" style="display:none;flex:0.5;" onclick="disconnectVrCloud()">Disconnetti</button>
           </div>
@@ -1755,21 +1757,21 @@
 
         <!-- Estensione Browser PC -->
         <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;border:1px solid var(--border);">
-          <div style="font-weight:700;font-size:14px;margin-bottom:6px;">💻 Estensione Browser PC (Tampermonkey)</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Estensione Browser PC (Tampermonkey)</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
             Script per compilare automaticamente il planner da Chrome o Edge su PC.
           </p>
           <div class="btn-row" style="margin-bottom:8px;">
-            <button class="btn btn-primary" onclick="installTampermonkeyScript()">⚡ Installa con 1 Clic</button>
-            <button class="btn btn-outline" onclick="copySyncKey()">📋 Copia Chiave</button>
+            <button class="btn btn-primary" onclick="installTampermonkeyScript()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Installa con 1 Clic</button>
+            <button class="btn btn-outline" onclick="copySyncKey()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copia Chiave</button>
           </div>
-          <button class="btn btn-outline" style="width:100%;font-size:12px;padding:8px;" onclick="downloadUserscriptFile()">⬇️ Scarica Script .user.js</button>
+          <button class="btn btn-outline" style="width:100%;font-size:12px;padding:8px;" onclick="downloadUserscriptFile()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Scarica Script .user.js</button>
         </div>
       </div>
 
       <!-- SUBSECTION 4: DOCUMENTI E FOGLIO DRIVE -->
       <div class="card">
-        <div class="shift-title" style="margin-bottom:12px;">📊 Foglio di Calcolo & Documenti</div>
+        <div class="shift-title" style="margin-bottom:12px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Foglio di Calcolo & Documenti</div>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">
           Tutti i tuoi dati contabili personali risiedono nel tuo foglio Google dedicato.
         </p>
@@ -1801,7 +1803,7 @@
       <div id="wiz-test-banner" style="display:none;background:rgba(234, 179, 8, 0.15);border:1px solid var(--warning);border-radius:12px;padding:12px 14px;margin-bottom:14px;text-align:center;">
         <div style="font-weight:700;color:var(--warning);font-size:13px;margin-bottom:2px;">🧪 MODALITÀ ANTEPRIMA WIZARD COLLEGA</div>
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Stai testando tutti i passaggi dell'onboarding. Nessun dato reale verrà salvato e il tuo turno di oggi è intatto.</div>
-        <button class="btn btn-outline btn-sm" style="margin:0 auto;display:inline-flex;" onclick="exitWizardTestMode()">❌ Esci dalla Prova</button>
+        <button class="btn btn-outline btn-sm" style="margin:0 auto;display:inline-flex;" onclick="exitWizardTestMode()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Esci dalla Prova</button>
       </div>
 
       <!-- Stepper / Indicatori Passo -->
@@ -1818,7 +1820,7 @@
       <!-- PASSO 1: 🏠 CASA -->
       <div id="wiz-step-1" class="wiz-step-pane card">
         <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
-          <span>🏠</span> 1. Tariffe Lavoro a Casa
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> 1. Tariffe Lavoro a Casa
         </h2>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
           Configura i tuoi accordi per le giornate lavorate a Casa (Bologna).
@@ -1842,8 +1844,8 @@
         <div class="form-group" style="margin-top:14px;">
           <label class="form-label">Hai un accordo per la mezza giornata a Casa?</label>
           <div style="display:flex;gap:8px;margin-bottom:8px;">
-            <button type="button" id="btn-wiz-casa-half-yes" class="btn btn-outline" style="flex:1;font-size:12px;" onclick="toggleWizCasaHalf(true)">✅ Ho la mezza giornata</button>
-            <button type="button" id="btn-wiz-casa-half-no" class="btn btn-primary" style="flex:1;font-size:12px;" onclick="toggleWizCasaHalf(false)">❌ Sempre giornata intera</button>
+            <button type="button" id="btn-wiz-casa-half-yes" class="btn btn-outline" style="flex:1;font-size:12px;" onclick="toggleWizCasaHalf(true)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Ho la mezza giornata</button>
+            <button type="button" id="btn-wiz-casa-half-no" class="btn btn-primary" style="flex:1;font-size:12px;" onclick="toggleWizCasaHalf(false)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Sempre giornata intera</button>
           </div>
           <div id="wiz-casa-half-details" style="display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:6px;">
             <div class="form-grid">
@@ -1864,13 +1866,13 @@
           <input type="number" id="wiz-casa-straord" class="form-input" placeholder="Es. 30" value="">
         </div>
 
-        <button class="btn btn-primary" style="width:100%;margin-top:18px;" onclick="goToWizStep(2)">Continua a Trasferta ➡️</button>
+        <button class="btn btn-primary" style="width:100%;margin-top:18px;" onclick="goToWizStep(2)">Continua a Trasferta <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-left:4px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
       </div>
 
       <!-- PASSO 2: 🚗 TRASFERTA -->
       <div id="wiz-step-2" class="wiz-step-pane card" style="display:none;">
         <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
-          <span>🚗</span> 2. Tariffe Lavoro in Trasferta
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg> 2. Tariffe Lavoro in Trasferta
         </h2>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
           Configura i tuoi accordi per le trasferte fuori sede.
@@ -1894,8 +1896,8 @@
         <div class="form-group" style="margin-top:14px;">
           <label class="form-label">Hai un accordo per la mezza giornata in Trasferta?</label>
           <div style="display:flex;gap:8px;margin-bottom:8px;">
-            <button type="button" id="btn-wiz-trasf-half-yes" class="btn btn-outline" style="flex:1;font-size:12px;" onclick="toggleWizTrasfHalf(true)">✅ Ho la mezza giornata</button>
-            <button type="button" id="btn-wiz-trasf-half-no" class="btn btn-primary" style="flex:1;font-size:12px;" onclick="toggleWizTrasfHalf(false)">❌ Sempre giornata intera</button>
+            <button type="button" id="btn-wiz-trasf-half-yes" class="btn btn-outline" style="flex:1;font-size:12px;" onclick="toggleWizTrasfHalf(true)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Ho la mezza giornata</button>
+            <button type="button" id="btn-wiz-trasf-half-no" class="btn btn-primary" style="flex:1;font-size:12px;" onclick="toggleWizTrasfHalf(false)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Sempre giornata intera</button>
           </div>
           <div id="wiz-trasf-half-details" style="display:none;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:6px;">
             <div class="form-grid">
@@ -1917,15 +1919,15 @@
         </div>
 
         <div class="btn-row" style="margin-top:18px;">
-          <button class="btn btn-outline" onclick="goToWizStep(1)">⬅️ Indietro</button>
-          <button class="btn btn-primary" onclick="goToWizStep(3)">Continua a Weekend ➡️</button>
+          <button class="btn btn-outline" onclick="goToWizStep(1)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Indietro</button>
+          <button class="btn btn-primary" onclick="goToWizStep(3)">Continua a Weekend <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-left:4px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
         </div>
       </div>
 
       <!-- PASSO 3: 🎈 REGOLA WEEKEND E FESTIVI -->
       <div id="wiz-step-3" class="wiz-step-pane card" style="display:none;">
         <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
-          <span>🎈</span> 3. Regola Weekend e Festivi
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/><polygon points="12 13 13 15 15 15 13.5 16.5 14 18.5 12 17 10 18.5 10.5 16.5 9 15 11 15 12 13"/></svg> 3. Regola Weekend e Festivi
         </h2>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
           Nei giorni festivi nazionali e nei weekend, applichi la tariffa più alta di Trasferta anche se lavori a Casa?
@@ -1958,23 +1960,23 @@
         </div>
 
         <div class="btn-row" style="margin-top:18px;">
-          <button class="btn btn-outline" onclick="goToWizStep(2)">⬅️ Indietro</button>
-          <button class="btn btn-primary" onclick="goToWizStep(4)">Continua a Videorent ➡️</button>
+          <button class="btn btn-outline" onclick="goToWizStep(2)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Indietro</button>
+          <button class="btn btn-primary" onclick="goToWizStep(4)">Continua a Videorent <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-left:4px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
         </div>
       </div>
 
       <!-- PASSO 4: ☁️ INTEGRAZIONE VIDEORENT -->
       <div id="wiz-step-4" class="wiz-step-pane card" style="display:none;">
         <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
-          <span>☁️</span> 4. Integrazione Videorent
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg> 4. Integrazione Videorent
         </h2>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
           Come preferisci compilare automaticamente i tuoi consuntivi orari su Videorent?
         </p>
 
         <div style="display:flex;gap:6px;margin-bottom:14px;">
-          <button type="button" id="tab-wiz-vr-cloud" class="btn btn-primary btn-sm" style="flex:1;" onclick="setWizVrTab('cloud')">☁️ Cloud Sync</button>
-          <button type="button" id="tab-wiz-vr-tamper" class="btn btn-outline btn-sm" style="flex:1;" onclick="setWizVrTab('tamper')">💻 Tampermonkey</button>
+          <button type="button" id="tab-wiz-vr-cloud" class="btn btn-primary btn-sm" style="flex:1;" onclick="setWizVrTab('cloud')"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>Cloud Sync</button>
+          <button type="button" id="tab-wiz-vr-tamper" class="btn btn-outline btn-sm" style="flex:1;" onclick="setWizVrTab('tamper')"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Tampermonkey</button>
           <button type="button" id="tab-wiz-vr-skip" class="btn btn-outline btn-sm" style="flex:1;" onclick="setWizVrTab('skip')">⏩ Salta</button>
         </div>
 
@@ -2012,22 +2014,22 @@
         </div>
 
         <div class="btn-row" style="margin-top:18px;">
-          <button class="btn btn-outline" onclick="goToWizStep(3)">⬅️ Indietro</button>
-          <button class="btn btn-primary" onclick="goToWizStep(5)">Continua a Calendar ➡️</button>
+          <button class="btn btn-outline" onclick="goToWizStep(3)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Indietro</button>
+          <button class="btn btn-primary" onclick="goToWizStep(5)">Continua a Calendar <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-left:4px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
         </div>
       </div>
 
       <!-- PASSO 5: 📅 GOOGLE CALENDAR -->
       <div id="wiz-step-5" class="wiz-step-pane card" style="display:none;">
         <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
-          <span>📅</span> 5. Google Calendar
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> 5. Google Calendar
         </h2>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
           Vuoi sincronizzare automaticamente i tuoi eventi con Google Calendar?
         </p>
 
         <div style="display:flex;gap:6px;margin-bottom:14px;">
-          <button type="button" id="tab-wiz-cal-connect" class="btn btn-primary btn-sm" style="flex:1;" onclick="setWizCalTab('connect')">📧 Collega Calendar</button>
+          <button type="button" id="tab-wiz-cal-connect" class="btn btn-primary btn-sm" style="flex:1;" onclick="setWizCalTab('connect')"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>Collega Calendar</button>
           <button type="button" id="tab-wiz-cal-skip" class="btn btn-outline btn-sm" style="flex:1;" onclick="setWizCalTab('skip')">⏩ Salta</button>
         </div>
 
@@ -2049,15 +2051,15 @@
         </div>
 
         <div class="btn-row" style="margin-top:18px;">
-          <button class="btn btn-outline" onclick="goToWizStep(4)">⬅️ Indietro</button>
-          <button class="btn btn-primary" onclick="goToWizStep(6)">Vai al Riepilogo ➡️</button>
+          <button class="btn btn-outline" onclick="goToWizStep(4)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Indietro</button>
+          <button class="btn btn-primary" onclick="goToWizStep(6)">Vai al Riepilogo <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-left:4px;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
         </div>
       </div>
 
       <!-- PASSO 6: 🎉 RIEPILOGO COMPLETO & CONFERMA -->
       <div id="wiz-step-6" class="wiz-step-pane card" style="display:none;">
         <h2 style="font-size:17px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
-          <span>🎉</span> 6. Riepilogo & Conferma
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 15 2 2 4-4"/><rect width="18" height="18" x="3" y="3" rx="2"/></svg> 6. Riepilogo & Conferma
         </h2>
         <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">
           Controlla il riepilogo delle tue impostazioni prima di iniziare. I tuoi accordi restano 100% privati nel tuo foglio Google.
@@ -2068,8 +2070,8 @@
         </div>
 
         <div class="btn-row" style="margin-top:18px;">
-          <button class="btn btn-outline" onclick="goToWizStep(5)">⬅️ Indietro</button>
-          <button class="btn btn-success" style="flex:2;" onclick="submitWizard()">🚀 Completa Configurazione</button>
+          <button class="btn btn-outline" onclick="goToWizStep(5)"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Indietro</button>
+          <button class="btn btn-success" style="flex:2;" onclick="submitWizard()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Completa Configurazione</button>
         </div>
       </div>
     </section>
@@ -2077,35 +2079,35 @@
     <!-- SCREEN 4: IN ATTESA DI APPROVAZIONE -->
     <section id="screen-pending" class="view-screen">
       <div class="card" style="text-align:center;padding:40px 20px;">
-        <div style="font-size:48px;margin-bottom:12px;">⏳</div>
+        <div style="display:flex;justify-content:center;margin-bottom:12px;"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg></div>
         <h2 style="font-size:18px;margin-bottom:8px;">Richiesta Inviata</h2>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">
           La tua richiesta di accesso è stata notificata all'amministratore. Non appena il tuo profilo verrà abilitato, potrai configurare le tue tariffe ed iniziare.
         </p>
-        <button class="btn btn-outline" style="margin:0 auto;" onclick="fetchDashboardData()">🔄 Controlla Approvazione</button>
+        <button class="btn btn-outline" style="margin:0 auto;" onclick="fetchDashboardData()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Controlla Approvazione</button>
       </div>
     </section>
 
     <!-- SCREEN: ACCESSO FUORI TELEGRAM -->
     <section id="screen-not-telegram" class="view-screen">
       <div class="card" style="text-align:center;padding:40px 20px;">
-        <div style="font-size:48px;margin-bottom:12px;">📱</div>
+        <div style="display:flex;justify-content:center;margin-bottom:12px;"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg></div>
         <h2 style="font-size:18px;margin-bottom:8px;">Applicazione Telegram</h2>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">
           Questa applicazione è integrata con il Bot Telegram di Videorent. Per accedere ai tuoi dati e al tuo foglio, avvia l'app direttamente dal bot.
         </p>
-        <a href="https://t.me/sxscalcolotariffabot" class="btn btn-primary" style="text-decoration:none;display:inline-flex;margin:0 auto;">🚀 Apri nel Bot Telegram</a>
+        <a href="https://t.me/sxscalcolotariffabot" class="btn btn-primary" style="text-decoration:none;display:inline-flex;margin:0 auto;"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Apri nel Bot Telegram</a>
       </div>
     </section>
 
     <!-- SCREEN 5: PANNELLO AMMINISTRATORE -->
     <section id="screen-admin" class="view-screen">
       <div class="card">
-        <div class="shift-title" style="margin-bottom:8px;">👥 Gestione Colleghi</div>
+        <div class="shift-title" style="margin-bottom:8px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Gestione Colleghi</div>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Seleziona un collega per visualizzare il foglio Drive, le tariffe, sospendere/riattivare l'accesso o rigenerare la chiave Sync:</p>
         
         <button class="btn btn-outline" style="width:100%;margin-bottom:16px;border-color:var(--accent);color:var(--accent);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;" onclick="startWizardTestMode()">
-          🧪 Prova Esperienza Wizard Collega
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31L4.66 17.5A2 2 0 0 0 6.27 20.5h11.46a2 2 0 0 0 1.61-3L14 9.31V2"/></svg>Prova Esperienza Wizard Collega
         </button>
 
         <div id="admin-colleagues-list">
@@ -2174,21 +2176,21 @@
         <div class="card" style="margin-bottom:10px;">
           <div class="shift-title" style="margin-bottom:8px;">📍 Informazioni & Set</div>
           <div style="font-size:12px;line-height:1.6;">
-            <div>🏢 <strong>Cliente:</strong> <span id="ev-detail-client">—</span></div>
-            <div>👤 <strong>Referente:</strong> <span id="ev-detail-contact">—</span></div>
-            <div>🎭 <strong>Mansione:</strong> <span id="ev-detail-role">—</span></div>
-            <div id="ev-detail-crew-row" style="display:none;">👥 <strong>Troupe:</strong> <span id="ev-detail-crew">—</span></div>
-            <div>📅 <strong>Inizio:</strong> <span id="ev-detail-start">—</span></div>
-            <div>🏁 <strong>Fine:</strong> <span id="ev-detail-end">—</span></div>
-            <div style="margin-top:4px;">📍 <strong>Luogo:</strong> <span id="ev-detail-location">—</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg><strong>Cliente:</strong> <span id="ev-detail-client">—</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><strong>Referente:</strong> <span id="ev-detail-contact">—</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><strong>Mansione:</strong> <span id="ev-detail-role">—</span></div>
+            <div id="ev-detail-crew-row" style="display:none;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><strong>Troupe:</strong> <span id="ev-detail-crew">—</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg><strong>Inizio:</strong> <span id="ev-detail-start">—</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 10"/></svg><strong>Fine:</strong> <span id="ev-detail-end">—</span></div>
+            <div style="margin-top:4px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><strong>Luogo:</strong> <span id="ev-detail-location">—</span></div>
           </div>
           <div id="ev-detail-maps-row" style="margin-top:10px;display:none;">
             <div style="display:flex;gap:6px;">
               <button id="ev-detail-nav-btn" class="btn btn-primary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px;" onclick="startNavigationForCurrentEvent()">
-                🧭 Avvia Navigatore
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px;"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>Avvia Navigatore
               </button>
               <button class="btn btn-outline" style="flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;padding:8px 12px;" onclick="copyEventLocation()" title="Copia Indirizzo">
-                📋 Copia
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copia
               </button>
             </div>
           </div>
@@ -2196,16 +2198,16 @@
 
         <!-- Sezione 2: Note Scheda Lavoro (Note Produzione) -->
         <div id="ev-detail-notes-prod-card" class="card" style="margin-bottom:10px;display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);">
-          <div class="shift-title" style="color:var(--warning);margin-bottom:6px;">⚠️ Note Scheda Lavoro</div>
+          <div class="shift-title" style="color:var(--warning);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>Note Scheda Lavoro</div>
           <div id="ev-detail-notes-prod" style="font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.4;"></div>
         </div>
 
         <!-- Sezione 3: Materiali & Scheda Tecnica -->
         <div class="card" style="margin-bottom:10px;">
-          <div class="shift-title" style="margin-bottom:8px;">📦 Materiali & Attrezzatura</div>
+          <div class="shift-title" style="margin-bottom:8px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Materiali & Attrezzatura</div>
           <div id="ev-detail-drive-row" style="margin-bottom:10px;display:none;">
             <a id="ev-detail-drive-link" href="#" target="_blank" class="btn btn-primary" style="width:100%;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:8px;">
-              📁 Apri Cartella Drive Materiali
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px;"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>Apri Cartella Drive Materiali
             </a>
           </div>
           <div id="ev-materials-search-container" style="display:none;margin-bottom:10px;position:relative;">
@@ -2232,7 +2234,7 @@
 
         <!-- Sezione 4: Note del Tecnico (Diario) -->
         <div class="card" style="margin-bottom:10px;">
-          <div class="shift-title" style="margin-bottom:8px;">💬 Note del Tecnico</div>
+          <div class="shift-title" style="margin-bottom:8px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Note del Tecnico</div>
           <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
             Annotazioni visibili a Videorent e ai colleghi di lavoro.
           </p>
@@ -2247,28 +2249,28 @@
 
         <!-- Sezione 5: Presenza Tecnico -->
         <div id="ev-presence-action-card" class="card" style="display:none;">
-          <div class="shift-title" style="margin-bottom:6px;">✋ Conferma Presenza</div>
+          <div class="shift-title" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Conferma Presenza</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
             Risulti assegnato a questo lavoro in attesa di conferma.
           </p>
           <div style="display:flex;gap:8px;flex-direction:column;">
             <button id="btn-confirm-presence-modal" class="btn btn-success" style="width:100%;" onclick="confirmPresenceFromModal()">
-              ✅ Conferma la tua Presenza su Videorent
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>Conferma la tua Presenza su Videorent
             </button>
             <button id="btn-reject-presence-modal" class="btn btn-danger" style="width:100%;" onclick="rejectPresenceFromModal()">
-              ❌ Rifiuta Lavoro
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px;"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>Rifiuta Lavoro
             </button>
           </div>
         </div>
 
         <!-- Sezione 5b: Lavoro Rifiutato (Revoca Rifiuto) -->
         <div id="ev-rejected-action-card" class="card" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);">
-          <div class="shift-title" style="color:var(--danger);margin-bottom:6px;">⚠️ Lavoro Rifiutato</div>
+          <div class="shift-title" style="color:var(--danger);margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>Lavoro Rifiutato</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.4;">
             Hai rifiutato questo lavoro su Videorent. Se desideri annullare il rifiuto e ripristinare la tua disponibilità, puoi revocare il rifiuto e tornare in attesa.
           </p>
           <button id="btn-cancel-reject-modal" class="btn btn-outline" style="width:100%;color:var(--warning);border-color:rgba(245,158,11,0.5);" onclick="cancelRejectFromModal()">
-            ↩️ Revoca Rifiuto (Torna in Attesa)
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px;"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>Revoca Rifiuto (Torna in Attesa)
           </button>
         </div>
 
@@ -2280,7 +2282,7 @@
   <div id="modal-reject-work" class="modal-overlay">
     <div class="modal-sheet" style="max-height:85vh;">
       <div class="modal-header">
-        <div class="modal-title" style="color:var(--danger);" id="reject-modal-title">❌ Rifiuta Lavoro</div>
+        <div class="modal-title" style="color:var(--danger);display:flex;align-items:center;gap:6px;" id="reject-modal-title"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>Rifiuta Lavoro</div>
         <button class="close-btn" onclick="closeModal('modal-reject-work')">✕</button>
       </div>
       <p id="reject-modal-desc" style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
@@ -2308,7 +2310,7 @@
       <!-- Alert Weekend / Festivo Lavoro a Casa -->
       <div id="start-modal-weekend-alert" style="display:none;background:rgba(2,132,199,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:12px;margin-bottom:14px;">
         <div style="display:flex;align-items:center;gap:6px;font-weight:700;color:var(--accent-color, #38bdf8);font-size:13.5px;">
-          <span>✨</span> <span id="start-modal-holiday-badge">Weekend / Festivo Rilevato</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span id="start-modal-holiday-badge">Weekend / Festivo Rilevato</span>
         </div>
         <div style="font-size:12.5px;color:var(--text-color, #fff);margin-top:4px;line-height:1.45;" id="start-modal-holiday-desc">
           <b>Sabato:</b> tariffa Trasferta
@@ -2321,7 +2323,7 @@
         <input type="text" id="start-modal-time" class="form-input" inputmode="decimal" placeholder="es. 08:00 o 8.30">
       </div>
       <input type="hidden" id="start-modal-type">
-      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmStartShift()">🟢 Avvia Turno</button>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmStartShift()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>Avvia Turno</button>
     </div>
   </div>
 
@@ -2336,7 +2338,7 @@
       <!-- Alert Weekend / Festivo Chiusura Turno Casa -->
       <div id="end-modal-weekend-alert" style="display:none;background:rgba(2,132,199,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:10px 12px;margin-bottom:12px;">
         <div style="font-size:12.5px;color:var(--accent-color, #38bdf8);font-weight:700;display:flex;align-items:center;gap:6px;">
-          <span>✨</span> <span id="end-modal-holiday-badge">Tariffa Trasferta Weekend Attiva</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span id="end-modal-holiday-badge">Tariffa Trasferta Weekend Attiva</span>
         </div>
         <div style="font-size:12px;color:var(--text-color, #fff);margin-top:3px;line-height:1.4;" id="end-modal-holiday-desc">
           <b>Sabato:</b> tariffa Trasferta
@@ -2352,14 +2354,14 @@
         <label class="form-label">Extra / Rimborsi (€)</label>
         <input type="number" id="end-modal-extra" class="form-input" placeholder="0" value="0">
       </div>
-      <button class="btn btn-success" style="width:100%;margin-top:10px;" onclick="confirmEndShift()">✅ Salva e Registra</button>
+      <button class="btn btn-success" style="width:100%;margin-top:10px;" onclick="confirmEndShift()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Salva e Registra</button>
     </div>
   </div>
 
   <!-- MODAL: RIEPILOGO TURNO CHIUSO -->
   <div id="modal-shift-summary" class="modal-overlay">
     <div class="modal-sheet" style="text-align:center;">
-      <div style="font-size:38px;margin-bottom:8px;">✅</div>
+      <div style="display:flex;justify-content:center;margin-bottom:8px;"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
       <div class="modal-title" style="font-size:18px;font-weight:700;margin-bottom:4px;">Turno Registrato con Successo!</div>
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Turno registrato con successo</div>
 
@@ -2452,7 +2454,7 @@
       <!-- Tariffa Concordata / Forfait -->
       <div class="card" style="padding:12px;margin:12px 0;background:rgba(255,255,255,0.02);border:1px dashed var(--border);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:13px;font-weight:700;">🏷️ Tariffa Concordata / Forfait</div>
+          <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Tariffa Concordata / Forfait</div>
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-muted);">
             <input type="checkbox" id="manual-is-fixed" onchange="toggleManualFixedPay(this.checked)">
             <span>Attiva</span>
@@ -2475,7 +2477,7 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmManualEntry()">💾 Salva Giornata</button>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmManualEntry()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salva Giornata</button>
     </div>
   </div>
 
@@ -2484,7 +2486,7 @@
     <div class="modal-sheet" style="max-height:85vh;display:flex;flex-direction:column;">
       <div class="modal-header">
         <div>
-          <div class="modal-title">✏️ Modifica Giornate</div>
+          <div class="modal-title" style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Modifica Giornate</div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Seleziona la giornata registrata da modificare</div>
         </div>
         <button class="close-btn" onclick="closeModal('modal-select-entry-to-edit')">✕</button>
@@ -2514,8 +2516,8 @@
       <div class="form-group">
         <label class="form-label">Tipologia Lavoro</label>
         <div class="segmented-control">
-          <button type="button" id="btn-seg-casa" class="segmented-btn active casa" onclick="setEditType('CASA')">🏠 Casa</button>
-          <button type="button" id="btn-seg-trasf" class="segmented-btn" onclick="setEditType('TRASFERTA')">🚗 Trasferta</button>
+          <button type="button" id="btn-seg-casa" class="segmented-btn active casa" onclick="setEditType('CASA')"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Casa</button>
+          <button type="button" id="btn-seg-trasf" class="segmented-btn" onclick="setEditType('TRASFERTA')"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>Trasferta</button>
         </div>
       </div>
 
@@ -2550,7 +2552,7 @@
       <!-- Tariffa Concordata / Forfait -->
       <div class="card" style="padding:12px;margin:12px 0;background:rgba(255,255,255,0.02);border:1px dashed var(--border);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:13px;font-weight:700;">💵 Tariffa Concordata / Forfait</div>
+          <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Tariffa Concordata / Forfait</div>
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-muted);">
             <input type="checkbox" id="edit-is-fixed" onchange="toggleEditFixedPay(this.checked)">
             <span>Attiva</span>
@@ -2575,12 +2577,12 @@
 
       <!-- Pulsante Separa/Unisci da Evento Ieri (Parità 100% Bot) -->
       <button type="button" id="btn-edit-toggle-event" class="btn btn-outline" style="display:none;width:100%;margin-bottom:12px;font-size:12.5px;" onclick="toggleEntryEventConnection()">
-        ✂️ Separa da Evento Ieri
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px;"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>Separa da Evento Ieri
       </button>
 
       <div class="btn-row" style="margin-top:14px;">
-        <button class="btn btn-primary" onclick="confirmEditEntry()">💾 Salva Modifiche</button>
-        <button class="btn btn-danger" style="flex:0.4;" onclick="confirmDeleteEntry()">🗑️ Elimina</button>
+        <button class="btn btn-primary" onclick="confirmEditEntry()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salva Modifiche</button>
+        <button class="btn btn-danger" style="flex:0.4;" onclick="confirmDeleteEntry()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>Elimina</button>
       </div>
     </div>
   </div>
@@ -2596,8 +2598,8 @@
         <iframe id="pdf-preview-frame" style="width:100%;height:100%;border:none;background:#ffffff;" sandbox="allow-same-origin allow-scripts allow-modals"></iframe>
       </div>
       <div class="pdf-footer">
-        <button class="btn btn-primary" onclick="printPdfPreview()">🖨️ Stampa / Salva</button>
-        <button class="btn btn-success" onclick="sendPdfToTelegram()">📩 Ricevi su Telegram</button>
+        <button class="btn btn-primary" onclick="printPdfPreview()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>Stampa / Salva</button>
+        <button class="btn btn-success" onclick="sendPdfToTelegram()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Ricevi su Telegram</button>
       </div>
     </div>
   </div>
@@ -2607,7 +2609,7 @@
     <div class="modal-sheet">
       <div class="modal-header">
         <div>
-          <div class="modal-title">⚡ Compila Gestionale Videorent</div>
+          <div class="modal-title" style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Compila Gestionale Videorent</div>
           <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;">Seleziona i lavori da registrare sul portale</div>
         </div>
         <button class="close-btn" onclick="closeModal('modal-compile-vr')">✕</button>
@@ -2633,12 +2635,12 @@
 
       <!-- Empty State -->
       <div id="vr-empty-state" style="display:none;text-align:center;padding:24px 14px;">
-        <div style="font-size:36px;margin-bottom:10px;">✅</div>
+        <div style="display:flex;justify-content:center;margin-bottom:10px;"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
         <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Tutto allineato!</div>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">
           Tutte le giornate registrate nel foglio risultano già regolarmente compilate su Videorent.
         </div>
-        <button class="btn btn-outline" style="margin:0 auto;" onclick="openCompileVrModal()">🔄 Ricontrolla</button>
+        <button class="btn btn-outline" style="margin:0 auto;" onclick="openCompileVrModal()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Ricontrolla</button>
       </div>
     </div>
   </div>
@@ -2648,7 +2650,7 @@
     <div class="modal-sheet">
       <div class="modal-header">
         <div>
-          <div class="modal-title">📄 Consuntivo PDF</div>
+          <div class="modal-title" style="display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Consuntivo PDF</div>
           <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-top:2px;">Scegli il mese da elaborare</div>
         </div>
         <button class="close-btn" onclick="closeModal('modal-pdf-options')">✕</button>
@@ -2687,8 +2689,8 @@
       </div>
 
       <div class="btn-row" style="margin-top:16px;">
-        <button class="btn btn-primary" onclick="generatePdfPreviewFromOptions()">👁️ Anteprima A4</button>
-        <button class="btn btn-success" onclick="sendPdfToTelegramFromOptions()">📩 Invia su Telegram</button>
+        <button class="btn btn-primary" onclick="generatePdfPreviewFromOptions()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Anteprima A4</button>
+        <button class="btn btn-success" onclick="sendPdfToTelegramFromOptions()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Invia su Telegram</button>
       </div>
     </div>
   </div>
@@ -2715,7 +2717,7 @@
     <div class="pdf-modal-sheet" style="background:var(--bg);height:92vh;">
       <div class="pdf-header">
         <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:20px;">📖</span>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           <div>
             <div class="modal-title" style="font-size:15px;line-height:1.2;">Manuale Utente Videorent</div>
             <div style="font-size:11px;color:var(--text-muted);font-weight:600;">Guida tecnici • v3.20</div>
@@ -2726,7 +2728,7 @@
 
       <!-- Barra Pillole Navigazione Rapida Capitoli -->
       <div style="display:flex;gap:6px;padding:8px 14px;background:var(--card-bg);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;">
-        <button id="pill-man-all" class="btn btn-primary btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('all')">🌟 Tutto</button>
+        <button id="pill-man-all" class="btn btn-primary btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('all')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Tutto</button>
         <button id="pill-man-cap1" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap1')">1. Abilitazione</button>
         <button id="pill-man-cap2" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap2')">2. Tariffe & Wizard</button>
         <button id="pill-man-cap3" class="btn btn-outline btn-sm manual-nav-pill" style="white-space:nowrap;font-size:11px;padding:4px 10px;" onclick="scrollManualTo('cap3')">3. Turni & Mini App</button>
@@ -7114,7 +7116,7 @@ function openModal(id) {
         const isPending = (ev.presenza_confirmed === 0 || ev.isTechnicianConfirmed === false);
         const dateFormatted = formatEventDates(ev.start, ev.end);
         const loc = [ev.venue, ev.city].filter(Boolean).join(" — ") || ev.fullLocation || "Luogo da definire";
-        const crewHtml = (ev.crew && ev.crew.length > 0) ? `<div style="font-size:11px;color:var(--accent);margin-top:4px;">👥 ${ev.crew.join(", ")}</div>` : "";
+        const crewHtml = (ev.crew && ev.crew.length > 0) ? `<div style="font-size:11px;color:var(--accent);margin-top:4px;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${ev.crew.join(", ")}</div>` : "";
 
         html += `
           <div class="card" style="cursor:pointer;margin-bottom:10px;" onclick="openEventDetail('${ev.id}')">
@@ -7135,18 +7137,18 @@ function openModal(id) {
             </div>
 
             <div style="font-size:12px;color:var(--text-muted);line-height:1.4;">
-              ${ev.client ? `<div>🏢 ${escapeHtml(ev.client)}</div>` : ''}
-              <div>📍 ${escapeHtml(loc)}</div>
+              ${ev.client ? `<div style="display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>${escapeHtml(ev.client)}</div>` : ''}
+              <div style="display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ef4444" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>${escapeHtml(loc)}</div>
               ${crewHtml}
             </div>
 
             ${isPending ? `
               <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;gap:8px;">
                 <button class="btn btn-danger btn-sm" style="font-size:11px;padding:5px 12px;" onclick="event.stopPropagation(); rejectPresenceDirect('${ev.id}')">
-                  ❌ Rifiuta
+                  <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>Rifiuta
                 </button>
                 <button class="btn btn-success btn-sm" style="font-size:11px;padding:5px 12px;" onclick="event.stopPropagation(); confirmPresenceDirect('${ev.id}')">
-                  ✅ Conferma
+                  <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Conferma
                 </button>
               </div>
             ` : ''}
@@ -7879,7 +7881,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=35").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=36").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
