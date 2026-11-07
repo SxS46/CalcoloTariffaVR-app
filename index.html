@@ -1043,6 +1043,18 @@
           <button class="btn btn-success" onclick="openEndShiftModal()">⏹️ Chiudi Turno</button>
           <button class="btn btn-danger" onclick="confirmCancelShift()">🗑️ Annulla</button>
         </div>
+
+        <!-- Quick Button Scheda Evento Odierno -->
+        <div id="today-event-quick-btn" style="display:none;margin-top:10px;" onclick="openTodayEventModal()">
+          <button type="button" class="btn btn-outline" style="width:100%;justify-content:space-between;padding:9px 12px;font-size:12px;background:rgba(2,132,199,0.08);border:1px solid rgba(56,189,248,0.35);color:var(--text);border-radius:10px;">
+            <span style="display:flex;align-items:center;gap:7px;min-width:0;text-align:left;">
+              <span style="font-size:14px;">📋</span>
+              <span style="font-weight:700;color:var(--accent);">Scheda Oggi:</span>
+              <span id="today-event-quick-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;">Caricamento...</span>
+            </span>
+            <span style="font-size:11.5px;color:var(--accent);font-weight:700;flex-shrink:0;margin-left:6px;">Dettagli ➔</span>
+          </button>
+        </div>
       </div>
 
       <!-- Quick Actions (Comandi versione chat) -->
@@ -1056,8 +1068,14 @@
           <div class="action-desc">Inserisci un turno passato o retroattivo</div>
         </div>
 
+        <div class="action-card" onclick="openSelectEntryToEditModal()">
+          <div class="action-icon" style="background:rgba(245,158,11,0.15);color:var(--warning);">✏️</div>
+          <div class="action-title">Modifica Giornata</div>
+          <div class="action-desc">Modifica orari, compensi o elimina</div>
+        </div>
+
         <div class="action-card" onclick="openCompileVrModal()">
-          <div class="action-icon" style="background:rgba(245,158,11,0.15);color:var(--warning);">⚡</div>
+          <div class="action-icon" style="background:rgba(16,185,129,0.15);color:var(--success);">⚡</div>
           <div class="action-title">Compila Videorent</div>
           <div class="action-desc">Scegli ID e compila a gestionale</div>
         </div>
@@ -1067,24 +1085,18 @@
           <div class="action-title">Consuntivo PDF</div>
           <div class="action-desc">Scegli mese ed esporta prospetto A4</div>
         </div>
+      </div>
 
-        <div class="action-card" onclick="showScreen('events')">
-          <div class="action-icon" style="background:rgba(56,189,248,0.15);color:var(--accent);">📋</div>
-          <div class="action-title">Eventi Videorent</div>
-          <div class="action-desc">Note, materiali e prossimi lavori</div>
+      <!-- Banner Attività e Turni -->
+      <div class="action-card" onclick="showScreen('schedule')" style="width:100%;flex-direction:row;align-items:center;justify-content:space-between;padding:12px 14px;margin-top:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="action-icon" style="background:rgba(56,189,248,0.15);color:var(--accent);flex-shrink:0;">📅</div>
+          <div>
+            <div class="action-title" style="margin:0;">Attività e Turni</div>
+            <div class="action-desc" style="margin-top:2px;">Vista calendario settimana e mese</div>
+          </div>
         </div>
-
-        <div class="action-card" onclick="showScreen('schedule')">
-          <div class="action-icon" style="background:rgba(16,185,129,0.15);color:var(--success);">📅</div>
-          <div class="action-title">Attività e Turni</div>
-          <div class="action-desc">Vista calendario settimana e mese</div>
-        </div>
-
-        <div class="action-card" onclick="showScreen('settings')">
-          <div class="action-icon" style="background:rgba(148,163,184,0.15);color:var(--text-muted);">⚙️</div>
-          <div class="action-title">Impostazioni</div>
-          <div class="action-desc">Tariffe, Calendar, Videorent e Drive</div>
-        </div>
+        <span style="color:var(--text-muted);font-size:14px;font-weight:700;">➔</span>
       </div>
 
     </main>
@@ -2156,6 +2168,23 @@
       </div>
 
       <button class="btn btn-primary" style="width:100%;margin-top:10px;" onclick="confirmManualEntry()">💾 Salva Giornata</button>
+    </div>
+  </div>
+
+  <!-- MODAL: SELEZIONA GIORNATA DA MODIFICARE -->
+  <div id="modal-select-entry-to-edit" class="modal-overlay">
+    <div class="modal-sheet" style="max-height:85vh;display:flex;flex-direction:column;">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">✏️ Modifica Giornate</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Seleziona la giornata registrata da modificare</div>
+        </div>
+        <button class="close-btn" onclick="closeModal('modal-select-entry-to-edit')">✕</button>
+      </div>
+
+      <div id="select-entry-to-edit-list" style="overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:2px;margin-top:8px;">
+        <!-- Popolato dinamicamente -->
+      </div>
     </div>
   </div>
 
@@ -3358,6 +3387,7 @@
           }
         }
       }
+      updateTodayEventQuickButton();
     }
 
     function updateElapsedTime() {
@@ -5066,6 +5096,82 @@ function openModal(id) {
       document.getElementById("edit-fixed-pay").value = val;
     }
 
+    function openSelectEntryToEditModal() {
+      haptic.light();
+      const listEl = document.getElementById("select-entry-to-edit-list");
+      if (!listEl) return;
+      listEl.innerHTML = "";
+
+      const entries = [...(appState.entries || [])].sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return b.row - a.row;
+      });
+
+      if (entries.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-state" style="padding:24px 12px;text-align:center;">
+            <div class="empty-icon" style="font-size:32px;margin-bottom:8px;">🏖️</div>
+            <div style="font-size:14px;font-weight:600;color:var(--text);">Nessuna giornata registrata</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;margin-bottom:14px;">Non ci sono ancora giornate salvate in questo mese da poter modificare.</div>
+            <button class="btn btn-primary btn-sm" style="margin:0 auto;display:inline-flex;" onclick="closeModal('modal-select-entry-to-edit');openManualEntryModal();">➕ Aggiungi Giornata</button>
+          </div>
+        `;
+        openModal("modal-select-entry-to-edit");
+        return;
+      }
+
+      entries.forEach(e => {
+        const isCasa = (e.type === "CASA");
+        const item = document.createElement("div");
+        item.className = "card";
+        item.style.padding = "10px 12px";
+        item.style.margin = "0";
+        item.style.cursor = "pointer";
+        item.style.display = "flex";
+        item.style.justifyContent = "space-between";
+        item.style.alignItems = "center";
+        item.style.background = "rgba(255,255,255,0.03)";
+        item.style.border = "1px solid rgba(255,255,255,0.08)";
+        item.style.borderRadius = "10px";
+
+        const rowTotal = (e.total !== undefined && e.total !== null) ? e.total : ((e.dayPay || 0) + (e.extra || 0));
+        const displayTotal = rowTotal > 0 ? (rowTotal + ' €') : (e.dayPay > 0 ? e.dayPay + ' €' : '—');
+        const fixedBadge = e.isFixedRate ? `<span style="font-size:9.5px;padding:2px 5px;border-radius:4px;background:rgba(56,189,248,0.15);color:var(--accent);font-weight:700;">FISSA</span>` : '';
+        const extraBadge = (e.extra && Number(e.extra) > 0) ? `<span style="font-size:9.5px;padding:2px 5px;border-radius:4px;background:rgba(16,185,129,0.15);color:var(--success);font-weight:700;">+${e.extra}€</span>` : '';
+
+        item.innerHTML = `
+          <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+            <div class="entry-type-icon ${isCasa ? 'casa' : 'trasf'}" style="width:34px;height:34px;font-size:15px;flex-shrink:0;">
+              ${isCasa ? '🏠' : '🚗'}
+            </div>
+            <div style="min-width:0;">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span style="font-weight:700;font-size:13px;color:var(--text);">${e.date}</span>
+                ${fixedBadge}
+                ${extraBadge}
+              </div>
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">
+                ${e.start} - ${e.end} (${isCasa ? 'Casa' : 'Trasferta'})
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <span style="font-weight:700;font-size:13px;color:var(--accent);">${displayTotal}</span>
+            <span style="color:var(--text-muted);font-size:13px;">✏️</span>
+          </div>
+        `;
+
+        item.onclick = () => {
+          closeModal("modal-select-entry-to-edit");
+          openEditEntryModal(e);
+        };
+
+        listEl.appendChild(item);
+      });
+
+      openModal("modal-select-entry-to-edit");
+    }
+
     let currentEditEntry = null;
 
     function openEditEntryModal(entry) {
@@ -6301,9 +6407,68 @@ function openModal(id) {
           });
           console.log(`[VR Prefetch] Scheda lavoro odierna #${todayEvent.id} precaricata in cache locale.`);
         }
+        updateTodayEventQuickButton();
       } catch (err) {
         // Silenzioso: nessun alert o disturbo se offline
         console.warn("[VR Prefetch] Ignorato errore background:", err);
+      }
+    }
+
+    function ensureVrEventsLoaded() {
+      if (!vrEventsState.loaded || (vrEventsState.upcoming.length === 0 && vrEventsState.past.length === 0)) {
+        try {
+          const cached = readEventsLocalCache(getEventsCacheKey("events"));
+          if (cached && cached.data && Array.isArray(cached.data.upcoming)) {
+            vrEventsState.upcoming = cached.data.upcoming || [];
+            vrEventsState.past = cached.data.past || [];
+            vrEventsState.loaded = true;
+          }
+        } catch(e) {}
+      }
+    }
+
+    function getTodayVrEvent() {
+      try {
+        ensureVrEventsLoaded();
+        const now = new Date();
+        const todayIso = Utilities_formatDateOnly(now);
+        const allEvs = [...(vrEventsState.upcoming || []), ...(vrEventsState.past || [])];
+        return allEvs.find(ev => {
+          if (!ev || !ev.start) return false;
+          const sIso = String(ev.start).split("T")[0].split(" ")[0];
+          const eIso = ev.end ? String(ev.end).split("T")[0].split(" ")[0] : sIso;
+          return todayIso >= sIso && todayIso <= eIso;
+        }) || null;
+      } catch(e) {
+        return null;
+      }
+    }
+
+    function updateTodayEventQuickButton() {
+      const btn = document.getElementById("today-event-quick-btn");
+      const titleEl = document.getElementById("today-event-quick-title");
+      if (!btn) return;
+
+      const ev = getTodayVrEvent();
+      if (ev && ev.id) {
+        btn.style.display = "block";
+        const cleanId = String(ev.id).replace("#", "").trim();
+        const evTitle = ev.title || ev.client || ev.location || ("Commessa #" + cleanId);
+        if (titleEl) {
+          titleEl.textContent = `#${cleanId} • ${evTitle}`;
+        }
+      } else {
+        btn.style.display = "none";
+      }
+    }
+
+    function openTodayEventModal() {
+      haptic.light();
+      const ev = getTodayVrEvent();
+      if (ev && ev.id) {
+        openEventDetail(ev.id);
+      } else {
+        showScreen("events");
       }
     }
 
@@ -6355,6 +6520,7 @@ function openModal(id) {
         vrEventsState.upcoming = cached.data.upcoming || [];
         vrEventsState.past = cached.data.past || [];
         vrEventsState.loaded = true;
+        updateTodayEventQuickButton();
         if (loadingEl) loadingEl.style.display = "none";
         if (notCfgEl) notCfgEl.style.display = "none";
         if (listEl) listEl.style.display = "block";
@@ -6413,6 +6579,7 @@ function openModal(id) {
         vrEventsState.upcoming = res.upcoming || [];
         vrEventsState.past = res.past || [];
         vrEventsState.loaded = true;
+        updateTodayEventQuickButton();
 
         // Se i dati non sono cambiati rispetto a quelli a video, NON ri-renderizzare la lista
         if (hasRenderedCache && oldEventsSig === newEventsSig) {
@@ -7226,7 +7393,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=27").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=28").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
