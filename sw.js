@@ -1,5 +1,5 @@
 // Service Worker per Calcolo Tariffa VR - PWA Offline Support
-const CACHE_NAME = 'vr-app-shell-v16';
+const CACHE_NAME = 'vr-app-shell-v17';
 const ASSETS_TO_CACHE = [
   './',
   './index.html'

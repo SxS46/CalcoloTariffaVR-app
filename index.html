@@ -365,6 +365,50 @@
       color: var(--warning);
       border: 1px solid rgba(245, 158, 11, 0.5);
     }
+    .segmented-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: .25s;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .25s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
 
     /* Quick Chips (Modal) */
     .chip-row {
@@ -1031,6 +1075,83 @@
         </div>
       </div>
 
+      <!-- SEZIONE ATTIVITÀ & CALENDARIO: TOGGLE SETTIMANA / MESE -->
+      <div class="card" style="margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:16px;">📅</span>
+            <span class="shift-title" id="dash-schedule-title" style="font-size:14px;">Attività & Turni</span>
+          </div>
+          <div class="segmented-control" style="max-width:190px;padding:2px;margin:0;">
+            <button type="button" id="btn-dash-view-week" class="segmented-btn active" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('week')">📅 Settimana</button>
+            <button type="button" id="btn-dash-view-month" class="segmented-btn" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('month')">🗓️ Mese</button>
+          </div>
+        </div>
+
+        <!-- VISTA SETTIMANA -->
+        <div id="dash-week-view">
+          <!-- Week Navigation Header -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:10px;">
+            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeDashboardWeek(-1)" title="Settimana precedente">◀️</button>
+            <div style="text-align:center;">
+              <div id="dash-week-label" style="font-size:12.5px;font-weight:700;color:var(--text);">Settimana Corrente</div>
+              <div id="dash-week-sub" style="font-size:11px;color:var(--text-muted);margin-top:1px;">Caricamento...</div>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:10.5px;" onclick="resetDashboardWeekToCurrent()">Oggi</button>
+              <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeDashboardWeek(1)" title="Settimana successiva">▶️</button>
+            </div>
+          </div>
+
+          <!-- 7 Giorni della Settimana -->
+          <div id="dash-week-days-list" style="display:flex;flex-direction:column;gap:6px;">
+            <!-- Popolato dinamicamente -->
+          </div>
+
+          <!-- Totale Settimana Footer -->
+          <div id="dash-week-summary-footer" style="margin-top:10px;padding:8px 12px;background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.2);border-radius:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+            <div style="color:var(--text-muted);">Riepilogo settimana:</div>
+            <div id="dash-week-summary-values" style="font-weight:700;color:var(--accent);">0 gg • 0.0 h • 0 €</div>
+          </div>
+        </div>
+
+        <!-- VISTA MESE -->
+        <div id="dash-month-view" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:10px;">
+            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(-1)" title="Mese precedente">◀️</button>
+            <span id="dash-month-name" style="font-size:12.5px;font-weight:700;color:var(--text);">Mese Corrente</span>
+            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(1)" title="Mese successivo">▶️</button>
+          </div>
+
+          <!-- Mini Stats Grid Mese -->
+          <div class="stats-grid" style="margin-bottom:10px;">
+            <div class="stat-box" style="padding:10px 8px;">
+              <div class="stat-label">Compenso</div>
+              <div id="dash-month-total-pay" class="stat-value highlight" style="font-size:15px;">0 €</div>
+            </div>
+            <div class="stat-box" style="padding:10px 8px;">
+              <div class="stat-label">Giornate</div>
+              <div id="dash-month-total-days" class="stat-value" style="font-size:15px;">0</div>
+            </div>
+            <div class="stat-box" style="padding:10px 8px;">
+              <div class="stat-label">Casa / Trasf</div>
+              <div id="dash-month-split-days" class="stat-value" style="font-size:15px;">0 / 0</div>
+            </div>
+            <div class="stat-box" style="padding:10px 8px;">
+              <div class="stat-label">Extra</div>
+              <div id="dash-month-extra-pay" class="stat-value" style="font-size:15px;">0 €</div>
+            </div>
+          </div>
+
+          <div id="dash-month-entries-preview" style="display:flex;flex-direction:column;gap:6px;">
+            <!-- Popolato dinamicamente -->
+          </div>
+          <button class="btn btn-outline" style="width:100%;margin-top:8px;font-size:12px;padding:7px;" onclick="showScreen('summary')">
+            📊 Apri Riepilogo Completo Mese ➔
+          </button>
+        </div>
+      </div>
+
     </main>
 
     <!-- SCREEN: EVENTI / LAVORI VIDEORENT -->
@@ -1128,36 +1249,86 @@
         <div class="shift-title" style="margin-bottom:14px;">💰 Tariffe e Straordinari</div>
         
         <!-- CASA -->
+        <div style="font-size:12.5px;font-weight:700;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          <span>🏠</span> <span>Sede Casa (Bologna)</span>
+        </div>
         <div id="cfg-casa-grid" class="form-grid">
           <div class="form-group" id="group-cfg-casa-base">
-            <label class="form-label">🏠 Casa Base (€)</label>
+            <label class="form-label">Base Giornata (€)</label>
             <input type="number" id="cfg-casa-base" class="form-input" placeholder="Es. 220">
           </div>
           <div class="form-group" id="group-cfg-casa-extra">
-            <label class="form-label">Straordinario (€)</label>
+            <label class="form-label">Straordinario (€/h)</label>
             <input type="number" id="cfg-casa-extra" class="form-input" placeholder="Es. 30">
           </div>
-          <div class="form-group" id="group-cfg-casa-half" style="display:none;">
-            <label class="form-label">Mezza Giornata (€)</label>
-            <input type="number" id="cfg-casa-half" class="form-input" placeholder="Es. 140">
+        </div>
+
+        <!-- Toggle & Campi Mezza Giornata Casa -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;margin:10px 0 16px 0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:12.5px;font-weight:600;">⏱️ Mezza Giornata Casa</div>
+              <div style="font-size:11px;color:var(--text-muted);">Accordo tariffario fino a soglia ore</div>
+            </div>
+            <label class="switch" style="margin:0;">
+              <input type="checkbox" id="cfg-casa-has-half" onchange="toggleCasaHalfInputs(this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div id="group-cfg-casa-half-container" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Soglia Ore (h)</label>
+                <input type="number" step="0.5" id="cfg-casa-half-hours" class="form-input" placeholder="Es. 4">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Compenso Mezza (€)</label>
+                <input type="number" id="cfg-casa-half" class="form-input" placeholder="Es. 140">
+              </div>
+            </div>
           </div>
         </div>
 
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
 
         <!-- TRASFERTA -->
+        <div style="font-size:12.5px;font-weight:700;color:var(--success);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          <span>🚗</span> <span>Sede Trasferta (Fuori Bologna)</span>
+        </div>
         <div id="cfg-trasf-grid" class="form-grid">
           <div class="form-group" id="group-cfg-trasf-base">
-            <label class="form-label">🚗 Trasferta Base (€)</label>
+            <label class="form-label">Base Giornata (€)</label>
             <input type="number" id="cfg-trasf-base" class="form-input" placeholder="Es. 250">
           </div>
           <div class="form-group" id="group-cfg-trasf-extra">
-            <label class="form-label">Straordinario (€)</label>
+            <label class="form-label">Straordinario (€/h)</label>
             <input type="number" id="cfg-trasf-extra" class="form-input" placeholder="Es. 30">
           </div>
-          <div class="form-group" id="group-cfg-trasf-half" style="display:none;">
-            <label class="form-label">Mezza Giornata (€)</label>
-            <input type="number" id="cfg-trasf-half" class="form-input" placeholder="Es. 250">
+        </div>
+
+        <!-- Toggle & Campi Mezza Giornata Trasferta -->
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;margin:10px 0 16px 0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:12.5px;font-weight:600;">⏱️ Mezza Giornata Trasferta</div>
+              <div style="font-size:11px;color:var(--text-muted);">Accordo tariffario fino a soglia ore</div>
+            </div>
+            <label class="switch" style="margin:0;">
+              <input type="checkbox" id="cfg-trasf-has-half" onchange="toggleTrasfHalfInputs(this.checked)">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div id="group-cfg-trasf-half-container" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Soglia Ore (h)</label>
+                <input type="number" step="0.5" id="cfg-trasf-half-hours" class="form-input" placeholder="Es. 4">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Compenso Mezza (€)</label>
+                <input type="number" id="cfg-trasf-half" class="form-input" placeholder="Es. 250">
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1755,6 +1926,17 @@
           </div>
         </div>
 
+        <!-- Sezione 5b: Lavoro Rifiutato (Revoca Rifiuto) -->
+        <div id="ev-rejected-action-card" class="card" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);">
+          <div class="shift-title" style="color:var(--danger);margin-bottom:6px;">⚠️ Lavoro Rifiutato</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.4;">
+            Hai rifiutato questo lavoro su Videorent. Se desideri annullare il rifiuto e ripristinare la tua disponibilità, puoi revocare il rifiuto e tornare in attesa.
+          </p>
+          <button id="btn-cancel-reject-modal" class="btn btn-outline" style="width:100%;color:var(--warning);border-color:rgba(245,158,11,0.5);" onclick="cancelRejectFromModal()">
+            ↩️ Revoca Rifiuto (Torna in Attesa)
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
@@ -2031,6 +2213,11 @@
           Calcolo automatico standard basato sulla tariffa base e straordinari orari.
         </div>
       </div>
+
+      <!-- Pulsante Separa/Unisci da Evento Ieri (Parità 100% Bot) -->
+      <button type="button" id="btn-edit-toggle-event" class="btn btn-outline" style="display:none;width:100%;margin-bottom:12px;font-size:12.5px;" onclick="toggleEntryEventConnection()">
+        ✂️ Separa da Evento Ieri
+      </button>
 
       <div class="btn-row" style="margin-top:14px;">
         <button class="btn btn-primary" onclick="confirmEditEntry()">💾 Salva Modifiche</button>
@@ -3207,55 +3394,337 @@
       document.getElementById("stat-total-days").textContent = cDays + tDays;
       document.getElementById("stat-split-days").textContent = `${cDays} / ${tDays}`;
       document.getElementById("stat-extra-pay").textContent = (s.totalExtra || 0) + " €";
+
+      // Mini Stats Mese Dashboard
+      const dmName = document.getElementById("dash-month-name");
+      if (dmName) dmName.textContent = appState.monthName || s.monthName || "Mese Corrente";
+      const dmPay = document.getElementById("dash-month-total-pay");
+      if (dmPay) dmPay.textContent = totalEur + " €";
+      const dmDays = document.getElementById("dash-month-total-days");
+      if (dmDays) dmDays.textContent = cDays + tDays;
+      const dmSplit = document.getElementById("dash-month-split-days");
+      if (dmSplit) dmSplit.textContent = `${cDays} / ${tDays}`;
+      const dmExtra = document.getElementById("dash-month-extra-pay");
+      if (dmExtra) dmExtra.textContent = (s.totalExtra || 0) + " €";
     }
 
     // Cronologia decrescente: le giornate più recenti compaiono in alto!
     function renderEntries() {
       const listEl = document.getElementById("entries-list");
-      listEl.innerHTML = "";
+      if (listEl) {
+        listEl.innerHTML = "";
 
-      if (!appState.entries || appState.entries.length === 0) {
-        listEl.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">🏖️</div>
-            <div>Nessuna giornata registrata in questo mese</div>
-          </div>
+        if (!appState.entries || appState.entries.length === 0) {
+          listEl.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">🏖️</div>
+              <div>Nessuna giornata registrata in questo mese</div>
+            </div>
+          `;
+        } else {
+          const sorted = [...appState.entries].sort((a, b) => {
+            if (a.date !== b.date) return b.date.localeCompare(a.date);
+            return b.row - a.row;
+          });
+
+          sorted.forEach(e => {
+            const isCasa = (e.type === "CASA");
+            const div = document.createElement("div");
+            div.className = "entry-item";
+            div.onclick = () => openEditEntryModal(e);
+
+            const rowTotal = (e.total !== undefined && e.total !== null) ? e.total : ((e.dayPay || 0) + (e.extra || 0));
+            const displayTotal = rowTotal > 0 ? (rowTotal + ' €') : (e.dayPay > 0 ? e.dayPay + ' €' : '—');
+            const fixedBadge = e.isFixedRate ? `<span style="font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(56,189,248,0.15);color:var(--accent);margin-left:4px;font-weight:700;">💵 FISSA</span>` : '';
+
+            div.innerHTML = `
+              <div class="entry-left">
+                <div class="entry-type-icon ${isCasa ? 'casa' : 'trasf'}">
+                  ${isCasa ? '🏠' : '🚗'}
+                </div>
+                <div>
+                  <div class="entry-date">${e.date}</div>
+                  <div class="entry-hours">${e.start} - ${e.end}</div>
+                </div>
+              </div>
+              <div class="entry-right">
+                <div class="entry-pay">${displayTotal}${fixedBadge}</div>
+                ${e.extra > 0 ? `<div class="entry-extra">+${e.extra} € extra</div>` : ''}
+              </div>
+            `;
+            listEl.appendChild(div);
+          });
+        }
+      }
+
+      // Aggiorna viste Schedule Dashboard (Settimana e Mese)
+      renderDashboardWeek();
+      renderDashboardMonthPreview();
+    }
+
+    // =========================================================================
+    // VISTA SETTIMANA RAPIDA DASHBOARD [📅 Settimana | 🗓️ Mese]
+    // =========================================================================
+    function setDashboardView(mode) {
+      appState.dashboardView = mode;
+      const btnW = document.getElementById("btn-dash-view-week");
+      const btnM = document.getElementById("btn-dash-view-month");
+      const viewW = document.getElementById("dash-week-view");
+      const viewM = document.getElementById("dash-month-view");
+      if (mode === "week") {
+        if (btnW) btnW.classList.add("active");
+        if (btnM) btnM.classList.remove("active");
+        if (viewW) viewW.style.display = "block";
+        if (viewM) viewM.style.display = "none";
+        renderDashboardWeek();
+      } else {
+        if (btnM) btnM.classList.add("active");
+        if (btnW) btnW.classList.remove("active");
+        if (viewM) viewM.style.display = "block";
+        if (viewW) viewW.style.display = "none";
+        renderDashboardMonthPreview();
+      }
+    }
+
+    function changeDashboardWeek(delta) {
+      appState.dashboardWeekOffset = (appState.dashboardWeekOffset || 0) + delta;
+      renderDashboardWeek();
+    }
+
+    function resetDashboardWeekToCurrent() {
+      appState.dashboardWeekOffset = 0;
+      renderDashboardWeek();
+    }
+
+    function Utilities_formatDateOnly(d) {
+      if (!d) return "";
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function renderDashboardWeek() {
+      const offset = appState.dashboardWeekOffset || 0;
+      const now = new Date();
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (offset * 7));
+      const dayOfWeek = d.getDay(); // 0 Dom, 1 Lun...
+      const diffToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+      const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() + diffToMonday);
+
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        days.push(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i));
+      }
+
+      const sunday = days[6];
+      const mNames = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+      const dFmt = (dt) => String(dt.getDate()).padStart(2, "0");
+      const subLabel = `${dFmt(monday)} ${mNames[monday.getMonth()]} — ${dFmt(sunday)} ${mNames[sunday.getMonth()]} ${sunday.getFullYear()}`;
+
+      const lblEl = document.getElementById("dash-week-label");
+      const subEl = document.getElementById("dash-week-sub");
+      if (lblEl) {
+        if (offset === 0) lblEl.textContent = "Settimana Corrente";
+        else if (offset === -1) lblEl.textContent = "Settimana Scorsa";
+        else if (offset === 1) lblEl.textContent = "Prossima Settimana";
+        else lblEl.textContent = `Settimana (${offset > 0 ? "+" + offset : offset})`;
+      }
+      if (subEl) subEl.textContent = subLabel;
+
+      const listContainer = document.getElementById("dash-week-days-list");
+      if (!listContainer) return;
+      listContainer.innerHTML = "";
+
+      const dayNamesShort = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+      const todayIso = Utilities_formatDateOnly(now);
+
+      let weekDaysWorked = 0;
+      let weekTotalHours = 0;
+      let weekTotalPay = 0;
+
+      days.forEach((dayDate, idx) => {
+        const iso = Utilities_formatDateOnly(dayDate);
+        const isToday = (iso === todayIso);
+        const isWeekend = (idx >= 5);
+
+        const entry = (appState.entries || []).find(e => e.date === iso);
+        const isLiveToday = (isToday && appState.activeShift && appState.activeShift.start);
+
+        const rowDiv = document.createElement("div");
+        rowDiv.style.display = "flex";
+        rowDiv.style.alignItems = "center";
+        rowDiv.style.justifyContent = "space-between";
+        rowDiv.style.padding = "8px 10px";
+        rowDiv.style.borderRadius = "8px";
+        rowDiv.style.border = isToday ? "1px solid rgba(56,189,248,0.35)" : "1px solid rgba(255,255,255,0.05)";
+        rowDiv.style.background = isToday ? "rgba(2,132,199,0.09)" : (isWeekend ? "rgba(255,255,255,0.015)" : "rgba(255,255,255,0.025)");
+
+        let dayBadgeHtml = `
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:42px;font-size:11.5px;font-weight:700;color:${isToday ? 'var(--accent)' : (isWeekend ? '#38bdf8' : 'var(--text)')};">
+              ${dayNamesShort[idx]} <span style="font-size:10px;font-weight:500;color:var(--text-muted);">${dFmt(dayDate)}</span>
+            </div>
         `;
+
+        if (entry) {
+          weekDaysWorked++;
+          const hVal = Number(entry.hours || 0);
+          weekTotalHours += hVal;
+          const pVal = Number(entry.total || entry.dayPay || 0);
+          weekTotalPay += pVal;
+          const isCasa = (entry.type === "CASA");
+
+          dayBadgeHtml += `
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:${isCasa ? 'rgba(2,132,199,0.18)' : 'rgba(103,175,35,0.18)'};color:${isCasa ? 'var(--primary)' : 'var(--success)'};border:1px solid ${isCasa ? 'rgba(2,132,199,0.3)' : 'rgba(103,175,35,0.3)'};">
+                ${isCasa ? '🏠 Casa' : '🚗 Trasf'}
+              </span>
+              <span style="font-size:11px;color:var(--text-muted);">${entry.start}-${entry.end} (${hVal.toFixed(1)}h)</span>
+            </div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);">
+            ${pVal > 0 ? pVal + ' €' : '—'}
+          </div>
+          `;
+          rowDiv.style.cursor = "pointer";
+          rowDiv.onclick = () => openEditEntryModal(entry);
+        } else if (isLiveToday) {
+          dayBadgeHtml += `
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="status-badge live" style="font-size:9.5px;padding:2px 6px;">🟢 In Servizio</span>
+              <span style="font-size:11px;color:var(--text);font-weight:600;">dalle ${appState.activeShift.start}</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--accent);font-weight:700;">In corso</div>
+          `;
+        } else {
+          dayBadgeHtml += `
+            <div style="font-size:11.5px;color:var(--text-muted);font-style:italic;">— Riposo</div>
+          </div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,0.2);">—</div>
+          `;
+        }
+
+        rowDiv.innerHTML = dayBadgeHtml;
+        listContainer.appendChild(rowDiv);
+      });
+
+      const footerVals = document.getElementById("dash-week-summary-values");
+      if (footerVals) {
+        footerVals.textContent = `${weekDaysWorked} gg • ${weekTotalHours.toFixed(1)} h • ${weekTotalPay} €`;
+      }
+    }
+
+    function renderDashboardMonthPreview() {
+      const container = document.getElementById("dash-month-entries-preview");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const entries = [...(appState.entries || [])].sort((a, b) => b.date.localeCompare(a.date));
+      if (entries.length === 0) {
+        container.innerHTML = `<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:12px;">Nessuna giornata registrata questo mese.</div>`;
         return;
       }
 
-      const sorted = [...appState.entries].sort((a, b) => {
-        if (a.date !== b.date) return b.date.localeCompare(a.date);
-        return b.row - a.row;
-      });
-
-      sorted.forEach(e => {
+      entries.slice(0, 4).forEach(e => {
         const isCasa = (e.type === "CASA");
-        const div = document.createElement("div");
-        div.className = "entry-item";
-        div.onclick = () => openEditEntryModal(e);
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.alignItems = "center";
+        row.style.justifyContent = "space-between";
+        row.style.padding = "7px 10px";
+        row.style.borderRadius = "8px";
+        row.style.background = "rgba(255,255,255,0.02)";
+        row.style.border = "1px solid rgba(255,255,255,0.04)";
+        row.style.cursor = "pointer";
+        row.onclick = () => openEditEntryModal(e);
 
-        const rowTotal = (e.total !== undefined && e.total !== null) ? e.total : ((e.dayPay || 0) + (e.extra || 0));
-        const displayTotal = rowTotal > 0 ? (rowTotal + ' €') : (e.dayPay > 0 ? e.dayPay + ' €' : '—');
-        const fixedBadge = e.isFixedRate ? `<span style="font-size:10px;padding:2px 6px;border-radius:6px;background:rgba(56,189,248,0.15);color:var(--accent);margin-left:4px;font-weight:700;">💵 FISSA</span>` : '';
-
-        div.innerHTML = `
-          <div class="entry-left">
-            <div class="entry-type-icon ${isCasa ? 'casa' : 'trasf'}">
-              ${isCasa ? '🏠' : '🚗'}
-            </div>
-            <div>
-              <div class="entry-date">${e.date}</div>
-              <div class="entry-hours">${e.start} - ${e.end}</div>
-            </div>
+        row.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;">${isCasa ? '🏠' : '🚗'}</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text);">${e.date}</span>
+            <span style="font-size:11px;color:var(--text-muted);">${e.start}-${e.end}</span>
           </div>
-          <div class="entry-right">
-            <div class="entry-pay">${displayTotal}${fixedBadge}</div>
-            ${e.extra > 0 ? `<div class="entry-extra">+${e.extra} € extra</div>` : ''}
+          <div style="font-size:12px;font-weight:700;color:var(--accent);">
+            ${(e.total || e.dayPay || 0)} €
           </div>
         `;
-        listEl.appendChild(div);
+        container.appendChild(row);
       });
+    }
+
+    // =========================================================================
+    // SICUREZZA & VALIDAZIONE TURNI (Durata > 16h e Sovrapposizioni)
+    // =========================================================================
+    function calculateShiftDuration(startStr, endStr) {
+      const s = normalizeInputTime(startStr);
+      const e = normalizeInputTime(endStr);
+      if (!s || !e) return 0;
+      const [sH, sM] = s.split(":").map(Number);
+      let [eH, eM] = e.split(":").map(Number);
+      let sDec = sH + (sM || 0) / 60;
+      let eDec = eH + (eM || 0) / 60;
+      if (eDec < sDec) eDec += 24;
+      return Math.round((eDec - sDec) * 100) / 100;
+    }
+
+    function checkShiftOverlap(dateIso, startStr, endStr, ignoreRow) {
+      if (!appState.entries || appState.entries.length === 0) return null;
+      const s = normalizeInputTime(startStr);
+      const e = normalizeInputTime(endStr);
+      if (!s || !e || !dateIso) return null;
+      const [sH, sM] = s.split(":").map(Number);
+      let [eH, eM] = e.split(":").map(Number);
+      let sDec = sH + (sM || 0) / 60;
+      let eDec = eH + (eM || 0) / 60;
+      if (eDec < sDec) eDec += 24;
+
+      const targetD = new Date(dateIso);
+      targetD.setHours(0, 0, 0, 0);
+      const targetTime = targetD.getTime();
+      const oneDayMs = 86400000;
+
+      for (let i = 0; i < appState.entries.length; i++) {
+        const entry = appState.entries[i];
+        if (ignoreRow && Number(entry.row) === Number(ignoreRow)) continue;
+        if (!entry.start || !entry.end || !entry.date) continue;
+
+        const entryD = new Date(entry.date);
+        entryD.setHours(0, 0, 0, 0);
+        const entryTime = entryD.getTime();
+
+        const [exSh, exSm] = entry.start.split(":").map(Number);
+        let [exEh, exEm] = entry.end.split(":").map(Number);
+        const exStartDec = exSh + (exSm || 0) / 60;
+        let exEndDec = exEh + (exEm || 0) / 60;
+        const isOvernight = (exEndDec < exStartDec);
+        if (isOvernight) exEndDec += 24;
+
+        if (entryTime === targetTime) {
+          if (sDec < exEndDec && exStartDec < eDec) {
+            return {
+              type: (entry.type === "CASA" ? "🏠 Casa" : "🚗 Trasferta"),
+              date: entry.date,
+              start: entry.start,
+              end: entry.end,
+              row: entry.row
+            };
+          }
+        } else if (entryTime === targetTime - oneDayMs && isOvernight) {
+          const overflowEnd = exEndDec - 24;
+          if (sDec < overflowEnd) {
+            return {
+              type: (entry.type === "CASA" ? "🏠 Casa" : "🚗 Trasferta") + " (Notturno di ieri)",
+              date: entry.date,
+              start: entry.start,
+              end: entry.end,
+              row: entry.row
+            };
+          }
+        }
+      }
+      return null;
     }
 
     const CALENDAR_COLORS_DEFAULT = {
@@ -3460,42 +3929,36 @@
       const u = appState.user || {};
 
       // Tariffe
+      // Tariffe Casa
       document.getElementById("cfg-casa-base").value = r.casaBase || "";
       document.getElementById("cfg-casa-extra").value = r.casaStraord || "";
-      document.getElementById("cfg-casa-half").value = r.casaShort || r.casaShortPay || "";
       
+      const hasCasaHalf = Number(r.casaShortHours) > 0;
+      const chkCasa = document.getElementById("cfg-casa-has-half");
+      if (chkCasa) chkCasa.checked = hasCasaHalf;
+      toggleCasaHalfInputs(hasCasaHalf);
+      const casaHInput = document.getElementById("cfg-casa-half-hours");
+      if (casaHInput) casaHInput.value = hasCasaHalf ? r.casaShortHours : "4";
+      document.getElementById("cfg-casa-half").value = r.casaShort || r.casaShortPay || "";
+
+      // Tariffe Trasferta
       const tBase = r.trasfertaBase !== undefined ? r.trasfertaBase : (r.trasfBase || "");
       const tExtra = r.trasfertaStraord !== undefined ? r.trasfertaStraord : (r.trasfStraord || "");
       const tShort = r.trasfertaShort !== undefined ? r.trasfertaShort : (r.trasfShortPay || "");
+      const tShortH = (r.trasfertaShortHours !== undefined ? r.trasfertaShortHours : r.trasfShortHours) || 0;
 
       document.getElementById("cfg-trasf-base").value = tBase;
       document.getElementById("cfg-trasf-extra").value = tExtra;
+
+      const hasTrasfHalf = Number(tShortH) > 0;
+      const chkTrasf = document.getElementById("cfg-trasf-has-half");
+      if (chkTrasf) chkTrasf.checked = hasTrasfHalf;
+      toggleTrasfHalfInputs(hasTrasfHalf);
+      const trasfHInput = document.getElementById("cfg-trasf-half-hours");
+      if (trasfHInput) trasfHInput.value = hasTrasfHalf ? tShortH : "4";
       document.getElementById("cfg-trasf-half").value = tShort;
+
       document.getElementById("cfg-weekend-rule").value = u.weekendHolidayAsTrasferta || "NONE";
-
-      // Adattamento dinamico mezza giornata (se disattivata, sparire mezza giornata e affiancare base e straordinario)
-      const hasCasaHalf = Number(r.casaShortHours) > 0;
-      const hasTrasfHalf = Number(r.trasfertaShortHours !== undefined ? r.trasfertaShortHours : r.trasfShortHours) > 0;
-
-      const groupCasaHalf = document.getElementById("group-cfg-casa-half");
-      const groupCasaBase = document.getElementById("group-cfg-casa-base");
-      if (hasCasaHalf) {
-        if (groupCasaHalf) groupCasaHalf.style.display = "block";
-        if (groupCasaBase) groupCasaBase.style.gridColumn = "1 / -1";
-      } else {
-        if (groupCasaHalf) groupCasaHalf.style.display = "none";
-        if (groupCasaBase) groupCasaBase.style.gridColumn = "auto";
-      }
-
-      const groupTrasfHalf = document.getElementById("group-cfg-trasf-half");
-      const groupTrasfBase = document.getElementById("group-cfg-trasf-base");
-      if (hasTrasfHalf) {
-        if (groupTrasfHalf) groupTrasfHalf.style.display = "block";
-        if (groupTrasfBase) groupTrasfBase.style.gridColumn = "1 / -1";
-      } else {
-        if (groupTrasfHalf) groupTrasfHalf.style.display = "none";
-        if (groupTrasfBase) groupTrasfBase.style.gridColumn = "auto";
-      }
 
       // Google Calendar
       const isCalActive = Boolean(u.calendarSyncEnabled);
@@ -4180,6 +4643,20 @@ function openModal(id) {
       const extra = document.getElementById("end-modal-extra").value || "0";
       if (!end) return alert("Inserisci un orario di fine");
 
+      const start = appState.activeShift?.start || "08:00";
+      const dur = calculateShiftDuration(start, end);
+      if (dur > 16) {
+        const okDur = await askConfirmation(`⚠️ ATTENZIONE: Turno di ${dur.toFixed(1)} ore!\n\nStai chiudendo un turno continuativo di oltre 16 ore (dalle ${start} alle ${end}).\n\nVuoi confermare comunque la chiusura?`);
+        if (!okDur) return;
+      }
+
+      const todayIso = Utilities_formatDateOnly(appState.activeShift?.dateObj ? new Date(appState.activeShift.dateObj) : new Date());
+      const overlap = checkShiftOverlap(todayIso, start, end, null);
+      if (overlap) {
+        const okOv = await askConfirmation(`⚠️ ATTENZIONE: Sovrapposizione Oraria!\n\nEsiste già un turno registrato in data ${overlap.date}:\n• ${overlap.type}: dalle ${overlap.start} alle ${overlap.end}\n\nVuoi confermare comunque la registrazione?`);
+        if (!okOv) return;
+      }
+
       closeModal("modal-end-shift");
       showLoader("Salvataggio e calcolo tariffa...");
 
@@ -4350,6 +4827,18 @@ function openModal(id) {
 
       if (!date || !start || !end) return alert("Compila data, orario di inizio e fine");
 
+      const dur = calculateShiftDuration(start, end);
+      if (dur > 16) {
+        const okDur = await askConfirmation(`⚠️ ATTENZIONE: Turno di ${dur.toFixed(1)} ore!\n\nStai registrando un turno continuativo di oltre 16 ore (dalle ${start} alle ${end}).\n\nVuoi confermare comunque la registrazione?`);
+        if (!okDur) return;
+      }
+
+      const overlap = checkShiftOverlap(date, start, end, null);
+      if (overlap) {
+        const okOv = await askConfirmation(`⚠️ ATTENZIONE: Sovrapposizione Oraria!\n\nEsiste già un turno registrato in data ${overlap.date}:\n• ${overlap.type}: dalle ${overlap.start} alle ${overlap.end}\n\nVuoi confermare comunque la registrazione?`);
+        if (!okOv) return;
+      }
+
       closeModal("modal-manual-entry");
       showLoader("Registrazione giornata...");
 
@@ -4435,7 +4924,10 @@ function openModal(id) {
       document.getElementById("edit-fixed-pay").value = val;
     }
 
+    let currentEditEntry = null;
+
     function openEditEntryModal(entry) {
+      currentEditEntry = entry;
       document.getElementById("edit-row").value = entry.row;
       document.getElementById("edit-sheet-name").value = entry.sheetName || "";
       document.getElementById("edit-modal-date").textContent = entry.date || "";
@@ -4465,8 +4957,62 @@ function openModal(id) {
       editStartInput.onchange = updateEditEndSuggs;
       updateEditEndSuggs();
 
+      // Configura pulsante Unisci / Separa da Evento Ieri (Parità 100% Bot)
+      const btnToggle = document.getElementById("btn-edit-toggle-event");
+      if (btnToggle) {
+        if (entry.hasYesterday) {
+          btnToggle.style.display = "block";
+          if (entry.isConnected) {
+            btnToggle.textContent = "✂️ Separa da Evento Ieri";
+            btnToggle.style.color = "var(--danger)";
+            btnToggle.style.borderColor = "rgba(239,68,68,0.5)";
+          } else {
+            btnToggle.textContent = "🔗 Unisci a Evento Ieri";
+            btnToggle.style.color = "var(--primary)";
+            btnToggle.style.borderColor = "rgba(14,165,233,0.5)";
+          }
+        } else {
+          btnToggle.style.display = "none";
+        }
+      }
+
       updateEditWeekendAlert();
       openModal("modal-edit-entry");
+    }
+
+    async function toggleEntryEventConnection() {
+      if (!currentEditEntry) return;
+      const isConn = Boolean(currentEditEntry.isConnected);
+      const actionText = isConn ? "separare questo turno dall'evento di ieri" : "unire questo turno come continuazione dell'evento di ieri";
+      const ok = await askConfirmation(`Confermi di voler ${actionText}?`);
+      if (!ok) return;
+
+      closeModal("modal-edit-entry");
+      showLoader(isConn ? "Separazione evento..." : "Collegamento evento...");
+
+      try {
+        const res = await callApi("miniapp_toggle_event", {
+          row: currentEditEntry.row,
+          sheetName: currentEditEntry.sheetName,
+          type: currentEditEntry.type,
+          date: currentEditEntry.date
+        });
+
+        if (res.success) {
+          if (res.stats) appState.stats = res.stats;
+          if (res.entries) appState.entries = res.entries;
+          renderStats();
+          renderEntries();
+          showToast(res.message || (isConn ? "✂️ Evento separato con successo!" : "🔗 Evento unito a quello di ieri!"));
+          if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        } else {
+          alert("Errore: " + (res.error || "Operazione non riuscita"));
+        }
+      } catch (e) {
+        alert("Errore: " + e.message);
+      } finally {
+        hideLoader();
+      }
     }
 
     async function confirmEditEntry() {
@@ -4478,6 +5024,19 @@ function openModal(id) {
       const extra = document.getElementById("edit-extra").value;
       const isFixed = document.getElementById("edit-is-fixed").checked;
       const fixedPay = document.getElementById("edit-fixed-pay").value;
+
+      const dur = calculateShiftDuration(start, end);
+      if (dur > 16) {
+        const okDur = await askConfirmation(`⚠️ ATTENZIONE: Turno di ${dur.toFixed(1)} ore!\n\nStai modificando un turno continuativo di oltre 16 ore (dalle ${start} alle ${end}).\n\nVuoi confermare comunque la modifica?`);
+        if (!okDur) return;
+      }
+
+      const dateText = document.getElementById("edit-modal-date")?.textContent || currentEditEntry?.date;
+      const overlap = checkShiftOverlap(dateText, start, end, Number(row));
+      if (overlap) {
+        const okOv = await askConfirmation(`⚠️ ATTENZIONE: Sovrapposizione Oraria!\n\nEsiste già un altro turno registrato in data ${overlap.date}:\n• ${overlap.type}: dalle ${overlap.start} alle ${overlap.end}\n\nVuoi confermare comunque la modifica?`);
+        if (!okOv) return;
+      }
 
       closeModal("modal-edit-entry");
       showLoader("Salvataggio modifiche...");
@@ -4547,10 +5106,23 @@ function openModal(id) {
       }
     }
 
+    // Toggle visibilità campi mezza giornata
+    function toggleCasaHalfInputs(active) {
+      const container = document.getElementById("group-cfg-casa-half-container");
+      if (container) container.style.display = active ? "block" : "none";
+    }
+
+    function toggleTrasfHalfInputs(active) {
+      const container = document.getElementById("group-cfg-trasf-half-container");
+      if (container) container.style.display = active ? "block" : "none";
+    }
+
     // Settings & Rates
     async function saveRatesSettings() {
-      const hasCasaHalf = Number(appState.rates?.casaShortHours) > 0;
-      const hasTrasfHalf = Number(appState.rates?.trasfertaShortHours !== undefined ? appState.rates?.trasfertaShortHours : appState.rates?.trasfShortHours) > 0;
+      const hasCasaHalf = Boolean(document.getElementById("cfg-casa-has-half")?.checked);
+      const casaHalfHours = hasCasaHalf ? (parseFloat(document.getElementById("cfg-casa-half-hours")?.value) || 4) : 0;
+      const hasTrasfHalf = Boolean(document.getElementById("cfg-trasf-has-half")?.checked);
+      const trasfHalfHours = hasTrasfHalf ? (parseFloat(document.getElementById("cfg-trasf-half-hours")?.value) || 4) : 0;
 
       const casaBaseVal = document.getElementById("cfg-casa-base").value;
       const trasfBaseVal = document.getElementById("cfg-trasf-base").value;
@@ -4558,16 +5130,16 @@ function openModal(id) {
       const payload = {
         casaBase: casaBaseVal,
         casaStraord: document.getElementById("cfg-casa-extra").value,
-        casaShortHours: hasCasaHalf ? (appState.rates?.casaShortHours || 4) : 0,
-        casaShort: hasCasaHalf ? document.getElementById("cfg-casa-half").value : casaBaseVal,
-        casaShortPay: hasCasaHalf ? document.getElementById("cfg-casa-half").value : casaBaseVal,
+        casaShortHours: casaHalfHours,
+        casaShort: hasCasaHalf ? (document.getElementById("cfg-casa-half").value || casaBaseVal) : casaBaseVal,
+        casaShortPay: hasCasaHalf ? (document.getElementById("cfg-casa-half").value || casaBaseVal) : casaBaseVal,
         trasfertaBase: trasfBaseVal,
         trasfBase: trasfBaseVal,
         trasfertaStraord: document.getElementById("cfg-trasf-extra").value,
         trasfStraord: document.getElementById("cfg-trasf-extra").value,
-        trasfertaShortHours: hasTrasfHalf ? (appState.rates?.trasfertaShortHours !== undefined ? appState.rates?.trasfertaShortHours : appState.rates?.trasfShortHours || 4) : 0,
-        trasfertaShort: hasTrasfHalf ? document.getElementById("cfg-trasf-half").value : trasfBaseVal,
-        trasfShortPay: hasTrasfHalf ? document.getElementById("cfg-trasf-half").value : trasfBaseVal,
+        trasfertaShortHours: trasfHalfHours,
+        trasfertaShort: hasTrasfHalf ? (document.getElementById("cfg-trasf-half").value || trasfBaseVal) : trasfBaseVal,
+        trasfShortPay: hasTrasfHalf ? (document.getElementById("cfg-trasf-half").value || trasfBaseVal) : trasfBaseVal,
         weekendHolidayAsTrasferta: document.getElementById("cfg-weekend-rule").value
       };
 
@@ -5822,11 +6394,22 @@ function openModal(id) {
       document.getElementById("ev-detail-title").textContent = ev.title || ev.fullHeading || "Evento #" + ev.id;
       
       const statusBadge = document.getElementById("ev-detail-status-badge");
-      const isPending = (ev.presenza_confirmed === 0 || ev.isTechnicianConfirmed === false);
+      const isRejected = (ev.status === "rifiutato" || ev.isCancelled === true);
+      const isPending = !isRejected && (ev.presenza_confirmed === 0 || ev.isTechnicianConfirmed === false);
       if (statusBadge) {
-        statusBadge.textContent = isPending ? "In Attesa" : "Confermato";
-        statusBadge.style.background = isPending ? "rgba(245,158,11,0.15)" : "rgba(16,185,129,0.15)";
-        statusBadge.style.color = isPending ? "var(--warning)" : "var(--success)";
+        if (isRejected) {
+          statusBadge.textContent = "Rifiutato";
+          statusBadge.style.background = "rgba(239,68,68,0.15)";
+          statusBadge.style.color = "var(--danger)";
+        } else if (isPending) {
+          statusBadge.textContent = "In Attesa";
+          statusBadge.style.background = "rgba(245,158,11,0.15)";
+          statusBadge.style.color = "var(--warning)";
+        } else {
+          statusBadge.textContent = "Confermato";
+          statusBadge.style.background = "rgba(16,185,129,0.15)";
+          statusBadge.style.color = "var(--success)";
+        }
       }
 
       document.getElementById("ev-detail-client").textContent = ev.client || "—";
@@ -5903,10 +6486,14 @@ function openModal(id) {
         }
       }
 
-      // Presenza Card
+      // Presenza Card & Rifiutato Card
       const presCard = document.getElementById("ev-presence-action-card");
       if (presCard) {
         presCard.style.display = isPending ? "block" : "none";
+      }
+      const rejCard = document.getElementById("ev-rejected-action-card");
+      if (rejCard) {
+        rejCard.style.display = isRejected ? "block" : "none";
       }
 
       // Reset Sezioni Dinamiche (Materiali & Note Tecnico)
@@ -6426,6 +7013,42 @@ function openModal(id) {
       }
     }
 
+    async function cancelRejectFromModal() {
+      if (!vrEventsState.currentEventDetail) return;
+      const ev = vrEventsState.currentEventDetail;
+      const ok = await askConfirmation(`Vuoi revocare il rifiuto per il lavoro #${ev.id} e tornare in attesa di conferma?`);
+      if (!ok) return;
+
+      showLoader("Revoca rifiuto in corso...");
+      try {
+        const res = await callApi("miniapp_cancel_reject_vr_work", { eventId: ev.id });
+        hideLoader();
+        if (res && res.success) {
+          showToast("↩️ Rifiuto revocato! Lavoro ripristinato in attesa.");
+          ev.isCancelled = false;
+          ev.isTechnicianConfirmed = false;
+          ev.presenza_confirmed = 0;
+          ev.status = "in_attesa";
+
+          if (!vrEventsState.upcoming.some(e => String(e.id) === String(ev.id))) {
+            vrEventsState.upcoming.unshift(ev);
+          }
+          writeEventsLocalCache(getEventsCacheKey("events"), {
+            upcoming: vrEventsState.upcoming,
+            past: vrEventsState.past
+          });
+          renderEventsList();
+          openEventDetail(ev.id);
+          if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+        } else {
+          alert("Errore revoca rifiuto: " + (res?.error || "Operazione non riuscita"));
+        }
+      } catch (e) {
+        hideLoader();
+        alert("Errore: " + (e.message || String(e)));
+      }
+    }
+
     // Start App (Esecuzione garantita sia con DOM in caricamento sia già pronto)
     function startApp() {
       fetchDashboardData();
@@ -6454,7 +7077,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=16").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=17").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
