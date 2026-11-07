@@ -3286,7 +3286,7 @@
         }
 
         const typeLabel = isCasa 
-          ? (isWeBonus ? `🏠 Casa <span style="font-size:11px;background:rgba(2,132,199,0.22);color:#38bdf8;padding:2px 7px;border-radius:6px;font-weight:700;margin-left:6px;border:1px solid rgba(56,189,248,0.3);">🚗 Tariffa WE</span>` : "🏠 Casa") 
+          ? (isWeBonus ? `🏠 Casa <span style="font-size:11px;background:rgba(2,132,199,0.22);color:#38bdf8;padding:2px 7px;border-radius:6px;font-weight:700;margin-left:6px;border:1px solid rgba(56,189,248,0.3);">🚗 Tariffa Weekend</span>` : "🏠 Casa") 
           : "🚗 Trasferta";
         title.innerHTML = `In Turno • ${typeLabel}`;
         badge.className = "status-badge live";
@@ -3326,9 +3326,13 @@
         if (btnCasa) {
           const todayBonus = getWeekendBonusDetails(new Date(), "CASA");
           if (todayBonus.isApplicable) {
-            btnCasa.innerHTML = "🏠 Inizia Casa (Tariffa WE ⭐)";
+            btnCasa.innerHTML = '<div>🏠 Inizia Casa</div><div style="font-size:10.5px;font-weight:500;opacity:0.85;margin-top:2px;line-height:1.1;">(Tariffa Weekend)</div>';
+            btnCasa.style.flexDirection = "column";
+            btnCasa.style.padding = "8px 10px";
           } else {
             btnCasa.innerHTML = "🏠 Inizia Casa";
+            btnCasa.style.flexDirection = "";
+            btnCasa.style.padding = "";
           }
         }
       }
@@ -4608,7 +4612,7 @@ function openModal(id) {
       if (type === "CASA") {
         const bonus = getWeekendBonusDetails(new Date(), "CASA");
         if (bonus.isApplicable) {
-          titleEl.textContent = "🏠 Inizia Casa (Tariffa WE ⭐)";
+          titleEl.textContent = "🏠 Inizia Casa (Tariffa Weekend)";
           const badgeEl = document.getElementById("start-modal-holiday-badge");
           const descEl = document.getElementById("start-modal-holiday-desc");
           if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta`;
@@ -7112,7 +7116,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=23").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=24").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
