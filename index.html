@@ -45,6 +45,101 @@
       --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
+    /* Light Theme - High Contrast Optimization */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: var(--tg-theme-bg-color, #f1f5f9);
+        --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+        --text: var(--tg-theme-text-color, #0f172a);
+        --text-muted: #475569;
+        --primary: var(--tg-theme-button-color, #0284c7);
+        --primary-text: #ffffff;
+        --accent: #0284c7;
+        --border: rgba(15, 23, 42, 0.12);
+      }
+    }
+
+    [data-theme="light"], body.theme-light {
+      --bg: var(--tg-theme-bg-color, #f1f5f9);
+      --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #0f172a);
+      --text-muted: #475569;
+      --primary: var(--tg-theme-button-color, #0284c7);
+      --primary-text: #ffffff;
+      --accent: #0284c7;
+      --border: rgba(15, 23, 42, 0.12);
+    }
+
+    body.theme-light, [data-theme="light"] {
+      background-color: var(--bg);
+      color: var(--text);
+    }
+    body.theme-light .card, [data-theme="light"] .card {
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+    body.theme-light .shift-title, [data-theme="light"] .shift-title {
+      color: #334155;
+    }
+    body.theme-light .stat-label, [data-theme="light"] .stat-label {
+      color: #475569;
+    }
+    body.theme-light .stat-value, [data-theme="light"] .stat-value {
+      color: #0f172a;
+    }
+    body.theme-light .stat-box, [data-theme="light"] .stat-box {
+      background: rgba(15, 23, 42, 0.04);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+    body.theme-light .btn-outline, [data-theme="light"] .btn-outline {
+      border: 1px solid rgba(15, 23, 42, 0.25);
+      color: #0f172a;
+      background: #ffffff;
+    }
+    body.theme-light .btn-outline:active, [data-theme="light"] .btn-outline:active {
+      background: rgba(15, 23, 42, 0.06);
+    }
+    body.theme-light .icon-btn, [data-theme="light"] .icon-btn {
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.15);
+      color: #0f172a;
+    }
+    body.theme-light .bottom-nav, [data-theme="light"] .bottom-nav {
+      background: rgba(255, 255, 255, 0.96);
+      border-top: 1px solid rgba(15, 23, 42, 0.1);
+    }
+    body.theme-light .nav-item, [data-theme="light"] .nav-item {
+      color: #64748b;
+    }
+    body.theme-light .nav-item.active, [data-theme="light"] .nav-item.active {
+      color: #0284c7;
+    }
+    body.theme-light .action-card, [data-theme="light"] .action-card {
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    body.theme-light .action-title, [data-theme="light"] .action-title {
+      color: #0f172a;
+    }
+    body.theme-light .action-desc, [data-theme="light"] .action-desc {
+      color: #475569;
+    }
+    body.theme-light .modal, [data-theme="light"] .modal {
+      background: #ffffff;
+      color: #0f172a;
+    }
+    body.theme-light .modal-title, [data-theme="light"] .modal-title {
+      color: #0f172a;
+    }
+    body.theme-light input, body.theme-light select, body.theme-light textarea,
+    [data-theme="light"] input, [data-theme="light"] select, [data-theme="light"] textarea {
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid rgba(15, 23, 42, 0.22);
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -242,6 +337,9 @@
       line-height: 1.25;
       text-align: center;
       flex: 0 0 auto;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .btn:active {
       transform: scale(0.97);
@@ -249,6 +347,10 @@
     .btn-row .btn {
       flex: 1 1 0;
       min-width: 0;
+      font-size: 13px;
+      padding: 10px 8px;
+    }
+    #shift-closed-actions .btn, #shift-open-actions .btn {
       white-space: nowrap;
       font-size: 13px;
       padding: 11px 8px;
@@ -1500,8 +1602,8 @@
 
         <button class="btn btn-outline" style="width:100%;margin-bottom:10px;" onclick="openGoogleSheet()">📊 Apri Foglio Personale su Google Drive</button>
         <div class="btn-row">
-          <button class="btn btn-primary" onclick="openMonthlyPdfPreview()">📄 Anteprima Consuntivo</button>
-          <button class="btn btn-success" onclick="sendPdfToTelegram()">📩 Invia PDF su Telegram</button>
+          <button class="btn btn-primary" onclick="openMonthlyPdfPreview()">📄 Anteprima PDF</button>
+          <button class="btn btn-success" onclick="sendPdfToTelegram()">📩 Invia PDF</button>
         </div>
       </div>
 
@@ -1512,7 +1614,7 @@
           Guida ufficiale e documentazione completa all'utilizzo del Bot e della Mini App.
         </p>
         <div class="btn-row">
-          <button class="btn btn-primary" onclick="openManualReader()">📖 Leggi Manuale Completo</button>
+          <button class="btn btn-primary" onclick="openManualReader()">📖 Leggi Manuale</button>
           <button class="btn btn-outline" onclick="openPdfDownloadFromManual()">⬇️ Scarica PDF</button>
         </div>
       </div>
@@ -2647,6 +2749,43 @@
       tg.ready();
       tg.expand();
       try { tg.disableClosingConfirmation(); } catch (e) {}
+    }
+
+    // Rilevamento e applicazione immediata tema chiaro / scuro
+    function applyThemeMode() {
+      const t = window.Telegram?.WebApp;
+      let isLight = false;
+      if (t && t.colorScheme) {
+        isLight = (t.colorScheme === 'light');
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        isLight = true;
+      }
+
+      try {
+        const computedBg = getComputedStyle(document.documentElement).getPropertyValue('--tg-theme-bg-color').trim();
+        if (computedBg && computedBg.startsWith('#')) {
+          const hex = computedBg.replace('#', '');
+          if (hex.length === 6) {
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+            if (luminance > 160) isLight = true;
+          }
+        }
+      } catch(e) {}
+
+      if (isLight) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.body.classList.add('theme-light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.body.classList.remove('theme-light');
+      }
+    }
+    applyThemeMode();
+    if (window.Telegram?.WebApp) {
+      try { window.Telegram.WebApp.onEvent('themeChanged', applyThemeMode); } catch (e) {}
     }
 
     // Telegram Haptic Feedback Wrapper sicuro
@@ -4101,6 +4240,12 @@
       document.querySelectorAll(".view-screen").forEach(s => s.classList.remove("active"));
       const target = document.getElementById(`screen-${name}`);
       if (target) target.classList.add("active");
+
+      // Reset scroll alla cima ad ogni cambio schermata
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      if (target) target.scrollTop = 0;
 
       document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
       if (name === "dashboard") document.querySelectorAll(".nav-item")[0]?.classList.add("active");
@@ -7534,7 +7679,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=30").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=31").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
