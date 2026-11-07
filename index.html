@@ -1032,20 +1032,8 @@
           <span id="start-shift-weekend-pill-text">Sabato: tariffa Trasferta</span>
         </div>
 
-        <!-- Buttons when shift is closed -->
-        <div id="shift-closed-actions" class="btn-row">
-          <button id="btn-start-casa" class="btn btn-primary" onclick="openStartShiftModal('CASA')">🏠 Inizia Casa</button>
-          <button id="btn-start-trasf" class="btn btn-primary" style="background:#0284c7;" onclick="openStartShiftModal('TRASFERTA')">🚗 Inizia Trasferta</button>
-        </div>
-
-        <!-- Buttons when shift is open -->
-        <div id="shift-open-actions" class="btn-row" style="display:none;">
-          <button class="btn btn-success" onclick="openEndShiftModal()">⏹️ Chiudi Turno</button>
-          <button class="btn btn-danger" onclick="confirmCancelShift()">🗑️ Annulla</button>
-        </div>
-
-        <!-- Quick Button Scheda Evento Odierno -->
-        <div id="today-event-quick-btn" style="display:none;margin-top:10px;" onclick="openTodayEventModal()">
+        <!-- Quick Button Scheda Evento Odierno (Sopra i pulsanti di azione) -->
+        <div id="today-event-quick-btn" style="display:none;margin-top:10px;margin-bottom:10px;" onclick="openTodayEventModal()">
           <button type="button" class="btn btn-outline" style="width:100%;justify-content:space-between;padding:9px 12px;font-size:12px;background:rgba(2,132,199,0.08);border:1px solid rgba(56,189,248,0.35);color:var(--text);border-radius:10px;">
             <span style="display:flex;align-items:center;gap:7px;min-width:0;text-align:left;">
               <span style="font-size:14px;">📋</span>
@@ -1054,6 +1042,18 @@
             </span>
             <span style="font-size:11.5px;color:var(--accent);font-weight:700;flex-shrink:0;margin-left:6px;">Dettagli ➔</span>
           </button>
+        </div>
+
+        <!-- Buttons when shift is closed (Sempre ultimi in fondo) -->
+        <div id="shift-closed-actions" class="btn-row">
+          <button id="btn-start-casa" class="btn btn-primary" onclick="openStartShiftModal('CASA')">🏠 Inizia Casa</button>
+          <button id="btn-start-trasf" class="btn btn-primary" style="background:#0284c7;" onclick="openStartShiftModal('TRASFERTA')">🚗 Inizia Trasferta</button>
+        </div>
+
+        <!-- Buttons when shift is open (Sempre ultimi in fondo) -->
+        <div id="shift-open-actions" class="btn-row" style="display:none;">
+          <button class="btn btn-success" onclick="openEndShiftModal()">⏹️ Chiudi Turno</button>
+          <button class="btn btn-danger" onclick="confirmCancelShift()">🗑️ Annulla</button>
         </div>
       </div>
 
@@ -3327,10 +3327,8 @@
           }
         }
 
-        const typeLabel = isCasa 
-          ? (isWeBonus ? `🏠 Casa <span style="font-size:11px;background:rgba(2,132,199,0.22);color:#38bdf8;padding:2px 7px;border-radius:6px;font-weight:700;margin-left:6px;border:1px solid rgba(56,189,248,0.3);">🚗 Tariffa Weekend</span>` : "🏠 Casa") 
-          : "🚗 Trasferta";
-        title.innerHTML = `In Turno • ${typeLabel}`;
+        const typeLabel = isCasa ? "🏠 Casa" : "🚗 Trasferta";
+        title.textContent = `In Turno • ${typeLabel}`;
         badge.className = "status-badge live";
         badge.textContent = "In Servizio";
         pulse.style.display = "inline-block";
@@ -6372,6 +6370,7 @@ function openModal(id) {
             vrEventsState.past = past;
             vrEventsState.loaded = true;
             writeEventsLocalCache(getEventsCacheKey("events"), { upcoming, past });
+            updateTodayEventQuickButton();
           }
         }
 
@@ -6379,10 +6378,12 @@ function openModal(id) {
         const allEvents = [...upcoming, ...past];
         const todayEvent = allEvents.find(ev => {
           if (!ev || !ev.start) return false;
-          const sIso = String(ev.start).split("T")[0].split(" ")[0];
-          const eIso = ev.end ? String(ev.end).split("T")[0].split(" ")[0] : sIso;
+          const sIso = String(ev.start).split("T")[0].split(" ")[0].trim();
+          const eIso = (ev.end ? String(ev.end) : String(ev.start)).split("T")[0].split(" ")[0].trim();
           return todayIso >= sIso && todayIso <= eIso;
         });
+
+        updateTodayEventQuickButton();
 
         if (!todayEvent || !todayEvent.id) {
           return; // Nessun evento in calendario per oggi
@@ -6414,6 +6415,29 @@ function openModal(id) {
       }
     }
 
+    let isFetchingEventsForTodayButton = false;
+    async function ensureTodayVrEventLoaded() {
+      if (isFetchingEventsForTodayButton) return;
+      isFetchingEventsForTodayButton = true;
+      try {
+        const res = await callApi("miniapp_get_vr_events");
+        if (res && res.success && Array.isArray(res.upcoming)) {
+          vrEventsState.upcoming = res.upcoming || [];
+          vrEventsState.past = res.past || [];
+          vrEventsState.loaded = true;
+          writeEventsLocalCache(getEventsCacheKey("events"), {
+            upcoming: vrEventsState.upcoming,
+            past: vrEventsState.past
+          });
+          updateTodayEventQuickButton();
+        }
+      } catch (e) {
+        console.warn("Auto-load events error:", e);
+      } finally {
+        isFetchingEventsForTodayButton = false;
+      }
+    }
+
     function ensureVrEventsLoaded() {
       if (!vrEventsState.loaded || (vrEventsState.upcoming.length === 0 && vrEventsState.past.length === 0)) {
         try {
@@ -6432,13 +6456,42 @@ function openModal(id) {
         ensureVrEventsLoaded();
         const now = new Date();
         const todayIso = Utilities_formatDateOnly(now);
+        const shiftIso = appState.activeShift?.dateObj ? Utilities_formatDateOnly(new Date(appState.activeShift.dateObj)) : todayIso;
+        const activeJobId = appState.activeShift?.jobId ? String(appState.activeShift.jobId).replace("#", "").trim() : "";
+
         const allEvs = [...(vrEventsState.upcoming || []), ...(vrEventsState.past || [])];
-        return allEvs.find(ev => {
-          if (!ev || !ev.start) return false;
-          const sIso = String(ev.start).split("T")[0].split(" ")[0];
-          const eIso = ev.end ? String(ev.end).split("T")[0].split(" ")[0] : sIso;
-          return todayIso >= sIso && todayIso <= eIso;
-        }) || null;
+
+        // 1. Cerca per ID commessa associata al turno attivo
+        if (activeJobId && allEvs.length > 0) {
+          const matchById = allEvs.find(ev => ev && String(ev.id).replace("#", "").trim() === activeJobId);
+          if (matchById) return matchById;
+        }
+
+        // 2. Cerca per data odierna o data del turno
+        if (allEvs.length > 0) {
+          const matchByDate = allEvs.find(ev => {
+            if (!ev || !ev.start) return false;
+            const sIso = String(ev.start).split("T")[0].split(" ")[0].trim();
+            const eIso = (ev.end ? String(ev.end) : String(ev.start)).split("T")[0].split(" ")[0].trim();
+            return (todayIso >= sIso && todayIso <= eIso) || (shiftIso >= sIso && shiftIso <= eIso);
+          });
+          if (matchByDate) return matchByDate;
+        }
+
+        // 3. Fallback se eventi in fase di scaricamento ma il turno attivo ha jobId
+        if (activeJobId) {
+          if (!vrEventsState.loaded || allEvs.length === 0) {
+            ensureTodayVrEventLoaded();
+          }
+          return { id: activeJobId, title: "Commessa #" + activeJobId };
+        }
+
+        // 4. Se la cache è vuota, avvia lo scaricamento in background e aggiorna la card all'arrivo
+        if (!vrEventsState.loaded || allEvs.length === 0) {
+          ensureTodayVrEventLoaded();
+        }
+
+        return null;
       } catch(e) {
         return null;
       }
@@ -6697,9 +6750,33 @@ function openModal(id) {
     }
 
     async function openEventDetail(eventId) {
-      const all = [...vrEventsState.upcoming, ...vrEventsState.past];
-      const ev = all.find(e => String(e.id) === String(eventId));
-      if (!ev) return;
+      const cleanTargetId = String(eventId).replace("#", "").trim();
+      let all = [...vrEventsState.upcoming, ...vrEventsState.past];
+      let ev = all.find(e => String(e.id).replace("#", "").trim() === cleanTargetId);
+
+      if (!ev) {
+        showLoader("Caricamento scheda...");
+        try {
+          const res = await callApi("miniapp_get_vr_events");
+          if (res && res.success && Array.isArray(res.upcoming)) {
+            vrEventsState.upcoming = res.upcoming || [];
+            vrEventsState.past = res.past || [];
+            vrEventsState.loaded = true;
+            writeEventsLocalCache(getEventsCacheKey("events"), {
+              upcoming: vrEventsState.upcoming,
+              past: vrEventsState.past
+            });
+            all = [...vrEventsState.upcoming, ...vrEventsState.past];
+            ev = all.find(e => String(e.id).replace("#", "").trim() === cleanTargetId);
+          }
+        } catch(e) {} finally {
+          hideLoader();
+        }
+      }
+      if (!ev) {
+        showToast("⚠️ Scheda commessa non trovata a gestionale");
+        return;
+      }
 
       vrEventsState.currentEventDetail = ev;
 
@@ -7393,7 +7470,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=28").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=29").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
