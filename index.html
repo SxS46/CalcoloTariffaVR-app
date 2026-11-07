@@ -1023,13 +1023,13 @@
         <!-- Badge Informativo Weekend / Festivo per Turno in Corso -->
         <div id="shift-weekend-badge" style="display:none;align-items:center;gap:6px;font-size:12px;color:#38bdf8;background:rgba(2,132,199,0.12);padding:6px 10px;border-radius:8px;margin-top:8px;border:1px solid rgba(56,189,248,0.25);">
           <span>🚗</span>
-          <span id="shift-weekend-badge-text"><b>Weekend:</b> Tariffa Trasferta applicata</span>
+          <span id="shift-weekend-badge-text"><b>Weekend:</b> tariffa Trasferta</span>
         </div>
 
         <!-- Pill Informativa Weekend / Festivo prima dell'avvio turno (sopra i due pulsanti) -->
         <div id="start-shift-weekend-pill" style="display:none;align-items:center;justify-content:center;gap:6px;font-size:11.5px;font-weight:600;color:#38bdf8;background:rgba(2,132,199,0.12);padding:7px 12px;border-radius:10px;margin-top:10px;margin-bottom:10px;border:1px solid rgba(56,189,248,0.25);text-align:center;">
           <span>🚗</span>
-          <span id="start-shift-weekend-pill-text">Weekend: a Casa si applica la tariffa Trasferta</span>
+          <span id="start-shift-weekend-pill-text">Sabato: tariffa Trasferta</span>
         </div>
 
         <!-- Buttons when shift is closed -->
@@ -1991,7 +1991,7 @@
           <span>✨</span> <span id="start-modal-holiday-badge">Weekend / Festivo Rilevato</span>
         </div>
         <div style="font-size:12.5px;color:var(--text-color, #fff);margin-top:4px;line-height:1.45;" id="start-modal-holiday-desc">
-          Oggi è <b>Sabato</b>: secondo le tue impostazioni, lavorando a <b>Casa</b> verrà applicata automaticamente la <b>tariffa Trasferta (250 € invece di 220 €)</b>.
+          <b>Sabato:</b> tariffa Trasferta
         </div>
       </div>
 
@@ -2019,7 +2019,7 @@
           <span>✨</span> <span id="end-modal-holiday-badge">Tariffa Trasferta Weekend Attiva</span>
         </div>
         <div style="font-size:12px;color:var(--text-color, #fff);margin-top:3px;line-height:1.4;" id="end-modal-holiday-desc">
-          A questo turno a Casa verrà applicata la tariffa Trasferta.
+          <b>Sabato:</b> tariffa Trasferta
         </div>
       </div>
 
@@ -2111,7 +2111,7 @@
           <span>✨</span> <span id="manual-holiday-badge">Weekend / Festivo Rilevato</span>
         </div>
         <div style="font-size:12px;color:var(--text-color, #fff);margin-top:3px;line-height:1.4;" id="manual-holiday-desc">
-          Per questa data a Casa verrà applicata automaticamente la tariffa Trasferta.
+          <b>Weekend:</b> tariffa Trasferta
         </div>
       </div>
       <div class="form-group">
@@ -2188,7 +2188,7 @@
           <span>✨</span> <span id="edit-holiday-badge">Weekend / Festivo Rilevato</span>
         </div>
         <div style="font-size:12px;color:var(--text-color, #fff);margin-top:3px;line-height:1.4;" id="edit-holiday-desc">
-          Per questa data a Casa viene applicata la tariffa Trasferta.
+          <b>Weekend:</b> tariffa Trasferta
         </div>
       </div>
 
@@ -3316,7 +3316,7 @@
           const tBase = appState.rates?.trasfertaBase || appState.rates?.trasfBase || 250;
           weekendBadgeEl.style.display = "flex";
           if (weekendBadgeTextEl) {
-            weekendBadgeTextEl.innerHTML = `<b>${hName || "Weekend"}:</b> Tariffa Trasferta applicata (<b>${tBase} €</b> base)`;
+            weekendBadgeTextEl.innerHTML = `<b>${hName || "Weekend"}:</b> tariffa Trasferta`;
           }
         } else if (weekendBadgeEl) {
           weekendBadgeEl.style.display = "none";
@@ -3351,10 +3351,7 @@
           if (todayBonus.isApplicable) {
             preShiftPill.style.display = "flex";
             if (preShiftPillText) {
-              const diffText = (todayBonus.trasfertaBase && todayBonus.casaBase && todayBonus.trasfertaBase > todayBonus.casaBase)
-                ? ` (<b>${todayBonus.trasfertaBase} €</b> anziché ${todayBonus.casaBase} €)`
-                : ` (<b>${todayBonus.trasfertaBase} €</b>)`;
-              preShiftPillText.innerHTML = `<b>${todayBonus.holidayName}:</b> a Casa si applica la tariffa Trasferta${diffText}`;
+              preShiftPillText.innerHTML = `<b>${todayBonus.holidayName}:</b> tariffa Trasferta`;
             }
           } else {
             preShiftPill.style.display = "none";
@@ -4572,6 +4569,29 @@ function openModal(id) {
       ];
     }
 
+    function computeTimeSuggestionsAround(timeStr, offsets) {
+      const norm = normalizeInputTime(timeStr || "17:00");
+      const parts = norm.split(":");
+      let h = parseInt(parts[0], 10);
+      let m = parseInt(parts[1], 10);
+      if (isNaN(h)) h = 17;
+      if (isNaN(m)) m = 0;
+      m = (m < 15) ? 0 : (m < 45) ? 30 : 0;
+      if (parseInt(parts[1], 10) >= 45) h = (h + 1) % 24;
+      const defaultOffsets = offsets || [-60, -30, 0, 30, 60];
+      return defaultOffsets.map(off => formatOffsetTimeColon(h, m, off));
+    }
+
+    function computeDefaultEnd(startTimeStr) {
+      const norm = normalizeInputTime(startTimeStr || "08:00");
+      const parts = norm.split(":");
+      let h = parseInt(parts[0], 10);
+      let m = parseInt(parts[1], 10) || 0;
+      if (isNaN(h)) h = 8;
+      const endMin = h * 60 + m + 9 * 60;
+      return formatOffsetTimeColon(Math.floor(endMin / 60) % 24, endMin % 60, 0);
+    }
+
     function renderTimePillSuggestions(containerId, inputId, suggestions, defaultVal) {
       const container = document.getElementById(containerId);
       const input = document.getElementById(inputId);
@@ -4642,7 +4662,7 @@ function openModal(id) {
           const descEl = document.getElementById("start-modal-holiday-desc");
           if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta`;
           if (descEl) {
-            descEl.innerHTML = `Oggi è <b>${bonus.holidayName}</b>: come da accordi, lavorando a <b>Casa</b> ti verrà applicata automaticamente la <b>tariffa Trasferta (${bonus.trasfertaBase} € anziché ${bonus.casaBase} €)</b>.`;
+            descEl.innerHTML = `<b>${bonus.holidayName}:</b> tariffa Trasferta`;
           }
           if (alertEl) alertEl.style.display = "block";
         } else {
@@ -4726,9 +4746,9 @@ function openModal(id) {
         if (bonus.isApplicable) {
           const badgeEl = document.getElementById("end-modal-holiday-badge");
           const descEl = document.getElementById("end-modal-holiday-desc");
-          if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta Attiva`;
+          if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta`;
           if (descEl) {
-            descEl.innerHTML = `A questa giornata a Casa verrà applicata la <b>tariffa Trasferta (${bonus.trasfertaBase} €)</b> con maggiorazione automatica di <b>+${bonus.diff} €</b> negli extra.`;
+            descEl.innerHTML = `<b>${bonus.holidayName}:</b> tariffa Trasferta`;
           }
           if (alertEl) alertEl.style.display = "block";
         } else if (alertEl) {
@@ -5063,21 +5083,32 @@ function openModal(id) {
       toggleEditFixedPay(isFixed);
       document.getElementById("edit-fixed-pay").value = isFixed ? (entry.fixedPay || entry.dayPay || "") : "";
 
-      const startSuggs = ["07:00", "07:30", "08:00", "08:30", "09:00"];
+      // 1. Orario Inizio: basato sull'orario di inizio già registrato per la giornata
       const initStart = entry.start ? normalizeInputTime(entry.start) : "08:00";
+      const startSuggs = computeTimeSuggestionsAround(initStart, [-60, -30, 0, 30, 60]);
       renderTimePillSuggestions("edit-start-suggestions", "edit-start", startSuggs, initStart);
 
+      // 2. Orario Fine: basato sull'orario di fine già registrato per la giornata (NON sull'ora attuale)
+      const initEnd = entry.end ? normalizeInputTime(entry.end) : computeDefaultEnd(initStart);
+      const endSuggs = computeTimeSuggestionsAround(initEnd, [-60, -30, 0, 30, 60]);
+      renderTimePillSuggestions("edit-end-suggestions", "edit-end", endSuggs, initEnd);
+
       const updateEditEndSuggs = () => {
-        const sVal = document.getElementById("edit-start").value || "08:00";
-        const endSuggs = computeEndTimeSuggestions(sVal, false);
-        const curEnd = document.getElementById("edit-end").value || entry.end;
-        const defEnd = curEnd ? normalizeInputTime(curEnd) : endSuggs[0];
-        renderTimePillSuggestions("edit-end-suggestions", "edit-end", endSuggs, defEnd);
+        const curEndVal = document.getElementById("edit-end").value;
+        const refEnd = curEndVal ? normalizeInputTime(curEndVal) : initEnd;
+        const newSuggs = computeTimeSuggestionsAround(refEnd, [-60, -30, 0, 30, 60]);
+        renderTimePillSuggestions("edit-end-suggestions", "edit-end", newSuggs, curEndVal ? normalizeInputTime(curEndVal) : newSuggs[2]);
       };
 
       const editStartInput = document.getElementById("edit-start");
-      editStartInput.onchange = updateEditEndSuggs;
-      updateEditEndSuggs();
+      editStartInput.onchange = function() {
+        if (!document.getElementById("edit-end").value) {
+          const sVal = editStartInput.value;
+          const defEnd = computeDefaultEnd(sVal);
+          const newSuggs = computeTimeSuggestionsAround(defEnd, [-60, -30, 0, 30, 60]);
+          renderTimePillSuggestions("edit-end-suggestions", "edit-end", newSuggs, defEnd);
+        }
+      };
 
       // Configura pulsante Unisci / Separa da Evento Ieri (Parità 100% Bot)
       const btnToggle = document.getElementById("btn-edit-toggle-event");
@@ -7195,7 +7226,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=26").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=27").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
