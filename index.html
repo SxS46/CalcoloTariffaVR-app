@@ -3436,6 +3436,9 @@
           renderActiveShift();
           renderStats();
           renderEntries();
+          renderDashboardWeek();
+          renderDashboardMonthPreview();
+          updateTodayEventQuickButton();
 
           const isEditingSettings = appState.currentScreen === "settings" && 
             document.activeElement && 
@@ -5107,6 +5110,8 @@ function openModal(id) {
       openModal("modal-start-shift");
     }
 
+    let isShiftActionInProgress = false;
+
     async function confirmStartShift() {
       const type = document.getElementById("start-modal-type").value;
       const rawStart = document.getElementById("start-modal-time").value;
@@ -5334,27 +5339,60 @@ function openModal(id) {
     async function confirmCancelShift() {
       const ok = await askConfirmation("⚠️ Sei sicuro di voler annullare il turno in corso senza salvare?\n\nTutti i dati registrati per la giornata odierna andranno persi.");
       if (!ok) return;
+
+      isShiftActionInProgress = true;
       showLoader("Annullamento turno...");
+
+      // Aggiornamento ottimistico immediato: resetta la view all'istante
+      appState.activeShift = null;
+      renderActiveShift();
+      renderDashboardWeek();
+      renderDashboardMonthPreview();
+      updateTodayEventQuickButton();
+
+      const tgUser = getTelegramUser();
+      if (tgUser && tgUser.id) {
+        const dashCacheKey = "vr_dashboard_cache_" + tgUser.id;
+        const cached = readAppLocalCache(dashCacheKey);
+        if (cached && cached.data) {
+          cached.data.activeShift = null;
+          writeAppLocalCache(dashCacheKey, cached.data);
+        }
+      }
+
       try {
         const res = await callApi("miniapp_cancel_shift");
-        if (res.success) {
+        if (res && res.success) {
           appState.activeShift = null;
+          if (res.stats) appState.stats = res.stats;
+          if (res.entries) appState.entries = res.entries;
           renderActiveShift();
-          const tgUser = getTelegramUser();
+          renderDashboardWeek();
+          renderDashboardMonthPreview();
+          renderStats();
+          renderEntries();
+          updateTodayEventQuickButton();
+
           if (tgUser && tgUser.id) {
             const dashCacheKey = "vr_dashboard_cache_" + tgUser.id;
             const cached = readAppLocalCache(dashCacheKey);
             if (cached && cached.data) {
               cached.data.activeShift = null;
+              if (res.stats) cached.data.stats = res.stats;
+              if (res.entries) cached.data.entries = res.entries;
               writeAppLocalCache(dashCacheKey, cached.data);
             }
           }
           showToast("🗑️ Turno annullato.");
+        } else {
+          fetchDashboardData(true);
         }
       } catch (e) {
         alert("Errore: " + e.message);
+        fetchDashboardData(true);
       } finally {
         hideLoader();
+        setTimeout(() => { isShiftActionInProgress = false; }, 1200);
       }
     }
 
@@ -7911,7 +7949,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=44").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=45").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
