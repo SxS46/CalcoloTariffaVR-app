@@ -3520,6 +3520,30 @@
       return `${y}-${m}-${day}`;
     }
 
+    function getSafeEntryHours(entry) {
+      if (!entry) return 0;
+      const h = Number(entry.hours);
+      if (!isNaN(h) && h > 0 && h < 100) {
+        return Math.round(h * 10) / 10;
+      }
+      if (entry.start && entry.end) {
+        const parseDec = (str) => {
+          const p = String(str).replace(".", ":").split(":");
+          const hr = parseInt(p[0], 10);
+          const mn = parseInt(p[1] || "0", 10);
+          if (isNaN(hr)) return null;
+          return hr + (isNaN(mn) ? 0 : mn / 60);
+        };
+        const s = parseDec(entry.start);
+        let e = parseDec(entry.end);
+        if (s !== null && e !== null) {
+          if (e < s) e += 24;
+          return Math.round((e - s) * 10) / 10;
+        }
+      }
+      return 0;
+    }
+
     function renderDashboardWeek() {
       const offset = appState.dashboardWeekOffset || 0;
       const now = new Date();
@@ -3585,18 +3609,22 @@
 
         if (entry) {
           weekDaysWorked++;
-          const hVal = Number(entry.hours || 0);
+          const hVal = getSafeEntryHours(entry);
           weekTotalHours += hVal;
           const pVal = Number(entry.total || entry.dayPay || 0);
           weekTotalPay += pVal;
           const isCasa = (entry.type === "CASA");
+
+          const hoursDisp = (entry.start && entry.end)
+            ? `${entry.start}-${entry.end} (${hVal.toFixed(1)}h)`
+            : (hVal > 0 ? `(${hVal.toFixed(1)}h)` : '');
 
           dayBadgeHtml += `
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:${isCasa ? 'rgba(2,132,199,0.18)' : 'rgba(103,175,35,0.18)'};color:${isCasa ? 'var(--primary)' : 'var(--success)'};border:1px solid ${isCasa ? 'rgba(2,132,199,0.3)' : 'rgba(103,175,35,0.3)'};">
                 ${isCasa ? '🏠 Casa' : '🚗 Trasf'}
               </span>
-              <span style="font-size:11px;color:var(--text-muted);">${entry.start}-${entry.end} (${hVal.toFixed(1)}h)</span>
+              <span style="font-size:11px;color:var(--text-muted);">${hoursDisp}</span>
             </div>
           </div>
           <div style="font-size:12px;font-weight:700;color:var(--text);">
@@ -7147,7 +7175,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=20").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=21").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
