@@ -3934,14 +3934,6 @@
       renderDashboardWeek();
     }
 
-    function formatDateOnlyDM(dateObj) {
-      if (!dateObj) return "";
-      const d = (dateObj instanceof Date) ? dateObj : new Date(dateObj);
-      const dd = String(d.getDate()).padStart(2, '0');
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      return `${dd}/${mm}`;
-    }
-
     function Utilities_formatDateOnly(d) {
       if (!d) return "";
       const y = d.getFullYear();
@@ -5118,7 +5110,7 @@ function openModal(id) {
 
       try {
         const res = await callApi("miniapp_start_shift", { type: type, start: start, jobId: todayJobId });
-        if (res && res.success) {
+        if (res.success) {
           appState.activeShift = res.activeShift;
           renderActiveShift();
           const tgUser = getTelegramUser();
@@ -5133,7 +5125,7 @@ function openModal(id) {
           showToast("🟢 Turno aperto con successo!");
           if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
-          alert("Errore: " + (res?.error || "Operazione non riuscita"));
+          alert("Errore: " + res.error);
         }
       } catch (e) {
         alert("Errore: " + e.message);
@@ -7847,8 +7839,8 @@ function openModal(id) {
     let lastForegroundSyncTime = 0;
     function syncMiniAppInForeground(force = false) {
       const now = Date.now();
-      // Throttling leggero a 2 secondi per reattività immediata al ritorno da chat
-      if (!force && (now - lastForegroundSyncTime < 2000)) return;
+      // Throttling di sicurezza a 8 secondi per evitare spam se l'utente cambia tab rapidamente
+      if (!force && (now - lastForegroundSyncTime < 8000)) return;
       lastForegroundSyncTime = now;
       fetchDashboardData(force);
     }
@@ -7856,7 +7848,7 @@ function openModal(id) {
     function startApp() {
       fetchDashboardData();
 
-      // Sincronizzazione automatica reattiva: visibilitychange, focus, pageshow e viewport Telegram
+      // Sincronizzazione automatica al ritorno in primo piano (focus/visibilitychange)
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden) {
           syncMiniAppInForeground(false);
@@ -7865,23 +7857,6 @@ function openModal(id) {
       window.addEventListener("focus", () => {
         syncMiniAppInForeground(false);
       });
-      window.addEventListener("pageshow", () => {
-        syncMiniAppInForeground(true);
-      });
-      if (window.Telegram?.WebApp) {
-        try {
-          window.Telegram.WebApp.onEvent('viewportChanged', () => {
-            syncMiniAppInForeground(false);
-          });
-        } catch (e) {}
-      }
-
-      // Polling leggero in background (ogni 6s) per allineare subito cambi turno effettuati in chat
-      setInterval(() => {
-        if (!document.hidden && document.getElementById("loader")?.style.display === "none") {
-          syncMiniAppInForeground(false);
-        }
-      }, 6000);
 
       // Blocca lo scroll dello sfondo opaco dei modali e gestisce chiusura su click overlay
       document.querySelectorAll(".modal-overlay").forEach(overlay => {
@@ -7907,7 +7882,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=42").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=43").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
