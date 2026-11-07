@@ -3285,7 +3285,9 @@
           }
         }
 
-        const typeLabel = isCasa ? "🏠 Casa" : "🚗 Trasferta";
+        const typeLabel = isCasa 
+          ? (isWeBonus ? `🏠 Casa <span style="font-size:11px;background:rgba(2,132,199,0.22);color:#38bdf8;padding:2px 7px;border-radius:6px;font-weight:700;margin-left:6px;border:1px solid rgba(56,189,248,0.3);">🚗 Tariffa WE</span>` : "🏠 Casa") 
+          : "🚗 Trasferta";
         title.innerHTML = `In Turno • ${typeLabel}`;
         badge.className = "status-badge live";
         badge.textContent = "In Servizio";
@@ -3294,7 +3296,16 @@
         elapsedTag.style.display = "block";
         closedActions.style.display = "none";
         openActions.style.display = "flex";
-        if (weekendBadgeEl) weekendBadgeEl.style.display = "none";
+
+        if (isCasa && isWeBonus && weekendBadgeEl) {
+          const tBase = appState.rates?.trasfertaBase || appState.rates?.trasfBase || 250;
+          weekendBadgeEl.style.display = "flex";
+          if (weekendBadgeTextEl) {
+            weekendBadgeTextEl.innerHTML = `<b>${hName || "Weekend"}:</b> Tariffa Trasferta applicata (<b>${tBase} €</b> base)`;
+          }
+        } else if (weekendBadgeEl) {
+          weekendBadgeEl.style.display = "none";
+        }
 
         updateElapsedTime();
         appState.timerInterval = setInterval(updateElapsedTime, 60000);
@@ -3313,7 +3324,12 @@
         if (progContainer) progContainer.style.display = "none";
 
         if (btnCasa) {
-          btnCasa.innerHTML = "🏠 Inizia Casa";
+          const todayBonus = getWeekendBonusDetails(new Date(), "CASA");
+          if (todayBonus.isApplicable) {
+            btnCasa.innerHTML = "🏠 Inizia Casa (Tariffa WE ⭐)";
+          } else {
+            btnCasa.innerHTML = "🏠 Inizia Casa";
+          }
         }
       }
     }
@@ -4587,13 +4603,26 @@ function openModal(id) {
       document.getElementById("start-modal-type").value = type;
       
       const alertEl = document.getElementById("start-modal-weekend-alert");
-      if (alertEl) alertEl.style.display = "none";
       const titleEl = document.getElementById("start-modal-title");
 
       if (type === "CASA") {
-        titleEl.textContent = "🏠 Inizia Turno Casa";
+        const bonus = getWeekendBonusDetails(new Date(), "CASA");
+        if (bonus.isApplicable) {
+          titleEl.textContent = "🏠 Inizia Casa (Tariffa WE ⭐)";
+          const badgeEl = document.getElementById("start-modal-holiday-badge");
+          const descEl = document.getElementById("start-modal-holiday-desc");
+          if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta`;
+          if (descEl) {
+            descEl.innerHTML = `Oggi è <b>${bonus.holidayName}</b>: come da accordi, lavorando a <b>Casa</b> ti verrà applicata automaticamente la <b>tariffa Trasferta (${bonus.trasfertaBase} € anziché ${bonus.casaBase} €)</b>.`;
+          }
+          if (alertEl) alertEl.style.display = "block";
+        } else {
+          titleEl.textContent = "🏠 Inizia Turno Casa";
+          if (alertEl) alertEl.style.display = "none";
+        }
       } else {
         titleEl.textContent = "🚗 Inizia Turno Trasferta";
+        if (alertEl) alertEl.style.display = "none";
       }
       
       const suggs = computeStartTimeSuggestions();
@@ -7083,7 +7112,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=22").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=23").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
