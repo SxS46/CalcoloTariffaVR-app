@@ -249,6 +249,10 @@
     .btn-row .btn {
       flex: 1 1 0;
       min-width: 0;
+      white-space: nowrap;
+      font-size: 13px;
+      padding: 11px 8px;
+      letter-spacing: -0.2px;
     }
     .btn-block, .w-full {
       width: 100%;
@@ -1032,16 +1036,38 @@
           <span id="start-shift-weekend-pill-text">Sabato: tariffa Trasferta</span>
         </div>
 
-        <!-- Quick Button Scheda Evento Odierno (Sopra i pulsanti di azione) -->
-        <div id="today-event-quick-btn" style="display:none;margin-top:10px;margin-bottom:10px;" onclick="openTodayEventModal()">
-          <button type="button" class="btn btn-outline" style="width:100%;justify-content:space-between;padding:9px 12px;font-size:12px;background:rgba(2,132,199,0.08);border:1px solid rgba(56,189,248,0.35);color:var(--text);border-radius:10px;">
-            <span style="display:flex;align-items:center;gap:7px;min-width:0;text-align:left;">
-              <span style="font-size:14px;">📋</span>
-              <span style="font-weight:700;color:var(--accent);">Scheda Oggi:</span>
-              <span id="today-event-quick-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;">Caricamento...</span>
-            </span>
-            <span style="font-size:11.5px;color:var(--accent);font-weight:700;flex-shrink:0;margin-left:6px;">Dettagli ➔</span>
-          </button>
+        <!-- Quick Box Scheda Evento Odierno (Sopra i pulsanti di azione) -->
+        <div id="today-event-quick-btn" style="display:none;margin-top:10px;margin-bottom:10px;">
+          <div style="background:rgba(2,132,199,0.06);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:10px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+            <!-- Riga 1: Header con ID pulito e Link Dettagli -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;">
+                <span style="font-size:13px;">📋</span>
+                <span>Lavoro di Oggi</span>
+                <span id="today-event-quick-id" style="background:rgba(14,165,233,0.15);padding:1px 6px;border-radius:8px;font-size:11px;font-weight:700;">#—</span>
+              </div>
+              <button type="button" class="btn-text" onclick="openTodayEventModal()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:3px;">
+                Dettagli <span style="font-size:13px;">›</span>
+              </button>
+            </div>
+
+            <!-- Riga 2: Cliente / Titolo Evento (Piena larghezza, zero doppio ID) -->
+            <div id="today-event-quick-title" style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" onclick="openTodayEventModal()">
+              Caricamento...
+            </div>
+
+            <!-- Riga 3: Sede con Avvio Navigatore GPS (Cliccabile) -->
+            <div id="today-event-quick-loc-row" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:8px;background:rgba(14,165,233,0.08);border:1px solid rgba(56,189,248,0.22);cursor:pointer;" onclick="openTodayEventMap(event)">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                <span style="color:#ef4444;flex-shrink:0;">📍</span>
+                <span id="today-event-quick-loc" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Sede da definire</span>
+              </div>
+              <span id="today-event-quick-gps-badge" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;">
+                <span>Naviga</span>
+                <span style="font-size:12px;">🧭</span>
+              </span>
+            </div>
+          </div>
         </div>
 
         <!-- Buttons when shift is closed (Sempre ultimi in fondo) -->
@@ -6498,21 +6524,59 @@ function openModal(id) {
     }
 
     function updateTodayEventQuickButton() {
-      const btn = document.getElementById("today-event-quick-btn");
+      const container = document.getElementById("today-event-quick-btn");
+      const idEl = document.getElementById("today-event-quick-id");
       const titleEl = document.getElementById("today-event-quick-title");
-      if (!btn) return;
+      const locEl = document.getElementById("today-event-quick-loc");
+      const locRow = document.getElementById("today-event-quick-loc-row");
+      const gpsBadge = document.getElementById("today-event-quick-gps-badge");
+      if (!container) return;
 
       const ev = getTodayVrEvent();
       if (ev && ev.id) {
-        btn.style.display = "block";
+        container.style.display = "block";
         const cleanId = String(ev.id).replace("#", "").trim();
-        const evTitle = ev.title || ev.client || ev.location || ("Commessa #" + cleanId);
+        if (idEl) idEl.textContent = "#" + cleanId;
+
+        // Sanitizzazione ID duplicato da titolo/cliente (elimina duplicazioni come #41996 • 41996 - ...)
+        let rawHeading = (ev.client ? `${ev.client}${ev.title ? ' – ' + ev.title : ''}` : (ev.title || ev.fullHeading || "Lavoro di Oggi"));
+        rawHeading = rawHeading.replace(new RegExp(`^#?${cleanId}\\s*[-–•:]*\\s*`, "i"), "").trim();
+        rawHeading = rawHeading.replace(new RegExp(`\\b${cleanId}\\b\\s*[-–•:]*\\s*`, "i"), "").trim();
+        const displayHeading = rawHeading || (ev.client || "Lavoro Programmato");
         if (titleEl) {
-          titleEl.textContent = `#${cleanId} • ${evTitle}`;
+          titleEl.textContent = displayHeading;
+          titleEl.title = displayHeading;
+        }
+
+        // Sede dell'evento e query per navigatore GPS
+        const locText = [ev.venue, ev.city].filter(Boolean).join(" — ") || ev.address || ev.fullLocation || "Sede da definire";
+        const locQuery = [ev.venue, ev.address, ev.city].filter(Boolean).join(", ") || ev.fullLocation || "";
+        if (locEl) locEl.textContent = locText;
+
+        if (locRow) {
+          if (locQuery && locText !== "Sede da definire") {
+            locRow.dataset.mapsQuery = encodeURIComponent(locQuery);
+            locRow.style.cursor = "pointer";
+            if (gpsBadge) gpsBadge.style.display = "inline-flex";
+          } else {
+            delete locRow.dataset.mapsQuery;
+            locRow.style.cursor = "default";
+            if (gpsBadge) gpsBadge.style.display = "none";
+          }
         }
       } else {
-        btn.style.display = "none";
+        container.style.display = "none";
       }
+    }
+
+    function openTodayEventMap(event) {
+      if (event) event.stopPropagation();
+      const locRow = document.getElementById("today-event-quick-loc-row");
+      const query = locRow ? locRow.dataset.mapsQuery : null;
+      if (!query) return;
+      if (window.haptic) haptic.light();
+      const url = `https://maps.google.com/?q=${query}`;
+      window.open(url, "_blank");
     }
 
     function openTodayEventModal() {
@@ -7470,7 +7534,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=29").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=30").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
