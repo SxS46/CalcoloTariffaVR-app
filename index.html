@@ -105,6 +105,29 @@
       border: 1px solid rgba(15, 23, 42, 0.15);
       color: #0f172a;
     }
+    body.theme-light #btn-refresh.is-success, [data-theme="light"] #btn-refresh.is-success {
+      color: #059669 !important;
+      background: #ecfdf5 !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 1px 6px rgba(16, 185, 129, 0.25);
+    }
+    body.theme-light .slider, [data-theme="light"] .slider {
+      background-color: #cbd5e1;
+      border: 1px solid #94a3b8;
+    }
+    body.theme-light .slider:before, [data-theme="light"] .slider:before {
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+    }
+    body.theme-light input:checked + .slider, [data-theme="light"] input:checked + .slider {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    body.theme-light .toggle-section-card, [data-theme="light"] .toggle-section-card {
+      background: #f8fafc;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
     body.theme-light .bottom-nav, [data-theme="light"] .bottom-nav {
       background: rgba(255, 255, 255, 0.96);
       border-top: 1px solid rgba(15, 23, 42, 0.1);
@@ -480,40 +503,74 @@
     .switch {
       position: relative;
       display: inline-block;
-      width: 44px;
-      height: 24px;
+      width: 48px;
+      height: 26px;
       flex-shrink: 0;
+      cursor: pointer;
     }
     .switch input {
       opacity: 0;
       width: 0;
       height: 0;
+      position: absolute;
     }
     .slider {
       position: absolute;
       cursor: pointer;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(255, 255, 255, 0.15);
-      transition: .25s;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.2);
+      transition: all .25s ease;
+      border-radius: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
     .slider:before {
       position: absolute;
       content: "";
-      height: 18px;
-      width: 18px;
+      height: 20px;
+      width: 20px;
       left: 2px;
       bottom: 2px;
-      background-color: white;
-      transition: .25s;
+      background-color: #ffffff;
+      transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
       border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
     input:checked + .slider {
       background-color: var(--primary);
+      border-color: var(--primary);
     }
     input:checked + .slider:before {
-      transform: translateX(20px);
+      transform: translateX(22px);
+    }
+
+    .toggle-section-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 12px 0 16px 0;
+    }
+
+    /* Header Refresh Button Animations & States */
+    #btn-refresh {
+      position: relative;
+      cursor: pointer;
+      transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    #btn-refresh-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
+    #btn-refresh.is-spinning #btn-refresh-icon {
+      animation: vrSpin 0.85s linear infinite;
+    }
+    #btn-refresh.is-success {
+      color: #10b981 !important;
+      background: rgba(16, 185, 129, 0.16) !important;
+      border-color: rgba(16, 185, 129, 0.5) !important;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
     }
 
     /* Quick Chips (Modal) */
@@ -1088,11 +1145,7 @@
         </div>
       </div>
       <div class="header-actions" style="display:flex;align-items:center;gap:6px;">
-        <div id="sync-indicator" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px;background:rgba(14,165,233,0.12);color:var(--accent);border:1px solid rgba(14,165,233,0.25);">
-          <span id="sync-icon" class="spin-icon">🔄</span>
-          <span id="sync-text">Aggiornamento...</span>
-        </div>
-        <button id="btn-refresh" class="icon-btn" onclick="fetchDashboardData(true)" title="Aggiorna dati">🔄</button>
+        <button id="btn-refresh" class="icon-btn" onclick="fetchDashboardData(true)" title="Aggiorna dati"><span id="btn-refresh-icon">🔄</span></button>
         <button id="btn-admin" class="icon-btn" style="display:none;" onclick="toggleAdminScreen()" title="Pannello Colleghi">👥</button>
       </div>
     </header>
@@ -1419,7 +1472,7 @@
         </div>
 
         <!-- Toggle & Campi Mezza Giornata Casa -->
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;margin:10px 0 16px 0;">
+        <div class="toggle-section-card">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div style="font-size:12.5px;font-weight:600;">⏱️ Mezza Giornata Casa</div>
@@ -1430,7 +1483,7 @@
               <span class="slider"></span>
             </label>
           </div>
-          <div id="group-cfg-casa-half-container" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div id="group-cfg-casa-half-container" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label">Soglia Ore (h)</label>
@@ -1462,7 +1515,7 @@
         </div>
 
         <!-- Toggle & Campi Mezza Giornata Trasferta -->
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;margin:10px 0 16px 0;">
+        <div class="toggle-section-card">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div style="font-size:12.5px;font-weight:600;">⏱️ Mezza Giornata Trasferta</div>
@@ -1473,7 +1526,7 @@
               <span class="slider"></span>
             </label>
           </div>
-          <div id="group-cfg-trasf-half-container" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div id="group-cfg-trasf-half-container" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
             <div class="form-grid">
               <div class="form-group">
                 <label class="form-label">Soglia Ore (h)</label>
@@ -2951,27 +3004,45 @@
       }
     }
 
-    // Helper per l'indicatore visivo di sincronizzazione in background
-    function showBackgroundSyncIndicator(visible, text = "Aggiornamento...", icon = "🔄") {
-      const el = document.getElementById("sync-indicator");
-      const iconEl = document.getElementById("sync-icon");
-      const textEl = document.getElementById("sync-text");
-      if (!el) return;
+    let refreshBtnSuccessTimer = null;
+    function setRefreshButtonState(state) {
+      const btn = document.getElementById("btn-refresh");
+      const icon = document.getElementById("btn-refresh-icon");
+      if (!btn) return;
+      if (refreshBtnSuccessTimer) {
+        clearTimeout(refreshBtnSuccessTimer);
+        refreshBtnSuccessTimer = null;
+      }
+      if (state === "spinning") {
+        btn.classList.remove("is-success");
+        btn.classList.add("is-spinning");
+        if (icon) icon.textContent = "🔄";
+      } else if (state === "success") {
+        btn.classList.remove("is-spinning");
+        btn.classList.add("is-success");
+        if (icon) icon.textContent = "✅";
+        refreshBtnSuccessTimer = setTimeout(() => {
+          btn.classList.remove("is-success");
+          if (icon) icon.textContent = "🔄";
+          refreshBtnSuccessTimer = null;
+        }, 2200);
+      } else {
+        btn.classList.remove("is-spinning");
+        btn.classList.remove("is-success");
+        if (icon) icon.textContent = "🔄";
+      }
+    }
+
+    // Helper per l'indicatore visivo (reindirizzato al pulsante refresh senza messaggi di testo)
+    function showBackgroundSyncIndicator(visible, text = "", icon = "🔄") {
       if (!visible) {
-        el.style.display = "none";
-        return;
-      }
-      el.style.display = "flex";
-      if (iconEl) {
-        iconEl.textContent = icon;
-        if (icon === "🔄") {
-          iconEl.classList.add("spin-icon");
-        } else {
-          iconEl.classList.remove("spin-icon");
-        }
-      }
-      if (textEl) {
-        textEl.textContent = text;
+        setRefreshButtonState("idle");
+      } else if (icon === "✅" || (text && text.toLowerCase().includes("aggiornat"))) {
+        setRefreshButtonState("success");
+      } else if (icon === "🔄") {
+        setRefreshButtonState("spinning");
+      } else {
+        setRefreshButtonState("idle");
       }
     }
 
@@ -3056,6 +3127,7 @@
 
     // Inizializzazione Dashboard (Stale-While-Revalidate / 0 ms / Offline-First)
     async function fetchDashboardData(forceRefresh = false) {
+      setRefreshButtonState("spinning");
       const isInitialBoot = !appState.user;
       const appStartTime = Date.now();
       const tgUser = getTelegramUser();
@@ -3217,11 +3289,8 @@
           console.log("[MiniApp Revalidation] Dati identici alla cache: nessun re-render eseguito.");
         }
 
-        // Icona di successo: mostra che il lavoro in background è terminato
-        showBackgroundSyncIndicator(true, "Aggiornato", "✅");
-        setTimeout(() => {
-          showBackgroundSyncIndicator(false);
-        }, 2000);
+        // Stato successo: il pulsante diventa verde senza messaggi o scritte
+        setRefreshButtonState("success");
 
       } catch (err) {
         clearTimeout(timeoutId);
@@ -7679,7 +7748,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=31").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=32").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
