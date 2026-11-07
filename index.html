@@ -976,10 +976,16 @@
           </div>
         </div>
 
+        <!-- Badge Informativo Weekend / Festivo per Turno in Corso -->
+        <div id="shift-weekend-badge" style="display:none;align-items:center;gap:6px;font-size:12px;color:#38bdf8;background:rgba(2,132,199,0.12);padding:6px 10px;border-radius:8px;margin-top:8px;border:1px solid rgba(56,189,248,0.25);">
+          <span>✨</span>
+          <span id="shift-weekend-badge-text"><b>Weekend:</b> Tariffa Trasferta applicata</span>
+        </div>
+
         <!-- Buttons when shift is closed -->
         <div id="shift-closed-actions" class="btn-row">
-          <button class="btn btn-primary" onclick="openStartShiftModal('CASA')">🏠 Inizia Casa</button>
-          <button class="btn btn-primary" style="background:#0284c7;" onclick="openStartShiftModal('TRASFERTA')">🚗 Inizia Trasferta</button>
+          <button id="btn-start-casa" class="btn btn-primary" onclick="openStartShiftModal('CASA')">🏠 Inizia Casa</button>
+          <button id="btn-start-trasf" class="btn btn-primary" style="background:#0284c7;" onclick="openStartShiftModal('TRASFERTA')">🚗 Inizia Trasferta</button>
         </div>
 
         <!-- Buttons when shift is open -->
@@ -1648,6 +1654,16 @@
       </div>
 
       <div id="ev-detail-body" style="overflow-y:auto;padding-right:2px;flex:1;">
+        <!-- Alert Lavoro Casa nel Weekend / Festivi -->
+        <div id="ev-detail-weekend-alert" class="card" style="display:none;background:rgba(2,132,199,0.12);border:1px solid rgba(56,189,248,0.35);margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:6px;font-weight:700;color:var(--accent-color, #38bdf8);font-size:13px;">
+            <span>✨</span> <span id="ev-detail-weekend-title">Tariffa Trasferta Weekend Rilevata</span>
+          </div>
+          <div id="ev-detail-weekend-desc" style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.45;">
+            Questo lavoro si svolge a <b>Casa</b> durante il weekend: ti verrà applicata automaticamente la <b>tariffa Trasferta (250 € invece di 220 €)</b>.
+          </div>
+        </div>
+
         <!-- Sezione 1: Logistica & Date -->
         <div class="card" style="margin-bottom:10px;">
           <div class="shift-title" style="margin-bottom:8px;">📍 Informazioni & Set</div>
@@ -1771,6 +1787,17 @@
         <div class="modal-title" id="start-modal-title">Inizia Turno</div>
         <button class="close-btn" onclick="closeModal('modal-start-shift')">✕</button>
       </div>
+
+      <!-- Alert Weekend / Festivo Lavoro a Casa -->
+      <div id="start-modal-weekend-alert" style="display:none;background:rgba(2,132,199,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:12px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:6px;font-weight:700;color:var(--accent-color, #38bdf8);font-size:13.5px;">
+          <span>✨</span> <span id="start-modal-holiday-badge">Weekend / Festivo Rilevato</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--text-color, #fff);margin-top:4px;line-height:1.45;" id="start-modal-holiday-desc">
+          Oggi è <b>Sabato</b>: secondo le tue impostazioni, lavorando a <b>Casa</b> verrà applicata automaticamente la <b>tariffa Trasferta (250 € invece di 220 €)</b>.
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="form-label">Orario di Inizio</label>
         <div id="start-modal-suggestions" class="time-pills-row"></div>
@@ -1788,6 +1815,17 @@
         <div class="modal-title">Concludi Turno di Lavoro</div>
         <button class="close-btn" onclick="closeModal('modal-end-shift')">✕</button>
       </div>
+
+      <!-- Alert Weekend / Festivo Chiusura Turno Casa -->
+      <div id="end-modal-weekend-alert" style="display:none;background:rgba(2,132,199,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:10px 12px;margin-bottom:12px;">
+        <div style="font-size:12.5px;color:var(--accent-color, #38bdf8);font-weight:700;display:flex;align-items:center;gap:6px;">
+          <span>✨</span> <span id="end-modal-holiday-badge">Tariffa Trasferta Weekend Attiva</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-color, #fff);margin-top:3px;line-height:1.4;" id="end-modal-holiday-desc">
+          A questo turno a Casa verrà applicata la tariffa Trasferta.
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="form-label">Orario di Fine</label>
         <div id="end-modal-suggestions" class="time-pills-row"></div>
@@ -1825,6 +1863,10 @@
           <span style="color:var(--text-muted);">Compenso Base</span>
           <span id="summary-shift-base" style="font-weight:600;">0 €</span>
         </div>
+        <div id="summary-shift-weekend-row" style="display:none;justify-content:space-between;margin-bottom:8px;font-size:13px;">
+          <span style="color:var(--accent-color, #38bdf8);">✨ Maggiorazione Weekend (Trasferta)</span>
+          <span id="summary-shift-weekend" style="font-weight:600;color:var(--accent-color, #38bdf8);">+0 €</span>
+        </div>
         <div id="summary-shift-extra-row" style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
           <span style="color:var(--text-muted);">Extra / Rimborsi</span>
           <span id="summary-shift-extra" style="font-weight:600;color:var(--accent-color, #38bdf8);">+0 €</span>
@@ -1857,6 +1899,16 @@
           <option value="CASA">🏠 Casa</option>
           <option value="TRASFERTA">🚗 Trasferta</option>
         </select>
+      </div>
+
+      <!-- Alert Weekend / Festivo Aggiunta Manuale -->
+      <div id="manual-modal-weekend-alert" style="display:none;background:rgba(2,132,199,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:10px 12px;margin-bottom:12px;">
+        <div style="font-size:12.5px;color:var(--accent-color, #38bdf8);font-weight:700;display:flex;align-items:center;gap:6px;">
+          <span>✨</span> <span id="manual-holiday-badge">Weekend / Festivo Rilevato</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-color, #fff);margin-top:3px;line-height:1.4;" id="manual-holiday-desc">
+          Per questa data a Casa verrà applicata automaticamente la tariffa Trasferta.
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Orario Inizio</label>
@@ -1923,6 +1975,16 @@
         <div class="segmented-control">
           <button type="button" id="btn-seg-casa" class="segmented-btn active casa" onclick="setEditType('CASA')">🏠 Casa</button>
           <button type="button" id="btn-seg-trasf" class="segmented-btn" onclick="setEditType('TRASFERTA')">🚗 Trasferta</button>
+        </div>
+      </div>
+
+      <!-- Alert Weekend / Festivo Modifica Giornata -->
+      <div id="edit-modal-weekend-alert" style="display:none;background:rgba(2,132,199,0.12);border:1px solid rgba(56,189,248,0.35);border-radius:12px;padding:10px 12px;margin-bottom:12px;">
+        <div style="font-size:12.5px;color:var(--accent-color, #38bdf8);font-weight:700;display:flex;align-items:center;gap:6px;">
+          <span>✨</span> <span id="edit-holiday-badge">Weekend / Festivo Rilevato</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-color, #fff);margin-top:3px;line-height:1.4;" id="edit-holiday-desc">
+          Per questa data a Casa viene applicata la tariffa Trasferta.
         </div>
       </div>
 
@@ -2820,6 +2882,173 @@
       }
     }
 
+    // Calcolo Festività e Regola Weekend/Festivi (Tariffa Trasferta su Casa)
+    function getItalianHolidayInfo(dateObj) {
+      if (!dateObj) return null;
+      const d = dateObj.getDate();
+      const m = dateObj.getMonth() + 1; // 1-12
+      const y = dateObj.getFullYear();
+      const dayOfWeek = dateObj.getDay(); // 0 = Dom, 6 = Sab
+
+      // Festività fisse nazionali italiane
+      const fixedHolidays = {
+        "1/1": "Capodanno",
+        "6/1": "Epifania",
+        "25/4": "Festa della Liberazione",
+        "1/5": "Festa dei Lavoratori",
+        "2/6": "Festa della Repubblica",
+        "15/8": "Ferragosto",
+        "1/11": "Tutti i Santi",
+        "8/12": "Immacolata Concezione",
+        "25/12": "Natale",
+        "26/12": "Santo Stefano"
+      };
+
+      const key = `${d}/${m}`;
+      if (fixedHolidays[key]) {
+        return { isHoliday: true, name: fixedHolidays[key] };
+      }
+
+      // Algoritmo Meeus/Jones/Butcher per Pasqua e Pasquetta
+      const a = y % 19;
+      const b = Math.floor(y / 100);
+      const c = y % 100;
+      const dd = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - dd - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const mm = Math.floor((a + 11 * h + 22 * l) / 451);
+      const easterMonth = Math.floor((h + l - 7 * mm + 114) / 31);
+      const easterDay = ((h + l - 7 * mm + 114) % 31) + 1;
+
+      if (m === easterMonth && d === easterDay) {
+        return { isHoliday: true, name: "Pasqua" };
+      }
+      const pasquettaDate = new Date(y, easterMonth - 1, easterDay + 1);
+      if (m === (pasquettaDate.getMonth() + 1) && d === pasquettaDate.getDate()) {
+        return { isHoliday: true, name: "Lunedì dell'Angelo (Pasquetta)" };
+      }
+
+      if (dayOfWeek === 6) {
+        return { isHoliday: true, name: "Sabato" };
+      }
+      if (dayOfWeek === 0) {
+        return { isHoliday: true, name: "Domenica" };
+      }
+      return null;
+    }
+
+    function getWeekendHolidayBonusInfo(dateInput) {
+      let rule = appState.user?.weekendHolidayAsTrasferta || appState.rates?.weekendHolidayAsTrasferta;
+      if (!rule || rule === "") {
+        const uId = appState.user?.id || getTelegramUser()?.id;
+        if (Number(uId) === 12025766 || appState.isAdmin) {
+          rule = "ALL";
+        } else {
+          rule = "NONE";
+        }
+      }
+      if (rule === "NONE") return null;
+
+      let d = null;
+      if (dateInput instanceof Date) {
+        d = dateInput;
+      } else if (typeof dateInput === "string") {
+        if (dateInput.includes("-")) {
+          const p = dateInput.split("-");
+          d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+        } else if (dateInput.includes("/")) {
+          const p = dateInput.split("/");
+          d = new Date(new Date().getFullYear(), Number(p[1]) - 1, Number(p[0]));
+        } else {
+          d = new Date(dateInput);
+        }
+      }
+      if (!d || isNaN(d.getTime())) d = new Date();
+
+      const hInfo = getItalianHolidayInfo(d);
+      if (!hInfo) return null;
+
+      if (hInfo.name === "Sabato") {
+        if (rule === "ALL") return hInfo;
+        return null;
+      }
+      return hInfo;
+    }
+
+    function getWeekendBonusDetails(dateInput, type) {
+      if (type && type !== "CASA") {
+        return { isApplicable: false, holidayName: "", casaBase: 0, trasfertaBase: 0, diff: 0 };
+      }
+      const hInfo = getWeekendHolidayBonusInfo(dateInput);
+      const r = appState.rates || {};
+      const cBase = Number(r.casaBase || 220);
+      const tBase = Number(r.trasfertaBase || r.trasfBase || 250);
+      const diff = Math.max(0, tBase - cBase);
+      return {
+        isApplicable: Boolean(hInfo),
+        holidayName: hInfo ? hInfo.name : "",
+        casaBase: cBase,
+        trasfertaBase: tBase,
+        diff: diff
+      };
+    }
+
+    function checkIsEventCasa(ev) {
+      if (!ev) return false;
+      if (ev.type && String(ev.type).toUpperCase() === "CASA") return true;
+      const cit = (ev.city || "").toLowerCase();
+      const loc = (ev.fullLocation || "").toLowerCase();
+      const ven = (ev.venue || "").toLowerCase();
+      const addr = (ev.address || "").toLowerCase();
+      const head = (ev.fullHeading || ev.title || "").toLowerCase();
+
+      const boTowns = [
+        "bologna", "villanova", "castenaso", "casalecchio", "san lazzaro", "calderara", "zola predosa",
+        "pianoro", "sasso marconi", "granarolo", "castel maggiore", "bentivoglio", "budrio", "anzola",
+        "sala bolognese", "crespellano", "valsamoggia", "monte san pietro", "argelato", "centergross",
+        "interporto", "ozzano", "medicina", "minerbio", "carlton", "savoia regency", "zanhotel", "duse"
+      ];
+      if (boTowns.some(kw => cit.includes(kw) || loc.includes(kw) || ven.includes(kw) || addr.includes(kw) || head.includes(kw))) {
+        return true;
+      }
+      if (/\bbo\b/i.test(cit) || /\b\(bo\)/i.test(loc) || /—\s*bologna/i.test(loc)) {
+        return true;
+      }
+      return false;
+    }
+
+    function checkEventHasWeekendDays(ev) {
+      if (!ev || !ev.start) return null;
+      try {
+        const s = new Date(ev.start);
+        const e = ev.end ? new Date(ev.end) : s;
+        if (isNaN(s.getTime())) return null;
+
+        const cur = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+        const endD = new Date(e.getFullYear(), e.getMonth(), e.getDate());
+
+        const weekendDays = [];
+        let count = 0;
+        while (cur.getTime() <= endD.getTime() && count < 60) {
+          const hInfo = getWeekendHolidayBonusInfo(new Date(cur));
+          if (hInfo) {
+            weekendDays.push(hInfo.name);
+          }
+          cur.setDate(cur.getDate() + 1);
+          count++;
+        }
+        if (weekendDays.length > 0) {
+          return [...new Set(weekendDays)];
+        }
+      } catch (err) {}
+      return null;
+    }
+
     function renderActiveShift() {
       const card = document.getElementById("shift-card");
       const title = document.getElementById("shift-status-title");
@@ -2829,6 +3058,9 @@
       const elapsedTag = document.getElementById("shift-elapsed-tag");
       const closedActions = document.getElementById("shift-closed-actions");
       const openActions = document.getElementById("shift-open-actions");
+      const btnCasa = document.getElementById("btn-start-casa");
+      const weekendBadgeEl = document.getElementById("shift-weekend-badge");
+      const weekendBadgeTextEl = document.getElementById("shift-weekend-badge-text");
 
       if (appState.timerInterval) {
         clearInterval(appState.timerInterval);
@@ -2837,8 +3069,23 @@
 
       if (appState.activeShift && appState.activeShift.start) {
         card.classList.add("active");
-        const typeLabel = (appState.activeShift.type === "CASA") ? "🏠 Casa" : "🚗 Trasferta";
-        title.textContent = `In Turno • ${typeLabel}`;
+        const isCasa = (appState.activeShift.type === "CASA");
+        let isWeBonus = Boolean(appState.activeShift.isWeekendHolidayBonus);
+        let hName = appState.activeShift.holidayName || "";
+        
+        if (isCasa && !isWeBonus) {
+          const dCheck = appState.activeShift.dateObj ? new Date(appState.activeShift.dateObj) : new Date();
+          const bDetails = getWeekendBonusDetails(dCheck, "CASA");
+          if (bDetails.isApplicable) {
+            isWeBonus = true;
+            hName = bDetails.holidayName;
+          }
+        }
+
+        const typeLabel = isCasa 
+          ? (isWeBonus ? `🏠 Casa <span style="font-size:11px;background:rgba(2,132,199,0.22);color:#38bdf8;padding:2px 7px;border-radius:6px;font-weight:700;margin-left:6px;border:1px solid rgba(56,189,248,0.3);">🚗 Tariffa WE</span>` : "🏠 Casa") 
+          : "🚗 Trasferta";
+        title.innerHTML = `In Turno • ${typeLabel}`;
         badge.className = "status-badge live";
         badge.textContent = "In Servizio";
         pulse.style.display = "inline-block";
@@ -2846,6 +3093,16 @@
         elapsedTag.style.display = "block";
         closedActions.style.display = "none";
         openActions.style.display = "flex";
+
+        if (isCasa && isWeBonus && weekendBadgeEl) {
+          const tBase = appState.rates?.trasfertaBase || appState.rates?.trasfBase || 250;
+          weekendBadgeEl.style.display = "flex";
+          if (weekendBadgeTextEl) {
+            weekendBadgeTextEl.innerHTML = `<b>${hName || "Weekend"}:</b> Tariffa Trasferta applicata (<b>${tBase} €</b> base)`;
+          }
+        } else if (weekendBadgeEl) {
+          weekendBadgeEl.style.display = "none";
+        }
 
         updateElapsedTime();
         appState.timerInterval = setInterval(updateElapsedTime, 60000);
@@ -2859,8 +3116,18 @@
         elapsedTag.style.display = "none";
         closedActions.style.display = "flex";
         openActions.style.display = "none";
+        if (weekendBadgeEl) weekendBadgeEl.style.display = "none";
         const progContainer = document.getElementById("shift-progress-container");
         if (progContainer) progContainer.style.display = "none";
+
+        if (btnCasa) {
+          const todayBonus = getWeekendBonusDetails(new Date(), "CASA");
+          if (todayBonus.isApplicable) {
+            btnCasa.innerHTML = "🏠 Inizia Casa (Tariffa WE ⭐)";
+          } else {
+            btnCasa.innerHTML = "🏠 Inizia Casa";
+          }
+        }
       }
     }
 
@@ -3822,7 +4089,29 @@ function openModal(id) {
     function openStartShiftModal(type) {
       haptic.medium();
       document.getElementById("start-modal-type").value = type;
-      document.getElementById("start-modal-title").textContent = (type === "CASA") ? "🏠 Inizia Turno Casa" : "🚗 Inizia Turno Trasferta";
+      
+      const alertEl = document.getElementById("start-modal-weekend-alert");
+      const titleEl = document.getElementById("start-modal-title");
+
+      if (type === "CASA") {
+        const bonus = getWeekendBonusDetails(new Date(), "CASA");
+        if (bonus.isApplicable) {
+          titleEl.textContent = "🏠 Inizia Casa (Tariffa WE ⭐)";
+          const badgeEl = document.getElementById("start-modal-holiday-badge");
+          const descEl = document.getElementById("start-modal-holiday-desc");
+          if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta`;
+          if (descEl) {
+            descEl.innerHTML = `Oggi è <b>${bonus.holidayName}</b>: come da accordi, lavorando a <b>Casa</b> ti verrà applicata automaticamente la <b>tariffa Trasferta (${bonus.trasfertaBase} € anziché ${bonus.casaBase} €)</b>.`;
+          }
+          if (alertEl) alertEl.style.display = "block";
+        } else {
+          titleEl.textContent = "🏠 Inizia Turno Casa";
+          if (alertEl) alertEl.style.display = "none";
+        }
+      } else {
+        titleEl.textContent = "🚗 Inizia Turno Trasferta";
+        if (alertEl) alertEl.style.display = "none";
+      }
       
       const suggs = computeStartTimeSuggestions();
       const defaultTime = suggs[3]; // curr
@@ -3862,6 +4151,26 @@ function openModal(id) {
       const defaultTime = suggs[1]; // curr (indice 1)
       renderTimePillSuggestions("end-modal-suggestions", "end-modal-time", suggs, defaultTime);
       document.getElementById("end-modal-extra").value = "0";
+
+      const alertEl = document.getElementById("end-modal-weekend-alert");
+      if (appState.activeShift && appState.activeShift.type === "CASA") {
+        const dCheck = appState.activeShift.dateObj ? new Date(appState.activeShift.dateObj) : new Date();
+        const bonus = getWeekendBonusDetails(dCheck, "CASA");
+        if (bonus.isApplicable) {
+          const badgeEl = document.getElementById("end-modal-holiday-badge");
+          const descEl = document.getElementById("end-modal-holiday-desc");
+          if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta Attiva`;
+          if (descEl) {
+            descEl.innerHTML = `A questa giornata a Casa verrà applicata la <b>tariffa Trasferta (${bonus.trasfertaBase} €)</b> con maggiorazione automatica di <b>+${bonus.diff} €</b> negli extra.`;
+          }
+          if (alertEl) alertEl.style.display = "block";
+        } else if (alertEl) {
+          alertEl.style.display = "none";
+        }
+      } else if (alertEl) {
+        alertEl.style.display = "none";
+      }
+
       openModal("modal-end-shift");
     }
 
@@ -3903,13 +4212,27 @@ function openModal(id) {
           const baseEl = document.getElementById("summary-shift-base");
           if (baseEl) baseEl.textContent = `${s.basePay} €`;
 
-          const extraTotal = Number(s.extra || 0);
+          // Maggiorazione Weekend / Festivi (Tariffa Trasferta su Casa)
+          const weekendBonus = Number(s.weekendBonus || 0);
+          const weekendRow = document.getElementById("summary-shift-weekend-row");
+          const weekendEl = document.getElementById("summary-shift-weekend");
+          if (weekendRow && weekendEl) {
+            if (weekendBonus > 0) {
+              weekendRow.style.display = "flex";
+              weekendEl.textContent = `+${weekendBonus} €`;
+            } else {
+              weekendRow.style.display = "none";
+            }
+          }
+
+          // Extra / Rimborsi inseriti dall'utente (scorporati dal bonus weekend)
+          const userExtra = (s.userExtra !== undefined) ? Number(s.userExtra) : Math.max(0, Number(s.extra || 0) - weekendBonus);
           const extraRow = document.getElementById("summary-shift-extra-row");
           const extraEl = document.getElementById("summary-shift-extra");
           if (extraRow && extraEl) {
-            if (extraTotal > 0) {
+            if (userExtra > 0) {
               extraRow.style.display = "flex";
-              extraEl.textContent = `+${extraTotal} €`;
+              extraEl.textContent = `+${userExtra} €`;
             } else {
               extraRow.style.display = "none";
             }
@@ -3959,13 +4282,44 @@ function openModal(id) {
       document.getElementById("manual-fixed-pay").value = val;
     }
 
+    function updateManualWeekendAlert() {
+      const typeEl = document.getElementById("manual-type");
+      const dateEl = document.getElementById("manual-date");
+      const alertEl = document.getElementById("manual-modal-weekend-alert");
+      if (!alertEl || !typeEl || !dateEl) return;
+
+      const type = typeEl.value;
+      const dateVal = dateEl.value;
+
+      if (type === "CASA" && dateVal) {
+        const bonus = getWeekendBonusDetails(dateVal, "CASA");
+        if (bonus.isApplicable) {
+          const badgeEl = document.getElementById("manual-holiday-badge");
+          const descEl = document.getElementById("manual-holiday-desc");
+          if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta`;
+          if (descEl) {
+            descEl.innerHTML = `Per questa data (${bonus.holidayName}) a <b>Casa</b> verrà applicata automaticamente la <b>tariffa Trasferta (${bonus.trasfertaBase} € anziché ${bonus.casaBase} €)</b>.`;
+          }
+          alertEl.style.display = "block";
+          return;
+        }
+      }
+      alertEl.style.display = "none";
+    }
+
     function openManualEntryModal() {
       const today = new Date().toISOString().split('T')[0];
-      document.getElementById("manual-date").value = today;
+      const manualDateEl = document.getElementById("manual-date");
+      const manualTypeEl = document.getElementById("manual-type");
+      manualDateEl.value = today;
       document.getElementById("manual-is-fixed").checked = false;
       document.getElementById("manual-fixed-pay").value = "";
       toggleManualFixedPay(false);
       document.getElementById("manual-extra").value = "0";
+
+      manualDateEl.onchange = updateManualWeekendAlert;
+      manualTypeEl.onchange = updateManualWeekendAlert;
+      updateManualWeekendAlert();
 
       const startSuggs = ["07:00", "07:30", "08:00", "08:30", "09:00"];
       renderTimePillSuggestions("manual-start-suggestions", "manual-start", startSuggs, "08:00");
@@ -4032,6 +4386,31 @@ function openModal(id) {
     // Edit / Delete Entry (Parità Completa col Bot)
     let currentEditType = "CASA";
 
+    function updateEditWeekendAlert() {
+      const typeEl = document.getElementById("edit-type-val");
+      const dateEl = document.getElementById("edit-modal-date");
+      const alertEl = document.getElementById("edit-modal-weekend-alert");
+      if (!alertEl || !typeEl || !dateEl) return;
+
+      const type = typeEl.value;
+      const dateText = dateEl.textContent || "";
+
+      if (type === "CASA" && dateText) {
+        const bonus = getWeekendBonusDetails(dateText, "CASA");
+        if (bonus.isApplicable) {
+          const badgeEl = document.getElementById("edit-holiday-badge");
+          const descEl = document.getElementById("edit-holiday-desc");
+          if (badgeEl) badgeEl.textContent = `${bonus.holidayName} - Tariffa Trasferta`;
+          if (descEl) {
+            descEl.innerHTML = `Questa giornata (${bonus.holidayName}) registrata a <b>Casa</b> beneficia automaticamente della <b>tariffa Trasferta (${bonus.trasfertaBase} € anziché ${bonus.casaBase} €)</b>.`;
+          }
+          alertEl.style.display = "block";
+          return;
+        }
+      }
+      alertEl.style.display = "none";
+    }
+
     function setEditType(type) {
       currentEditType = type;
       document.getElementById("edit-type-val").value = type;
@@ -4044,6 +4423,7 @@ function openModal(id) {
         btnCasa.className = "segmented-btn";
         btnTrasf.className = "segmented-btn active trasf";
       }
+      updateEditWeekendAlert();
     }
 
     function toggleEditFixedPay(checked) {
@@ -4085,6 +4465,7 @@ function openModal(id) {
       editStartInput.onchange = updateEditEndSuggs;
       updateEditEndSuggs();
 
+      updateEditWeekendAlert();
       openModal("modal-edit-entry");
     }
 
@@ -5381,12 +5762,19 @@ function openModal(id) {
         const loc = [ev.venue, ev.city].filter(Boolean).join(" — ") || ev.fullLocation || "Luogo da definire";
         const crewHtml = (ev.crew && ev.crew.length > 0) ? `<div style="font-size:11px;color:var(--accent);margin-top:4px;">👥 ${ev.crew.join(", ")}</div>` : "";
 
+        const isCasa = checkIsEventCasa(ev);
+        const weDays = isCasa ? checkEventHasWeekendDays(ev) : null;
+        const weBadgeHtml = (isCasa && weDays && weDays.length > 0)
+          ? `<span class="status-badge" style="background:rgba(2,132,199,0.18);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);font-weight:700;font-size:10.5px;">🚗 Tariffa WE</span>`
+          : "";
+
         html += `
           <div class="card" style="cursor:pointer;margin-bottom:10px;" onclick="openEventDetail('${ev.id}')">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:6px;">
-              <div style="display:flex;align-items:center;gap:6px;">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                 <span class="status-badge" style="background:rgba(14,165,233,0.15);color:var(--accent);font-weight:700;">#${ev.id}</span>
                 <span style="font-size:11px;color:var(--text-muted);font-weight:600;">${dateFormatted}</span>
+                ${weBadgeHtml}
               </div>
               <div>
                 ${isPending 
@@ -5459,6 +5847,26 @@ function openModal(id) {
       document.getElementById("ev-detail-start").textContent = formatDateTimeFull(ev.start);
       document.getElementById("ev-detail-end").textContent = formatDateTimeFull(ev.end);
       document.getElementById("ev-detail-location").textContent = ev.fullLocation || [ev.venue, ev.address, ev.city].filter(Boolean).join(" — ") || "—";
+
+      // Rilevamento Lavoro Casa nel Weekend / Festivi
+      const weAlertEl = document.getElementById("ev-detail-weekend-alert");
+      const weTitleEl = document.getElementById("ev-detail-weekend-title");
+      const weDescEl = document.getElementById("ev-detail-weekend-desc");
+      const isCasa = checkIsEventCasa(ev);
+      const weDays = isCasa ? checkEventHasWeekendDays(ev) : null;
+
+      if (isCasa && weDays && weDays.length > 0) {
+        const daysStr = weDays.join(", ");
+        const tBase = appState.rates?.trasfertaBase || appState.rates?.trasfBase || 250;
+        const cBase = appState.rates?.casaBase || 220;
+        if (weTitleEl) weTitleEl.textContent = `✨ Tariffa Trasferta Weekend Riconosciuta (${daysStr})`;
+        if (weDescEl) {
+          weDescEl.innerHTML = `Questo lavoro si svolge a <b>Casa (${ev.city || "Bologna"})</b> di <b>${daysStr}</b>: come da accordi sui festivi e weekend, per queste giornate ti verrà applicata la <b>tariffa Trasferta (${tBase} € anziché ${cBase} €)</b>.`;
+        }
+        if (weAlertEl) weAlertEl.style.display = "block";
+      } else if (weAlertEl) {
+        weAlertEl.style.display = "none";
+      }
 
       const mapsRow = document.getElementById("ev-detail-maps-row");
       const mapsLink = document.getElementById("ev-detail-maps-link");
@@ -6046,7 +6454,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=15").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=16").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
