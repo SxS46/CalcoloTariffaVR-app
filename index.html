@@ -267,6 +267,11 @@
     .shift-card.active {
       border-left-color: var(--success);
       background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, var(--card-bg) 100%);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.2);
+    }
+    body.theme-light .shift-card.active, [data-theme="light"] .shift-card.active {
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.06) 0%, #ffffff 100%);
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.16), 0 0 0 1px rgba(16, 185, 129, 0.25);
     }
     .shift-header {
       display: flex;
@@ -1059,29 +1064,49 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       color: var(--text-muted);
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 600;
       text-decoration: none;
       cursor: pointer;
-      transition: color 0.15s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       background: none;
       border: none;
+      padding: 5px 12px;
+      border-radius: 14px;
     }
     .nav-item.active {
       color: var(--primary);
+      background: rgba(14, 165, 233, 0.12);
+    }
+    body.theme-light .nav-item.active,
+    [data-theme="light"] .nav-item.active {
+      color: #0284c7;
+      background: rgba(2, 132, 199, 0.1);
     }
     .nav-icon {
       font-size: 20px;
+      line-height: 1;
     }
 
-    /* Screen Views */
+    /* Screen Views with Smooth Micro-Fade */
     .view-screen {
       display: none;
     }
     .view-screen.active {
       display: block;
+      animation: screenFadeIn 0.14s ease-out;
+    }
+    @keyframes screenFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(3px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* Loading Spinner & Splash */
@@ -1133,6 +1158,49 @@
       color: var(--text-muted);
       font-weight: 500;
       letter-spacing: 0.3px;
+    }
+
+    /* Today Event Location Row & GPS Chip */
+    .today-loc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 9px;
+      background: rgba(14, 165, 233, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .today-loc-row:active {
+      transform: scale(0.985);
+      background: rgba(14, 165, 233, 0.14);
+    }
+    body.theme-light .today-loc-row,
+    [data-theme="light"] .today-loc-row {
+      background: #f0f9ff;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+    .today-gps-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(14, 165, 233, 0.14);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(14, 165, 233, 0.25);
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+    body.theme-light .today-gps-chip,
+    [data-theme="light"] .today-gps-chip {
+      color: #0284c7;
+      background: #e0f2fe;
+      border-color: rgba(2, 132, 199, 0.3);
     }
   </style>
 </head>
@@ -1231,14 +1299,14 @@
             </div>
 
             <!-- Riga 3: Sede con Avvio Navigatore GPS (Cliccabile) -->
-            <div id="today-event-quick-loc-row" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:8px;background:rgba(14,165,233,0.08);border:1px solid rgba(56,189,248,0.22);cursor:pointer;" onclick="openTodayEventMap(event)">
+            <div id="today-event-quick-loc-row" class="today-loc-row" onclick="openTodayEventMap(event)">
               <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                 <span style="color:#ef4444;flex-shrink:0;">📍</span>
                 <span id="today-event-quick-loc" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Sede da definire</span>
               </div>
-              <span id="today-event-quick-gps-badge" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;">
+              <span id="today-event-quick-gps-badge" class="today-gps-chip">
                 <span>Naviga</span>
-                <span style="font-size:12px;">🧭</span>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0;"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
               </span>
             </div>
           </div>
@@ -7771,7 +7839,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=33").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=34").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
