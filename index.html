@@ -1022,8 +1022,14 @@
 
         <!-- Badge Informativo Weekend / Festivo per Turno in Corso -->
         <div id="shift-weekend-badge" style="display:none;align-items:center;gap:6px;font-size:12px;color:#38bdf8;background:rgba(2,132,199,0.12);padding:6px 10px;border-radius:8px;margin-top:8px;border:1px solid rgba(56,189,248,0.25);">
-          <span>✨</span>
+          <span>🚗</span>
           <span id="shift-weekend-badge-text"><b>Weekend:</b> Tariffa Trasferta applicata</span>
+        </div>
+
+        <!-- Pill Informativa Weekend / Festivo prima dell'avvio turno (sopra i due pulsanti) -->
+        <div id="start-shift-weekend-pill" style="display:none;align-items:center;justify-content:center;gap:6px;font-size:11.5px;font-weight:600;color:#38bdf8;background:rgba(2,132,199,0.12);padding:7px 12px;border-radius:10px;margin-top:10px;margin-bottom:10px;border:1px solid rgba(56,189,248,0.25);text-align:center;">
+          <span>🚗</span>
+          <span id="start-shift-weekend-pill-text">Weekend: a Casa si applica la tariffa Trasferta</span>
         </div>
 
         <!-- Buttons when shift is closed -->
@@ -3296,6 +3302,8 @@
         elapsedTag.style.display = "block";
         closedActions.style.display = "none";
         openActions.style.display = "flex";
+        const preShiftPill = document.getElementById("start-shift-weekend-pill");
+        if (preShiftPill) preShiftPill.style.display = "none";
 
         if (isCasa && isWeBonus && weekendBadgeEl) {
           const tBase = appState.rates?.trasfertaBase || appState.rates?.trasfBase || 250;
@@ -3324,15 +3332,25 @@
         if (progContainer) progContainer.style.display = "none";
 
         if (btnCasa) {
+          btnCasa.innerHTML = "🏠 Inizia Casa";
+          btnCasa.style.flexDirection = "";
+          btnCasa.style.padding = "";
+        }
+
+        const preShiftPill = document.getElementById("start-shift-weekend-pill");
+        const preShiftPillText = document.getElementById("start-shift-weekend-pill-text");
+        if (preShiftPill) {
           const todayBonus = getWeekendBonusDetails(new Date(), "CASA");
           if (todayBonus.isApplicable) {
-            btnCasa.innerHTML = '<div>🏠 Inizia Casa</div><div style="font-size:10.5px;font-weight:500;opacity:0.85;margin-top:2px;line-height:1.1;">(Tariffa Weekend)</div>';
-            btnCasa.style.flexDirection = "column";
-            btnCasa.style.padding = "8px 10px";
+            preShiftPill.style.display = "flex";
+            if (preShiftPillText) {
+              const diffText = (todayBonus.trasfertaBase && todayBonus.casaBase && todayBonus.trasfertaBase > todayBonus.casaBase)
+                ? ` (<b>${todayBonus.trasfertaBase} €</b> anziché ${todayBonus.casaBase} €)`
+                : ` (<b>${todayBonus.trasfertaBase} €</b>)`;
+              preShiftPillText.innerHTML = `<b>${todayBonus.holidayName}:</b> a Casa si applica la tariffa Trasferta${diffText}`;
+            }
           } else {
-            btnCasa.innerHTML = "🏠 Inizia Casa";
-            btnCasa.style.flexDirection = "";
-            btnCasa.style.padding = "";
+            preShiftPill.style.display = "none";
           }
         }
       }
@@ -7116,7 +7134,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=24").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=25").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
