@@ -9,6 +9,11 @@
   <title>Videorent Tariffa</title>
   
   <!-- PWA & Offline Support -->
+  <!-- Network Preconnect & DNS Prefetch per abbattere latenza primo avvio -->
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="dns-prefetch" href="https://script.google.com">
+  <link rel="preconnect" href="https://telegram.org" crossorigin>
+  <link rel="dns-prefetch" href="https://telegram.org">
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0b132b">
 
@@ -3197,7 +3202,9 @@
       return null;
     }
 
-    // Chiamata API verso Google Apps Script
+    const _inflightApiRequests = new Map();
+
+    // Chiamata API verso Google Apps Script (con deduplicazione richieste in corso)
     async function callApi(action, extraParams = {}) {
       const tgUser = getTelegramUser();
       if (!tgUser || !tgUser.id) {
@@ -3214,8 +3221,26 @@
       });
 
       const url = `${API_ENDPOINT}?${params.toString()}`;
-      const res = await fetch(url);
-      return await res.json();
+      const isReadAction = action === "miniapp_init" || action === "miniapp_get_history" || action.startsWith("get_");
+      if (isReadAction && _inflightApiRequests.has(url)) {
+        return await _inflightApiRequests.get(url);
+      }
+
+      const p = (async () => {
+        try {
+          const res = await fetch(url);
+          return await res.json();
+        } finally {
+          if (isReadAction) {
+            _inflightApiRequests.delete(url);
+          }
+        }
+      })();
+
+      if (isReadAction) {
+        _inflightApiRequests.set(url, p);
+      }
+      return await p;
     }
 
     function showLoader(msg) {
@@ -6959,8 +6984,10 @@ function openModal(id) {
       return `${dayS} ${monthS} – ${dayE} ${monthE}`;
     }
 
+    const _dateTimeFormatCache = new Map();
     function formatDateTimeFull(str) {
       if (!str) return "—";
+      if (_dateTimeFormatCache.has(str)) return _dateTimeFormatCache.get(str);
       const d = new Date(str);
       if (isNaN(d.getTime())) return str;
       const day = String(d.getDate()).padStart(2, "0");
@@ -6968,7 +6995,9 @@ function openModal(id) {
       const year = d.getFullYear();
       const hours = String(d.getHours()).padStart(2, "0");
       const mins = String(d.getMinutes()).padStart(2, "0");
-      return `${day}/${month}/${year} ore ${hours}:${mins}`;
+      const res = `${day}/${month}/${year} ore ${hours}:${mins}`;
+      _dateTimeFormatCache.set(str, res);
+      return res;
     }
 
     async function loadEventsScreen(forceRefresh = false) {
@@ -7882,7 +7911,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=43").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=44").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
