@@ -4596,6 +4596,15 @@ function openModal(id) {
         if (res.success) {
           appState.activeShift = res.activeShift;
           renderActiveShift();
+          const tgUser = getTelegramUser();
+          if (tgUser && tgUser.id) {
+            const dashCacheKey = "vr_dashboard_cache_" + tgUser.id;
+            const cached = readAppLocalCache(dashCacheKey);
+            if (cached && cached.data) {
+              cached.data.activeShift = res.activeShift;
+              writeAppLocalCache(dashCacheKey, cached.data);
+            }
+          }
           showToast("🟢 Turno aperto con successo!");
           if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
@@ -4673,6 +4682,18 @@ function openModal(id) {
           renderStats();
           renderEntries();
 
+          const tgUser = getTelegramUser();
+          if (tgUser && tgUser.id) {
+            const dashCacheKey = "vr_dashboard_cache_" + tgUser.id;
+            const cached = readAppLocalCache(dashCacheKey);
+            if (cached && cached.data) {
+              cached.data.activeShift = null;
+              if (res.stats) cached.data.stats = res.stats;
+              if (res.entries) cached.data.entries = res.entries;
+              writeAppLocalCache(dashCacheKey, cached.data);
+            }
+          }
+
           // Dati reali confermati e scritti sul foglio Google
           const s = res.shiftSummary;
 
@@ -4740,6 +4761,15 @@ function openModal(id) {
         if (res.success) {
           appState.activeShift = null;
           renderActiveShift();
+          const tgUser = getTelegramUser();
+          if (tgUser && tgUser.id) {
+            const dashCacheKey = "vr_dashboard_cache_" + tgUser.id;
+            const cached = readAppLocalCache(dashCacheKey);
+            if (cached && cached.data) {
+              cached.data.activeShift = null;
+              writeAppLocalCache(dashCacheKey, cached.data);
+            }
+          }
           showToast("🗑️ Turno annullato.");
         }
       } catch (e) {
@@ -7050,8 +7080,34 @@ function openModal(id) {
     }
 
     // Start App (Esecuzione garantita sia con DOM in caricamento sia già pronto)
+    let lastForegroundSyncTime = 0;
+    function syncMiniAppInForeground(force = false) {
+      const now = Date.now();
+      // Throttling di sicurezza a 4 secondi per evitare spam se l'utente cambia tab rapidamente
+      if (!force && (now - lastForegroundSyncTime < 4000)) return;
+      lastForegroundSyncTime = now;
+      fetchDashboardData(force);
+    }
+
     function startApp() {
       fetchDashboardData();
+
+      // Sincronizzazione automatica al ritorno in primo piano (focus/visibilitychange)
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          syncMiniAppInForeground(false);
+        }
+      });
+      window.addEventListener("focus", () => {
+        syncMiniAppInForeground(false);
+      });
+
+      // Polling di background ogni 25 secondi quando la pagina è attiva
+      setInterval(() => {
+        if (!document.hidden) {
+          syncMiniAppInForeground(false);
+        }
+      }, 25000);
 
       // Blocca lo scroll dello sfondo opaco dei modali e gestisce chiusura su click overlay
       document.querySelectorAll(".modal-overlay").forEach(overlay => {
@@ -7077,7 +7133,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=17").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=18").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
