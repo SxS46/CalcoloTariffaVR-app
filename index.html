@@ -1068,6 +1068,12 @@
           <div class="action-desc">Note, materiali e prossimi lavori</div>
         </div>
 
+        <div class="action-card" onclick="showScreen('schedule')">
+          <div class="action-icon" style="background:rgba(16,185,129,0.15);color:var(--success);">📅</div>
+          <div class="action-title">Attività e Turni</div>
+          <div class="action-desc">Vista calendario settimana e mese</div>
+        </div>
+
         <div class="action-card" onclick="showScreen('settings')">
           <div class="action-icon" style="background:rgba(148,163,184,0.15);color:var(--text-muted);">⚙️</div>
           <div class="action-title">Impostazioni</div>
@@ -1075,82 +1081,85 @@
         </div>
       </div>
 
-      <!-- SEZIONE ATTIVITÀ & CALENDARIO: TOGGLE SETTIMANA / MESE -->
-      <div class="card" style="margin-top:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-size:16px;">📅</span>
-            <span class="shift-title" id="dash-schedule-title" style="font-size:14px;">Attività & Turni</span>
-          </div>
-          <div class="segmented-control" style="max-width:190px;padding:2px;margin:0;">
-            <button type="button" id="btn-dash-view-week" class="segmented-btn active" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('week')">📅 Settimana</button>
-            <button type="button" id="btn-dash-view-month" class="segmented-btn" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('month')">🗓️ Mese</button>
-          </div>
+    </main>
+
+    <!-- SCREEN: ATTIVITÀ E TURNI -->
+    <main id="screen-schedule" class="view-screen">
+      <!-- Header Schermata Attività & Turni con Indietro e switcher Settimana / Mese -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="icon-btn" onclick="showScreen('dashboard')" title="Torna alla Home" style="width:34px;height:34px;flex-shrink:0;">🔙</button>
+          <div style="font-size:16px;font-weight:700;color:var(--text);margin:0;">📅 Attività e Turni</div>
         </div>
-
-        <!-- VISTA SETTIMANA -->
-        <div id="dash-week-view">
-          <!-- Week Navigation Header -->
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:10px;">
-            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeDashboardWeek(-1)" title="Settimana precedente">◀️</button>
-            <div style="text-align:center;">
-              <div id="dash-week-label" style="font-size:12.5px;font-weight:700;color:var(--text);">Settimana Corrente</div>
-              <div id="dash-week-sub" style="font-size:11px;color:var(--text-muted);margin-top:1px;">Caricamento...</div>
-            </div>
-            <div style="display:flex;gap:4px;">
-              <button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:10.5px;" onclick="resetDashboardWeekToCurrent()">Oggi</button>
-              <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeDashboardWeek(1)" title="Settimana successiva">▶️</button>
-            </div>
-          </div>
-
-          <!-- 7 Giorni della Settimana -->
-          <div id="dash-week-days-list" style="display:flex;flex-direction:column;gap:6px;">
-            <!-- Popolato dinamicamente -->
-          </div>
-
-          <!-- Totale Settimana Footer -->
-          <div id="dash-week-summary-footer" style="margin-top:10px;padding:8px 12px;background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.2);border-radius:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;">
-            <div style="color:var(--text-muted);">Riepilogo settimana:</div>
-            <div id="dash-week-summary-values" style="font-weight:700;color:var(--accent);">0 gg • 0.0 h • 0 €</div>
-          </div>
-        </div>
-
-        <!-- VISTA MESE -->
-        <div id="dash-month-view" style="display:none;">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:10px;">
-            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(-1)" title="Mese precedente">◀️</button>
-            <span id="dash-month-name" style="font-size:12.5px;font-weight:700;color:var(--text);">Mese Corrente</span>
-            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(1)" title="Mese successivo">▶️</button>
-          </div>
-
-          <!-- Mini Stats Grid Mese -->
-          <div class="stats-grid" style="margin-bottom:10px;">
-            <div class="stat-box" style="padding:10px 8px;">
-              <div class="stat-label">Compenso</div>
-              <div id="dash-month-total-pay" class="stat-value highlight" style="font-size:15px;">0 €</div>
-            </div>
-            <div class="stat-box" style="padding:10px 8px;">
-              <div class="stat-label">Giornate</div>
-              <div id="dash-month-total-days" class="stat-value" style="font-size:15px;">0</div>
-            </div>
-            <div class="stat-box" style="padding:10px 8px;">
-              <div class="stat-label">Casa / Trasf</div>
-              <div id="dash-month-split-days" class="stat-value" style="font-size:15px;">0 / 0</div>
-            </div>
-            <div class="stat-box" style="padding:10px 8px;">
-              <div class="stat-label">Extra</div>
-              <div id="dash-month-extra-pay" class="stat-value" style="font-size:15px;">0 €</div>
-            </div>
-          </div>
-
-          <div id="dash-month-entries-preview" style="display:flex;flex-direction:column;gap:6px;">
-            <!-- Popolato dinamicamente -->
-          </div>
-          <button class="btn btn-outline" style="width:100%;margin-top:8px;font-size:12px;padding:7px;" onclick="showScreen('summary')">
-            📊 Apri Riepilogo Completo Mese ➔
-          </button>
+        <div class="segmented-control" style="max-width:180px;padding:2px;margin:0;">
+          <button type="button" id="btn-dash-view-week" class="segmented-btn active" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('week')">📅 Settimana</button>
+          <button type="button" id="btn-dash-view-month" class="segmented-btn" style="padding:4px 8px;font-size:11.5px;" onclick="setDashboardView('month')">🗓️ Mese</button>
         </div>
       </div>
+
+      <!-- VISTA SETTIMANA -->
+      <div id="dash-week-view" class="card" style="margin-top:0;">
+        <!-- Week Navigation Header -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:10px;">
+          <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeDashboardWeek(-1)" title="Settimana precedente">◀️</button>
+          <div style="text-align:center;">
+            <div id="dash-week-label" style="font-size:12.5px;font-weight:700;color:var(--text);">Settimana Corrente</div>
+            <div id="dash-week-sub" style="font-size:11px;color:var(--text-muted);margin-top:1px;">Caricamento...</div>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:10.5px;" onclick="resetDashboardWeekToCurrent()">Oggi</button>
+            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeDashboardWeek(1)" title="Settimana successiva">▶️</button>
+          </div>
+        </div>
+
+        <!-- 7 Giorni della Settimana -->
+        <div id="dash-week-days-list" style="display:flex;flex-direction:column;gap:6px;">
+          <!-- Popolato dinamicamente -->
+        </div>
+
+        <!-- Totale Settimana Footer -->
+        <div id="dash-week-summary-footer" style="margin-top:10px;padding:8px 12px;background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.2);border-radius:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+          <div style="color:var(--text-muted);">Riepilogo settimana:</div>
+          <div id="dash-week-summary-values" style="font-weight:700;color:var(--accent);">0 gg • 0.0 h • 0 €</div>
+        </div>
+      </div>
+
+      <!-- VISTA MESE -->
+      <div id="dash-month-view" class="card" style="margin-top:0;display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:10px;">
+          <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(-1)" title="Mese precedente">◀️</button>
+          <span id="dash-month-name" style="font-size:12.5px;font-weight:700;color:var(--text);">Mese Corrente</span>
+          <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(1)" title="Mese successivo">▶️</button>
+        </div>
+
+        <!-- Mini Stats Grid Mese -->
+        <div class="stats-grid" style="margin-bottom:10px;">
+          <div class="stat-box" style="padding:10px 8px;">
+            <div class="stat-label">Compenso</div>
+            <div id="dash-month-total-pay" class="stat-value highlight" style="font-size:15px;">0 €</div>
+          </div>
+          <div class="stat-box" style="padding:10px 8px;">
+            <div class="stat-label">Giornate</div>
+            <div id="dash-month-total-days" class="stat-value" style="font-size:15px;">0</div>
+          </div>
+          <div class="stat-box" style="padding:10px 8px;">
+            <div class="stat-label">Casa / Trasf</div>
+            <div id="dash-month-split-days" class="stat-value" style="font-size:15px;">0 / 0</div>
+          </div>
+          <div class="stat-box" style="padding:10px 8px;">
+            <div class="stat-label">Extra</div>
+            <div id="dash-month-extra-pay" class="stat-value" style="font-size:15px;">0 €</div>
+          </div>
+        </div>
+
+        <div id="dash-month-entries-preview" style="display:flex;flex-direction:column;gap:6px;">
+          <!-- Popolato dinamicamente -->
+        </div>
+        <button class="btn btn-outline" style="width:100%;margin-top:8px;font-size:12px;padding:7px;" onclick="showScreen('summary')">
+          📊 Apri Riepilogo Completo Mese ➔
+        </button>
+      </div>
+    </main>
 
     </main>
 
@@ -2840,6 +2849,7 @@
 
     // Inizializzazione Dashboard (Stale-While-Revalidate / 0 ms / Offline-First)
     async function fetchDashboardData(forceRefresh = false) {
+      const isInitialBoot = !appState.user;
       const appStartTime = Date.now();
       const tgUser = getTelegramUser();
       if (!tgUser || !tgUser.id) {
@@ -2877,21 +2887,25 @@
           document.getElementById("btn-admin").style.display = "flex";
         }
 
-        showScreen("dashboard");
+        if (isInitialBoot) {
+          showScreen("dashboard");
+        }
         hideLoader();
         hasRenderedCache = true;
         // Mostra icona di aggiornamento in background ben visibile
         showBackgroundSyncIndicator(true, "Aggiornamento in corso...", "🔄");
-      } else {
+      } else if (isInitialBoot) {
         showLoader("Caricamento dati...");
       }
 
       const timeoutId = setTimeout(() => {
-        const loaderEl = document.getElementById("loader");
-        if (loaderEl && loaderEl.style.display !== "none") {
-          const msgEl = document.getElementById("loader-msg");
-          if (msgEl) {
-            msgEl.innerHTML = `Connessione lenta o risposta in attesa...<br><br><button class="btn btn-outline btn-sm" style="margin:8px auto;display:inline-flex;" onclick="window.location.reload(true)">🔄 Ricarica Pagina</button>`;
+        if (isInitialBoot) {
+          const loaderEl = document.getElementById("loader");
+          if (loaderEl && loaderEl.style.display !== "none") {
+            const msgEl = document.getElementById("loader-msg");
+            if (msgEl) {
+              msgEl.innerHTML = `Connessione lenta o risposta in attesa...<br><br><button class="btn btn-outline btn-sm" style="margin:8px auto;display:inline-flex;" onclick="window.location.reload(true)">🔄 Ricarica Pagina</button>`;
+            }
           }
         }
       }, 7000);
@@ -2901,9 +2915,9 @@
         clearTimeout(timeoutId);
 
         if (!data || !data.success) {
-          if (hasRenderedCache) {
-            showBackgroundSyncIndicator(true, "Offline (dati salvati)", "📶");
-            showToast("⚠️ Connessione assente: mostro dati salvati in locale");
+          if (hasRenderedCache || !isInitialBoot) {
+            showBackgroundSyncIndicator(true, "Disponibile offline", "📶");
+            if (isInitialBoot) showToast("⚠️ Connessione assente: mostro dati salvati in locale");
           } else {
             alert("Errore caricamento: " + (data?.error || "Risposta non valida"));
             hideLoader();
@@ -2971,10 +2985,12 @@
           renderStats();
           renderEntries();
           populateSettingsInputs();
-          showScreen(appState.currentScreen || "dashboard");
+          if (isInitialBoot) {
+            showScreen(appState.currentScreen || "dashboard");
+          }
 
           const elapsed = Date.now() - appStartTime;
-          if (elapsed < 850) {
+          if (elapsed < 850 && isInitialBoot) {
             await new Promise(r => setTimeout(r, 850 - elapsed));
           }
         } else if (hasDataChanged) {
@@ -4017,6 +4033,11 @@
 
       if (name === "events") {
         loadEventsScreen();
+      }
+
+      if (name === "schedule") {
+        renderDashboardWeek();
+        renderDashboardMonthPreview();
       }
     }
 
@@ -7083,8 +7104,8 @@ function openModal(id) {
     let lastForegroundSyncTime = 0;
     function syncMiniAppInForeground(force = false) {
       const now = Date.now();
-      // Throttling di sicurezza a 4 secondi per evitare spam se l'utente cambia tab rapidamente
-      if (!force && (now - lastForegroundSyncTime < 4000)) return;
+      // Throttling di sicurezza a 8 secondi per evitare spam se l'utente cambia tab rapidamente
+      if (!force && (now - lastForegroundSyncTime < 8000)) return;
       lastForegroundSyncTime = now;
       fetchDashboardData(force);
     }
@@ -7101,13 +7122,6 @@ function openModal(id) {
       window.addEventListener("focus", () => {
         syncMiniAppInForeground(false);
       });
-
-      // Polling di background ogni 25 secondi quando la pagina è attiva
-      setInterval(() => {
-        if (!document.hidden) {
-          syncMiniAppInForeground(false);
-        }
-      }, 25000);
 
       // Blocca lo scroll dello sfondo opaco dei modali e gestisce chiusura su click overlay
       document.querySelectorAll(".modal-overlay").forEach(overlay => {
@@ -7133,7 +7147,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=19").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=20").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
