@@ -377,6 +377,7 @@
       min-width: 0;
       font-size: 13px;
       padding: 10px 8px;
+      white-space: nowrap;
     }
     #shift-closed-actions .btn, #shift-open-actions .btn {
       white-space: nowrap;
@@ -1529,12 +1530,12 @@
 
       <!-- Month Summary Card with Navigation -->
       <div class="card">
-        <div class="shift-header">
-          <div class="shift-title"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>Riepilogo del Mese</div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(-1)" title="Mese precedente">◀️</button>
-            <span id="stats-month-name" class="status-badge" style="background:rgba(56,189,248,0.15);color:var(--accent);font-size:11px;">Mese</span>
-            <button class="icon-btn" style="width:28px;height:28px;font-size:11px;" onclick="changeMonth(1)" title="Mese successivo">▶️</button>
+        <div class="shift-header" style="flex-wrap:nowrap;gap:8px;">
+          <div class="shift-title" style="white-space:nowrap;font-size:13px;margin:0;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>Riepilogo Mese</div>
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+            <button class="icon-btn" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" onclick="changeMonth(-1)" title="Mese precedente"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+            <span id="stats-month-name" class="status-badge" style="background:rgba(56,189,248,0.15);color:var(--accent);font-size:11px;white-space:nowrap;padding:3px 8px;">Mese</span>
+            <button class="icon-btn" style="width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" onclick="changeMonth(1)" title="Mese successivo"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
           </div>
         </div>
         <div class="stats-grid">
@@ -1698,7 +1699,7 @@
           </div>
         </div>
 
-        <button id="btn-add-cal" class="btn btn-outline" style="width:100%;margin-top:6px;font-size:13px;" onclick="openAddGoogleCalendar()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Aggiungi al mio Google Calendar</button>
+        <button id="btn-add-cal" class="btn btn-outline" style="width:100%;margin-top:6px;font-size:13px;white-space:nowrap;" onclick="openAddGoogleCalendar()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Aggiungi a Google Calendar</button>
 
         <!-- Colori Google Calendar (24 Colori) -->
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
@@ -1757,13 +1758,13 @@
 
         <!-- Estensione Browser PC -->
         <div style="background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;border:1px solid var(--border);">
-          <div style="font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Estensione Browser PC (Tampermonkey)</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:6px;white-space:nowrap;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>Estensione Browser PC</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
             Script per compilare automaticamente il planner da Chrome o Edge su PC.
           </p>
           <div class="btn-row" style="margin-bottom:8px;">
-            <button class="btn btn-primary" onclick="installTampermonkeyScript()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Installa con 1 Clic</button>
-            <button class="btn btn-outline" onclick="copySyncKey()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copia Chiave</button>
+            <button class="btn btn-primary" style="white-space:nowrap;font-size:12.5px;" onclick="installTampermonkeyScript()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Installa 1-Clic</button>
+            <button class="btn btn-outline" style="white-space:nowrap;font-size:12.5px;" onclick="copySyncKey()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copia Chiave</button>
           </div>
           <button class="btn btn-outline" style="width:100%;font-size:12px;padding:8px;" onclick="downloadUserscriptFile()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Scarica Script .user.js</button>
         </div>
@@ -1776,7 +1777,7 @@
           Tutti i tuoi dati contabili personali risiedono nel tuo foglio Google dedicato.
         </p>
 
-        <button class="btn btn-outline" style="width:100%;margin-bottom:10px;" onclick="openGoogleSheet()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Apri Foglio Personale su Google Drive</button>
+        <button class="btn btn-outline" style="width:100%;margin-bottom:10px;white-space:nowrap;" onclick="openGoogleSheet()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Apri Foglio Google Drive</button>
         <div class="btn-row">
           <button class="btn btn-primary" onclick="openMonthlyPdfPreview()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Anteprima PDF</button>
           <button class="btn btn-success" onclick="sendPdfToTelegram()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Invia PDF</button>
@@ -7881,7 +7882,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=36").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=37").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
