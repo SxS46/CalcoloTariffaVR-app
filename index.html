@@ -7847,8 +7847,8 @@ function openModal(id) {
     let lastForegroundSyncTime = 0;
     function syncMiniAppInForeground(force = false) {
       const now = Date.now();
-      // Throttling di sicurezza a 8 secondi per evitare spam se l'utente cambia tab rapidamente
-      if (!force && (now - lastForegroundSyncTime < 8000)) return;
+      // Throttling leggero a 2 secondi per reattività immediata al ritorno da chat
+      if (!force && (now - lastForegroundSyncTime < 2000)) return;
       lastForegroundSyncTime = now;
       fetchDashboardData(force);
     }
@@ -7856,7 +7856,7 @@ function openModal(id) {
     function startApp() {
       fetchDashboardData();
 
-      // Sincronizzazione automatica al ritorno in primo piano (focus/visibilitychange)
+      // Sincronizzazione automatica reattiva: visibilitychange, focus, pageshow e viewport Telegram
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden) {
           syncMiniAppInForeground(false);
@@ -7865,6 +7865,23 @@ function openModal(id) {
       window.addEventListener("focus", () => {
         syncMiniAppInForeground(false);
       });
+      window.addEventListener("pageshow", () => {
+        syncMiniAppInForeground(true);
+      });
+      if (window.Telegram?.WebApp) {
+        try {
+          window.Telegram.WebApp.onEvent('viewportChanged', () => {
+            syncMiniAppInForeground(false);
+          });
+        } catch (e) {}
+      }
+
+      // Polling leggero in background (ogni 6s) per allineare subito cambi turno effettuati in chat
+      setInterval(() => {
+        if (!document.hidden && document.getElementById("loader")?.style.display === "none") {
+          syncMiniAppInForeground(false);
+        }
+      }, 6000);
 
       // Blocca lo scroll dello sfondo opaco dei modali e gestisce chiusura su click overlay
       document.querySelectorAll(".modal-overlay").forEach(overlay => {
@@ -7890,7 +7907,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=41").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=42").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
