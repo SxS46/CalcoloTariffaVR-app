@@ -5089,7 +5089,6 @@ function openModal(id) {
       if (!start) return alert("Inserisci un orario di inizio");
 
       closeModal("modal-start-shift");
-      showLoader("Apertura turno in corso...");
 
       // Rilevamento automatico commessa odierna da elenco eventi Videorent
       let todayJobId = "";
@@ -5108,9 +5107,25 @@ function openModal(id) {
         }
       } catch(eEv) {}
 
+      // Aggiornamento immediato ottimistico dell'interfaccia (0 ms di latenza)
+      const now = new Date();
+      const optimisticShift = {
+        type: type,
+        start: start,
+        date: formatDateOnlyDM(now),
+        dateObj: now.toISOString(),
+        startedAt: now.toISOString(),
+        jobId: todayJobId || null,
+        isWeekendHolidayBonus: false
+      };
+      appState.activeShift = optimisticShift;
+      renderActiveShift();
+      if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
+      showToast("🟢 Turno aperto con successo!");
+
       try {
         const res = await callApi("miniapp_start_shift", { type: type, start: start, jobId: todayJobId });
-        if (res.success) {
+        if (res && res.success) {
           appState.activeShift = res.activeShift;
           renderActiveShift();
           const tgUser = getTelegramUser();
@@ -5122,15 +5137,15 @@ function openModal(id) {
               writeAppLocalCache(dashCacheKey, cached.data);
             }
           }
-          showToast("🟢 Turno aperto con successo!");
-          if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred("success");
         } else {
-          alert("Errore: " + res.error);
+          appState.activeShift = null;
+          renderActiveShift();
+          alert("Errore avvio turno: " + (res?.error || "Operazione non riuscita"));
         }
       } catch (e) {
-        alert("Errore: " + e.message);
-      } finally {
-        hideLoader();
+        appState.activeShift = null;
+        renderActiveShift();
+        alert("Errore avvio turno: " + e.message);
       }
     }
 
@@ -7882,7 +7897,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=39").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=40").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
