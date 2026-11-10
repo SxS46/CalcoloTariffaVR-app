@@ -3794,11 +3794,38 @@
       if (isNaN(startH)) return;
 
       const now = new Date();
-      const currentH = now.getHours();
-      const currentM = now.getMinutes();
+      let shiftDate = appState.activeShift.dateObj ? new Date(appState.activeShift.dateObj) : new Date();
+      if (isNaN(shiftDate.getTime())) shiftDate = new Date();
+      if (appState.activeShift.date && typeof appState.activeShift.date === "string") {
+        const dParts = appState.activeShift.date.split("/");
+        if (dParts.length >= 2) {
+          const dVal = parseInt(dParts[0], 10);
+          const mVal = parseInt(dParts[1], 10) - 1;
+          if (!isNaN(dVal) && !isNaN(mVal)) {
+            shiftDate.setDate(dVal);
+            shiftDate.setMonth(mVal);
+          }
+        }
+      }
 
-      let diffMinutes = (currentH * 60 + currentM) - (startH * 60 + startM);
-      if (diffMinutes < 0) diffMinutes += 24 * 60; // Notturno
+      // Costruzione data/ora esatta di inizio turno
+      const startDateTime = new Date(
+        shiftDate.getFullYear(),
+        shiftDate.getMonth(),
+        shiftDate.getDate(),
+        startH,
+        startM,
+        0,
+        0
+      );
+
+      let diffMinutes = Math.floor((now.getTime() - startDateTime.getTime()) / 60000);
+
+      // Se l'orario di inizio è successivo all'orario attuale del giorno di inizio,
+      // le ore già lavorate devono segnare 0 (turno non ancora iniziato)
+      if (diffMinutes < 0) {
+        diffMinutes = 0;
+      }
 
       const h = Math.floor(diffMinutes / 60);
       const m = diffMinutes % 60;
@@ -7949,7 +7976,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=45").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=46").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
