@@ -2238,9 +2238,9 @@
           </div>
         </div>
 
-        <!-- Sezione 4: Note del Tecnico (Diario) -->
+        <!-- Sezione 4: Note (Diario) -->
         <div class="card" style="margin-bottom:10px;">
-          <div class="shift-title" style="margin-bottom:8px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Note del Tecnico</div>
+          <div class="shift-title" style="margin-bottom:8px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Note</div>
           <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
             Annotazioni visibili a Videorent e ai colleghi di lavoro.
           </p>
@@ -2248,17 +2248,17 @@
             <!-- Popolato dinamicamente -->
           </div>
           <div style="display:flex;gap:6px;align-items:flex-end;">
-            <textarea id="input-new-tech-note" class="form-input" placeholder="Scrivi una nota per il set... (Invio per inviare)" rows="1" style="font-size:12px;padding:8px 10px;resize:none;overflow-y:hidden;line-height:1.4;flex:1;max-height:120px;" oninput="handleNoteTextareaInput(this)" onkeydown="handleNoteTextareaKeydown(event)"></textarea>
-            <button class="btn btn-primary" style="flex:0 0 auto;font-size:12px;padding:8px 14px;height:36px;display:flex;align-items:center;justify-content:center;" onclick="submitTechNote()">Invia</button>
+            <textarea id="input-new-tech-note" class="form-input" placeholder="Scrivi una nota..." rows="1" style="font-size:12px;padding:8px 10px;resize:none;overflow-y:hidden;line-height:1.4;flex:1;max-height:120px;" oninput="handleNoteTextareaInput(this)" onkeydown="handleNoteTextareaKeydown(event)"></textarea>
+            <button id="btn-submit-note" class="btn btn-primary" style="flex:0 0 auto;font-size:12px;padding:8px 14px;height:36px;display:flex;align-items:center;justify-content:center;" onclick="submitTechNote()" disabled>Invia</button>
           </div>
         </div>
 
-        <!-- Sezione 4b: Allegati Commessa -->
+        <!-- Sezione 4b: Allegati -->
         <div class="card" style="margin-bottom:10px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
             <div class="shift-title" style="margin-bottom:0;display:flex;align-items:center;gap:6px;">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-              <span>Allegati Commessa</span>
+              <span>Allegati</span>
             </div>
             <span id="ev-detail-attachments-count" class="status-badge" style="display:none;font-size:11px;padding:2px 8px;background:rgba(14,165,233,0.15);color:var(--accent);">0</span>
           </div>
@@ -7126,7 +7126,7 @@ function openModal(id) {
           if (!vrEventsState.loaded || allEvs.length === 0) {
             ensureTodayVrEventLoaded();
           }
-          return { id: activeJobId, title: "Commessa #" + activeJobId };
+          return { id: activeJobId, title: "Lavoro #" + activeJobId };
         }
 
         // 4. Se la cache è vuota, avvia lo scaricamento in background e aggiorna la card all'arrivo
@@ -7476,7 +7476,7 @@ function openModal(id) {
         }
       }
       if (!ev) {
-        showToast("⚠️ Scheda commessa non trovata a gestionale");
+        showToast("⚠️ Scheda lavoro non trovata a gestionale");
         return;
       }
 
@@ -7594,14 +7594,18 @@ function openModal(id) {
 
       openModal("modal-event-detail");
       haptic.light();
-      // Ripristina eventuale bozza non inviata per questa commessa
+      // Ripristina eventuale bozza non inviata per questo lavoro
       const noteInputEl = document.getElementById("input-new-tech-note");
+      const submitNoteBtn = document.getElementById("btn-submit-note");
       if (noteInputEl) {
         try {
           noteInputEl.value = localStorage.getItem('vr_draft_note_' + ev.id) || '';
           noteInputEl.style.height = 'auto';
           if (noteInputEl.value) noteInputEl.style.height = Math.min(noteInputEl.scrollHeight, 120) + 'px';
+          if (submitNoteBtn) submitNoteBtn.disabled = !noteInputEl.value.trim();
         } catch(e) {}
+      } else if (submitNoteBtn) {
+        submitNoteBtn.disabled = true;
       }
 
       // 1. Lettura istantanea da Cache Dettaglio Locale (0 ms / Offline)
@@ -7945,6 +7949,31 @@ function openModal(id) {
       container.innerHTML = html;
     }
 
+    function handleNoteTextareaInput(textarea) {
+      if (!textarea) return;
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      const sendBtn = document.getElementById("btn-submit-note");
+      if (sendBtn) {
+        sendBtn.disabled = !textarea.value.trim();
+      }
+      if (vrEventsState.currentEventDetail) {
+        try {
+          localStorage.setItem('vr_draft_note_' + vrEventsState.currentEventDetail.id, textarea.value);
+        } catch(e) {}
+      }
+    }
+
+    function handleNoteTextareaKeydown(event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        const sendBtn = document.getElementById("btn-submit-note");
+        if (sendBtn && !sendBtn.disabled) {
+          submitTechNote();
+        }
+      }
+    }
+
     async function submitTechNote() {
       const input = document.getElementById("input-new-tech-note");
       if (!input || !input.value.trim() || !vrEventsState.currentEventDetail) return;
@@ -7958,6 +7987,8 @@ function openModal(id) {
         if (res && res.success) {
           input.value = "";
           input.style.height = 'auto';
+          const sendBtn = document.getElementById("btn-submit-note");
+          if (sendBtn) sendBtn.disabled = true;
           haptic.success();
           try { localStorage.removeItem('vr_draft_note_' + eventId); } catch(e) {}
           // Ricarica le note e aggiorna la cache locale
@@ -8035,7 +8066,7 @@ function openModal(id) {
 
       if (!Array.isArray(attachments) || attachments.length === 0) {
         if (countBadge) countBadge.style.display = "none";
-        container.innerHTML = `<div style="background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:8px;padding:12px;text-align:center;color:var(--text-muted);font-size:12px;">📁 Nessun allegato presente per questa commessa.</div>`;
+        container.innerHTML = `<div style="background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:8px;padding:12px;text-align:center;color:var(--text-muted);font-size:12px;">📁 Nessun allegato presente</div>`;
         return;
       }
 
@@ -8174,11 +8205,13 @@ function openModal(id) {
     async function submitEventAttachment() {
       const fileInput = document.getElementById("ev-attach-file-input");
       const file = fileInput && fileInput.files && fileInput.files[0];
-      if (!file || !vrEventsState.currentEventDetail) return;
+      const upBtn = document.getElementById("btn-upload-attachment");
+      if (!file || !vrEventsState.currentEventDetail || (upBtn && upBtn.disabled)) return;
       const eventId = vrEventsState.currentEventDetail.id;
       const descInput = document.getElementById("ev-attach-desc-input");
       const description = descInput ? descInput.value.trim() : "";
 
+      if (upBtn) upBtn.disabled = true;
       showLoader("Caricamento allegato in corso...");
       try {
         const prepared = await readFileAsOptimizedBase64(file);
@@ -8209,9 +8242,11 @@ function openModal(id) {
             renderAttachments(detRes.attachments || [], eventId);
           }
         } else {
+          if (upBtn) upBtn.disabled = false;
           alert("Errore caricamento allegato: " + (res?.error || "Operazione non riuscita"));
         }
       } catch (err) {
+        if (upBtn) upBtn.disabled = false;
         hideLoader();
         alert("Errore: " + (err.message || String(err)));
       }
@@ -8430,7 +8465,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=48").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=49").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
