@@ -6733,6 +6733,90 @@ function openModal(id) {
       currentEventDetail: null
     };
 
+    function parseEventDateSafe(dateStr, isEnd = false) {
+      if (!dateStr) return null;
+      if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
+      const s = String(dateStr).trim();
+      if (!s) return null;
+      if (s.includes("Z") || s.includes("z") || /[+-]\d{2}:?\d{2}$/.test(s)) {
+        const parsedIso = new Date(s);
+        if (!isNaN(parsedIso.getTime())) return parsedIso;
+      }
+      const dmyMatch = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+      if (dmyMatch) {
+        const day = parseInt(dmyMatch[1], 10);
+        const mon = parseInt(dmyMatch[2], 10) - 1;
+        const year = parseInt(dmyMatch[3], 10);
+        const hour = dmyMatch[4] ? parseInt(dmyMatch[4], 10) : (isEnd ? 23 : 9);
+        const min = dmyMatch[5] ? parseInt(dmyMatch[5], 10) : (isEnd && !dmyMatch[4] ? 59 : 0);
+        const sec = dmyMatch[6] ? parseInt(dmyMatch[6], 10) : (isEnd && !dmyMatch[4] ? 59 : 0);
+        return new Date(year, mon, day, hour, min, sec);
+      }
+      const ymdMatch = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[T\s](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+      if (ymdMatch) {
+        const year = parseInt(ymdMatch[1], 10);
+        const mon = parseInt(ymdMatch[2], 10) - 1;
+        const day = parseInt(ymdMatch[3], 10);
+        const hour = ymdMatch[4] ? parseInt(ymdMatch[4], 10) : (isEnd ? 23 : 9);
+        const min = ymdMatch[5] ? parseInt(ymdMatch[5], 10) : (isEnd && !ymdMatch[4] ? 59 : 0);
+        const sec = ymdMatch[6] ? parseInt(ymdMatch[6], 10) : (isEnd && !ymdMatch[4] ? 59 : 0);
+        return new Date(year, mon, day, hour, min, sec);
+      }
+      const isoDate = new Date(s.replace(" ", "T"));
+      if (!isNaN(isoDate.getTime())) return isoDate;
+      const rawDate = new Date(s);
+      if (!isNaN(rawDate.getTime())) return rawDate;
+      return null;
+    }
+
+    function partitionAndSortEvents(rawUpcoming = [], rawPast = []) {
+      const allEvents = [];
+      const seenIds = new Set();
+      [...(rawUpcoming || []), ...(rawPast || [])].forEach(ev => {
+        if (!ev || !ev.id) return;
+        const cleanId = String(ev.id).replace("#", "").trim();
+        if (!seenIds.has(cleanId)) {
+          seenIds.add(cleanId);
+          allEvents.push(ev);
+        }
+      });
+
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+
+      const upcoming = [];
+      const past = [];
+
+      allEvents.forEach(ev => {
+        const sDate = parseEventDateSafe(ev.start, false);
+        let eDate = ev.end ? parseEventDateSafe(ev.end, true) : null;
+        if (!eDate && sDate) {
+          eDate = new Date(sDate.getTime() + 9 * 3600000);
+        }
+        const refEndDate = eDate || sDate;
+        const isPast = refEndDate ? (refEndDate.getTime() < todayStart.getTime()) : false;
+        if (isPast) {
+          past.push(ev);
+        } else {
+          upcoming.push(ev);
+        }
+      });
+
+      upcoming.sort((a, b) => {
+        const tA = (parseEventDateSafe(a.start, false) || parseEventDateSafe(a.end, false) || new Date(0)).getTime();
+        const tB = (parseEventDateSafe(b.start, false) || parseEventDateSafe(b.end, false) || new Date(0)).getTime();
+        return tA - tB;
+      });
+
+      past.sort((a, b) => {
+        const tA = (parseEventDateSafe(a.end, true) || parseEventDateSafe(a.start, true) || new Date(0)).getTime();
+        const tB = (parseEventDateSafe(b.end, true) || parseEventDateSafe(b.start, true) || new Date(0)).getTime();
+        return tB - tA;
+      });
+
+      return { upcoming, past };
+    }
+
     // =========================================================================
     // CACHE LOCALE PERSISTENTE EVENTI (Stale-While-Revalidate / Offline-First)
     // =========================================================================
@@ -6827,9 +6911,10 @@ function openModal(id) {
 
         if (needsFreshList) {
           const res = await callApi("miniapp_get_vr_events");
-          if (res && res.success && Array.isArray(res.upcoming)) {
-            upcoming = res.upcoming || [];
-            past = res.past || [];
+          if (res && res.success && (Array.isArray(res.upcoming) || Array.isArray(res.past))) {
+            const partitioned = partitionAndSortEvents(res.upcoming, res.past);
+            upcoming = partitioned.upcoming;
+            past = partitioned.past;
             vrEventsState.upcoming = upcoming;
             vrEventsState.past = past;
             vrEventsState.loaded = true;
@@ -6840,11 +6925,18 @@ function openModal(id) {
 
         // 3. Verifica se oggi c'è un lavoro in svolgimento (anche multi-giorno)
         const allEvents = [...upcoming, ...past];
+        const todayStartMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
         const todayEvent = allEvents.find(ev => {
           if (!ev || !ev.start) return false;
-          const sIso = String(ev.start).split("T")[0].split(" ")[0].trim();
-          const eIso = (ev.end ? String(ev.end) : String(ev.start)).split("T")[0].split(" ")[0].trim();
-          return todayIso >= sIso && todayIso <= eIso;
+          const sDate = parseEventDateSafe(ev.start, false);
+          let eDate = ev.end ? parseEventDateSafe(ev.end, true) : null;
+          if (!eDate && sDate) {
+            eDate = new Date(sDate.getFullYear(), sDate.getMonth(), sDate.getDate(), 23, 59, 59, 999);
+          }
+          if (!sDate) return false;
+          const sMs = new Date(sDate.getFullYear(), sDate.getMonth(), sDate.getDate(), 0, 0, 0, 0).getTime();
+          const eMs = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate(), 23, 59, 59, 999).getTime();
+          return todayStartMs >= sMs && todayStartMs <= eMs;
         });
 
         updateTodayEventQuickButton();
@@ -6885,9 +6977,10 @@ function openModal(id) {
       isFetchingEventsForTodayButton = true;
       try {
         const res = await callApi("miniapp_get_vr_events");
-        if (res && res.success && Array.isArray(res.upcoming)) {
-          vrEventsState.upcoming = res.upcoming || [];
-          vrEventsState.past = res.past || [];
+        if (res && res.success && (Array.isArray(res.upcoming) || Array.isArray(res.past))) {
+          const partitioned = partitionAndSortEvents(res.upcoming, res.past);
+          vrEventsState.upcoming = partitioned.upcoming;
+          vrEventsState.past = partitioned.past;
           vrEventsState.loaded = true;
           writeEventsLocalCache(getEventsCacheKey("events"), {
             upcoming: vrEventsState.upcoming,
@@ -6906,9 +6999,10 @@ function openModal(id) {
       if (!vrEventsState.loaded || (vrEventsState.upcoming.length === 0 && vrEventsState.past.length === 0)) {
         try {
           const cached = readEventsLocalCache(getEventsCacheKey("events"));
-          if (cached && cached.data && Array.isArray(cached.data.upcoming)) {
-            vrEventsState.upcoming = cached.data.upcoming || [];
-            vrEventsState.past = cached.data.past || [];
+          if (cached && cached.data && (Array.isArray(cached.data.upcoming) || Array.isArray(cached.data.past))) {
+            const partitioned = partitionAndSortEvents(cached.data.upcoming, cached.data.past);
+            vrEventsState.upcoming = partitioned.upcoming;
+            vrEventsState.past = partitioned.past;
             vrEventsState.loaded = true;
           }
         } catch(e) {}
@@ -6933,11 +7027,26 @@ function openModal(id) {
 
         // 2. Cerca per data odierna o data del turno
         if (allEvs.length > 0) {
+          const targetDayStartMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).getTime();
+          let shiftDayStartMs = targetDayStartMs;
+          if (appState.activeShift?.dateObj) {
+            const sObj = new Date(appState.activeShift.dateObj);
+            if (!isNaN(sObj.getTime())) {
+              shiftDayStartMs = new Date(sObj.getFullYear(), sObj.getMonth(), sObj.getDate(), 0, 0, 0, 0).getTime();
+            }
+          }
+
           const matchByDate = allEvs.find(ev => {
             if (!ev || !ev.start) return false;
-            const sIso = String(ev.start).split("T")[0].split(" ")[0].trim();
-            const eIso = (ev.end ? String(ev.end) : String(ev.start)).split("T")[0].split(" ")[0].trim();
-            return (todayIso >= sIso && todayIso <= eIso) || (shiftIso >= sIso && shiftIso <= eIso);
+            const sDate = parseEventDateSafe(ev.start, false);
+            let eDate = ev.end ? parseEventDateSafe(ev.end, true) : null;
+            if (!eDate && sDate) {
+              eDate = new Date(sDate.getFullYear(), sDate.getMonth(), sDate.getDate(), 23, 59, 59, 999);
+            }
+            if (!sDate) return false;
+            const sMs = new Date(sDate.getFullYear(), sDate.getMonth(), sDate.getDate(), 0, 0, 0, 0).getTime();
+            const eMs = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate(), 23, 59, 59, 999).getTime();
+            return (targetDayStartMs >= sMs && targetDayStartMs <= eMs) || (shiftDayStartMs >= sMs && shiftDayStartMs <= eMs);
           });
           if (matchByDate) return matchByDate;
         }
@@ -7029,14 +7138,14 @@ function openModal(id) {
 
     function formatEventDates(startStr, endStr) {
       if (!startStr) return "";
-      const dStart = new Date(startStr);
-      if (isNaN(dStart.getTime())) return startStr;
+      const dStart = parseEventDateSafe(startStr, false);
+      if (!dStart || isNaN(dStart.getTime())) return startStr;
       const dayS = dStart.getDate();
       const monthS = dStart.toLocaleString("it-IT", { month: "short" }).toUpperCase();
 
       if (!endStr) return `${dayS} ${monthS}`;
-      const dEnd = new Date(endStr);
-      if (isNaN(dEnd.getTime())) return `${dayS} ${monthS}`;
+      const dEnd = parseEventDateSafe(endStr, true);
+      if (!dEnd || isNaN(dEnd.getTime())) return `${dayS} ${monthS}`;
       const dayE = dEnd.getDate();
       const monthE = dEnd.toLocaleString("it-IT", { month: "short" }).toUpperCase();
 
@@ -7053,8 +7162,8 @@ function openModal(id) {
     function formatDateTimeFull(str) {
       if (!str) return "—";
       if (_dateTimeFormatCache.has(str)) return _dateTimeFormatCache.get(str);
-      const d = new Date(str);
-      if (isNaN(d.getTime())) return str;
+      const d = parseEventDateSafe(str, false);
+      if (!d || isNaN(d.getTime())) return str;
       const day = String(d.getDate()).padStart(2, "0");
       const month = String(d.getMonth() + 1).padStart(2, "0");
       const year = d.getFullYear();
@@ -7074,10 +7183,11 @@ function openModal(id) {
       const cached = readEventsLocalCache(cacheKey);
       let hasRenderedCache = false;
 
-      // 1. Lettura istantanea da Cache (0 ms)
-      if (cached && cached.data && Array.isArray(cached.data.upcoming)) {
-        vrEventsState.upcoming = cached.data.upcoming || [];
-        vrEventsState.past = cached.data.past || [];
+      // 1. Lettura istantanea da Cache (0 ms) con ri-partizione immediata
+      if (cached && cached.data && (Array.isArray(cached.data.upcoming) || Array.isArray(cached.data.past))) {
+        const partitioned = partitionAndSortEvents(cached.data.upcoming, cached.data.past);
+        vrEventsState.upcoming = partitioned.upcoming;
+        vrEventsState.past = partitioned.past;
         vrEventsState.loaded = true;
         updateTodayEventQuickButton();
         if (loadingEl) loadingEl.style.display = "none";
@@ -7126,17 +7236,18 @@ function openModal(id) {
           return;
         }
 
+        const partitioned = partitionAndSortEvents(res.upcoming, res.past);
         const oldEventsSig = JSON.stringify({ upcoming: vrEventsState.upcoming, past: vrEventsState.past });
-        const newEventsSig = JSON.stringify({ upcoming: res.upcoming || [], past: res.past || [] });
+        const newEventsSig = JSON.stringify({ upcoming: partitioned.upcoming, past: partitioned.past });
 
         // Salva in cache persistente
         writeEventsLocalCache(cacheKey, {
-          upcoming: res.upcoming || [],
-          past: res.past || []
+          upcoming: partitioned.upcoming,
+          past: partitioned.past
         });
 
-        vrEventsState.upcoming = res.upcoming || [];
-        vrEventsState.past = res.past || [];
+        vrEventsState.upcoming = partitioned.upcoming;
+        vrEventsState.past = partitioned.past;
         vrEventsState.loaded = true;
         updateTodayEventQuickButton();
 
@@ -7167,6 +7278,20 @@ function openModal(id) {
             listEl.innerHTML = `<div class="card" style="text-align:center;color:var(--danger);padding:18px;">Errore: ${err.message || String(err)}</div>`;
           }
         }
+      }
+    }
+
+    function updateEventsNavBadge() {
+      const badge = document.getElementById("nav-events-badge");
+      if (!badge) return;
+      const pendingCount = (vrEventsState.upcoming || []).filter(ev => {
+        return (ev.presenza_confirmed === 0 || ev.isTechnicianConfirmed === false) && !ev.isCancelled && ev.status !== "rifiutato";
+      }).length;
+      if (pendingCount > 0) {
+        badge.textContent = pendingCount;
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
       }
     }
 
@@ -7264,9 +7389,10 @@ function openModal(id) {
         showLoader("Caricamento scheda...");
         try {
           const res = await callApi("miniapp_get_vr_events");
-          if (res && res.success && Array.isArray(res.upcoming)) {
-            vrEventsState.upcoming = res.upcoming || [];
-            vrEventsState.past = res.past || [];
+          if (res && res.success && (Array.isArray(res.upcoming) || Array.isArray(res.past))) {
+            const partitioned = partitionAndSortEvents(res.upcoming, res.past);
+            vrEventsState.upcoming = partitioned.upcoming;
+            vrEventsState.past = partitioned.past;
             vrEventsState.loaded = true;
             writeEventsLocalCache(getEventsCacheKey("events"), {
               upcoming: vrEventsState.upcoming,
@@ -7976,7 +8102,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=46").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=47").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
