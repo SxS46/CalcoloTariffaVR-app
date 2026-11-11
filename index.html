@@ -2253,6 +2253,53 @@
           </div>
         </div>
 
+        <!-- Sezione 4b: Allegati Commessa -->
+        <div class="card" style="margin-bottom:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div class="shift-title" style="margin-bottom:0;display:flex;align-items:center;gap:6px;">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              <span>Allegati Commessa</span>
+            </div>
+            <span id="ev-detail-attachments-count" class="status-badge" style="display:none;font-size:11px;padding:2px 8px;background:rgba(14,165,233,0.15);color:var(--accent);">0</span>
+          </div>
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+            Documenti, ordini di servizio, schede o foto caricati per questo lavoro.
+          </p>
+
+          <!-- Lista allegati esistenti -->
+          <div id="ev-attachments-loading" style="padding:6px 0;display:none;">
+            <div class="skeleton-shimmer" style="height:36px;width:100%;margin-bottom:6px;border-radius:8px;"></div>
+          </div>
+          <div id="ev-attachments-list" style="margin-bottom:12px;">
+            <!-- Popolato dinamicamente -->
+          </div>
+
+          <!-- Box Caricamento Nuovo Allegato -->
+          <div style="background:rgba(255,255,255,0.03);border:1px dashed var(--border);border-radius:10px;padding:10px;">
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">
+              Carica Nuovo Allegato
+            </div>
+            <input type="text" id="ev-attach-desc-input" class="form-input" placeholder="Descrizione allegato (opzionale)" style="font-size:12px;padding:7px 10px;margin-bottom:8px;height:34px;min-height:34px;border-radius:6px;background:rgba(255,255,255,0.04);">
+            
+            <input type="file" id="ev-attach-file-input" style="display:none;" onchange="handleAttachmentFileSelected(this)">
+            
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button type="button" class="btn btn-outline" style="flex:1;font-size:12px;padding:7px 10px;height:36px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="document.getElementById('ev-attach-file-input').click()">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span id="ev-attach-file-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Scegli file...</span>
+              </button>
+              <button type="button" id="btn-upload-attachment" class="btn btn-primary" style="flex:0 0 auto;font-size:12px;padding:7px 14px;height:36px;display:flex;align-items:center;gap:6px;" onclick="submitEventAttachment()" disabled>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                <span>Carica</span>
+              </button>
+            </div>
+            <div id="ev-attach-selected-info" style="display:none;margin-top:6px;font-size:11px;color:var(--text-muted);align-items:center;justify-content:space-between;">
+              <span id="ev-attach-size-badge"></span>
+              <button type="button" style="background:none;border:none;color:var(--danger);font-size:11px;cursor:pointer;padding:0;" onclick="clearSelectedAttachment()">Rimuovi</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Sezione 5: Presenza Tecnico -->
         <div id="ev-presence-action-card" class="card" style="display:none;">
           <div class="shift-title" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Conferma Presenza</div>
@@ -3204,12 +3251,35 @@
 
     const _inflightApiRequests = new Map();
 
-    // Chiamata API verso Google Apps Script (con deduplicazione richieste in corso)
-    async function callApi(action, extraParams = {}) {
+    // Chiamata API verso Google Apps Script (con deduplicazione richieste in corso e supporto POST per file/payload grandi)
+    async function callApi(action, extraParams = {}, options = {}) {
       const tgUser = getTelegramUser();
       if (!tgUser || !tgUser.id) {
         throw new Error("Utente non identificato");
       }
+
+      const isPost = options.post || action === "miniapp_upload_vr_attachment" || (extraParams && extraParams.fileBase64);
+
+      if (isPost) {
+        const payload = {
+          action: action,
+          telegram_id: tgUser.id,
+          first_name: tgUser.first_name || "",
+          last_name: tgUser.last_name || "",
+          username: tgUser.username || "",
+          initData: tg?.initData || "",
+          ...extraParams
+        };
+        const res = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+        return await res.json();
+      }
+
       const params = new URLSearchParams({
         action: action,
         telegram_id: tgUser.id,
@@ -7517,6 +7587,11 @@ function openModal(id) {
       currentMaterialsData = null;
       currentMaterialsQuery = "";
 
+      // Reset Allegati Form & Selezione
+      clearSelectedAttachment();
+      const descInput = document.getElementById("ev-attach-desc-input");
+      if (descInput) descInput.value = "";
+
       openModal("modal-event-detail");
       haptic.light();
       // Ripristina eventuale bozza non inviata per questa commessa
@@ -7540,6 +7615,11 @@ function openModal(id) {
         if (Array.isArray(d.notes)) {
           renderTechNotes(d.notes, d.current_user_id);
         }
+        if (Array.isArray(d.attachments)) {
+          renderAttachments(d.attachments, ev.id);
+        } else {
+          renderAttachments([], ev.id);
+        }
         if (d.preventivo.noteSchedaLavoro && !noteText) {
           if (noteProdCard && noteProdEl) {
             noteProdCard.style.display = "block";
@@ -7559,6 +7639,8 @@ function openModal(id) {
         if (matLoading) matLoading.style.display = "block";
         if (matList) { matList.style.display = "none"; matList.innerHTML = ""; }
         if (techNotesList) techNotesList.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Caricamento note...</div>';
+        const attList = document.getElementById("ev-attachments-list");
+        if (attList) attList.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Caricamento allegati...</div>';
       }
 
       // 2. Fetch Aggiornamento da API (Network)
@@ -7567,19 +7649,24 @@ function openModal(id) {
         // Nascondi SEMPRE il loading quando la risposta arriva
         if (matLoading) matLoading.style.display = "none";
         if (matList) matList.style.display = "block";
+        const attLoadingEl = document.getElementById("ev-attachments-loading");
+        if (attLoadingEl) attLoadingEl.style.display = "none";
 
         if (res && res.success) {
           const oldPrevSig = JSON.stringify(cachedDetail?.data?.preventivo || null);
           const newPrevSig = JSON.stringify(res.preventivo || null);
           const oldNotesSig = JSON.stringify(cachedDetail?.data?.notes || null);
           const newNotesSig = JSON.stringify(res.notes || null);
+          const oldAttSig = JSON.stringify(cachedDetail?.data?.attachments || null);
+          const newAttSig = JSON.stringify(res.attachments || null);
 
-          const hasDetailChanged = (!hasRenderedCachedDetail) || (oldPrevSig !== newPrevSig) || (oldNotesSig !== newNotesSig);
+          const hasDetailChanged = (!hasRenderedCachedDetail) || (oldPrevSig !== newPrevSig) || (oldNotesSig !== newNotesSig) || (oldAttSig !== newAttSig);
 
           writeEventsLocalCache(detailCacheKey, {
             preventivo: res.preventivo,
             notes: res.notes,
-            current_user_id: res.current_user_id
+            current_user_id: res.current_user_id,
+            attachments: res.attachments || []
           });
 
           // Se i dati erano già a video e non sono cambiati, non fare nulla (zero reflow / zero interruzioni)
@@ -7598,6 +7685,7 @@ function openModal(id) {
 
           renderMaterials(res.preventivo);
           renderTechNotes(res.notes, res.current_user_id);
+          renderAttachments(res.attachments || [], ev.id);
 
           if (noteInput && typingNoteText) {
             noteInput.value = typingNoteText;
@@ -7907,7 +7995,8 @@ function openModal(id) {
               writeEventsLocalCache(getEventsCacheKey("detail_" + eventId), {
                 preventivo: detRes.preventivo,
                 notes: detRes.notes,
-                current_user_id: detRes.current_user_id
+                current_user_id: detRes.current_user_id,
+                attachments: detRes.attachments || []
               });
               renderTechNotes(detRes.notes, detRes.current_user_id);
             }
@@ -7918,6 +8007,245 @@ function openModal(id) {
       } catch (e) {
         hideLoader();
         alert("Errore: " + (e.message || String(e)));
+      }
+    }
+
+    // =========================================================================
+    // GESTIONE ALLEGATI COMMESSA VIDEORENT (Upload, Lista, Download & Delete)
+    // =========================================================================
+
+    function getAttachmentFileIcon(filename) {
+      const ext = (filename || "").split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic'].includes(ext)) {
+        return `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#38bdf8;"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`;
+      }
+      if (ext === 'pdf') {
+        return `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#ef4444;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h6"/><path d="M9 11h6"/></svg>`;
+      }
+      if (['xls', 'xlsx', 'csv'].includes(ext)) {
+        return `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#10b981;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></svg>`;
+      }
+      return `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`;
+    }
+
+    function renderAttachments(attachments, eventId) {
+      const container = document.getElementById("ev-attachments-list");
+      const countBadge = document.getElementById("ev-detail-attachments-count");
+      if (!container) return;
+
+      if (!Array.isArray(attachments) || attachments.length === 0) {
+        if (countBadge) countBadge.style.display = "none";
+        container.innerHTML = `<div style="background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:8px;padding:12px;text-align:center;color:var(--text-muted);font-size:12px;">📁 Nessun allegato presente per questa commessa.</div>`;
+        return;
+      }
+
+      if (countBadge) {
+        countBadge.textContent = attachments.length;
+        countBadge.style.display = "inline-block";
+      }
+
+      let html = "";
+      attachments.forEach(att => {
+        const iconSvg = getAttachmentFileIcon(att.filename || att.filepath);
+        const hasDesc = Boolean(att.description && att.description.trim());
+        const displayTitle = hasDesc ? escapeHtml(att.description.trim()) : escapeHtml(att.filename || "Allegato");
+        const subInfo = (hasDesc ? escapeHtml(att.filename) + " • " : "") + (att.created_at ? escapeHtml(att.created_at) : "");
+
+        const downloadUrl = att.url || `https://g.videorent.it/uploads/events/${eventId}/tech_attachments/${att.filepath}`;
+
+        html += `
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:9px 10px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+              <div style="flex-shrink:0;width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;">
+                ${iconSvg}
+              </div>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${displayTitle}">
+                  ${displayTitle}
+                </div>
+                ${subInfo ? `<div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${subInfo}</div>` : ''}
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+              <a href="${downloadUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="padding:4px 8px;font-size:11px;display:flex;align-items:center;gap:4px;text-decoration:none;" title="Apri / Scarica">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <span>Apri</span>
+              </a>
+              <button type="button" class="icon-btn" style="width:26px;height:26px;color:var(--danger);" onclick="deleteEventAttachment(${att.id})" title="Elimina allegato">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function handleAttachmentFileSelected(input) {
+      const file = input && input.files && input.files[0];
+      if (!file) {
+        clearSelectedAttachment();
+        return;
+      }
+      const nameEl = document.getElementById("ev-attach-file-name");
+      if (nameEl) nameEl.textContent = file.name;
+      const sizeBadge = document.getElementById("ev-attach-size-badge");
+      if (sizeBadge) {
+        let sizeStr = "";
+        if (file.size < 1024) sizeStr = file.size + " B";
+        else if (file.size < 1024 * 1024) sizeStr = (file.size / 1024).toFixed(1) + " KB";
+        else sizeStr = (file.size / (1024 * 1024)).toFixed(1) + " MB";
+        sizeBadge.textContent = `${file.name} (${sizeStr})`;
+      }
+      const infoRow = document.getElementById("ev-attach-selected-info");
+      if (infoRow) infoRow.style.display = "flex";
+      const upBtn = document.getElementById("btn-upload-attachment");
+      if (upBtn) upBtn.disabled = false;
+    }
+
+    function clearSelectedAttachment() {
+      const fileInput = document.getElementById("ev-attach-file-input");
+      if (fileInput) fileInput.value = "";
+      const nameEl = document.getElementById("ev-attach-file-name");
+      if (nameEl) nameEl.textContent = "Scegli file...";
+      const infoRow = document.getElementById("ev-attach-selected-info");
+      if (infoRow) infoRow.style.display = "none";
+      const upBtn = document.getElementById("btn-upload-attachment");
+      if (upBtn) upBtn.disabled = true;
+    }
+
+    function readFileAsOptimizedBase64(file) {
+      return new Promise((resolve, reject) => {
+        if (file.type && file.type.startsWith("image/") && file.type !== "image/svg+xml" && file.size > 1024 * 1024) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              let width = img.width;
+              let height = img.height;
+              const maxDim = 1920;
+              if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                  height = Math.round((height * maxDim) / width);
+                  width = maxDim;
+                } else {
+                  width = Math.round((width * maxDim) / height);
+                  height = maxDim;
+                }
+              }
+              const canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, width, height);
+              const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+              resolve({
+                dataUrl: dataUrl,
+                mimeType: "image/jpeg",
+                fileName: file.name.replace(/\.[^.]+$/, ".jpg")
+              });
+            };
+            img.onerror = () => {
+              readRaw();
+            };
+            img.src = e.target.result;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        } else {
+          readRaw();
+        }
+
+        function readRaw() {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            resolve({
+              dataUrl: e.target.result,
+              mimeType: file.type || "application/octet-stream",
+              fileName: file.name
+            });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    async function submitEventAttachment() {
+      const fileInput = document.getElementById("ev-attach-file-input");
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      if (!file || !vrEventsState.currentEventDetail) return;
+      const eventId = vrEventsState.currentEventDetail.id;
+      const descInput = document.getElementById("ev-attach-desc-input");
+      const description = descInput ? descInput.value.trim() : "";
+
+      showLoader("Caricamento allegato in corso...");
+      try {
+        const prepared = await readFileAsOptimizedBase64(file);
+        const res = await callApi("miniapp_upload_vr_attachment", {
+          eventId: eventId,
+          fileName: prepared.fileName || file.name,
+          mimeType: prepared.mimeType || file.type || "application/octet-stream",
+          fileBase64: prepared.dataUrl,
+          description: description
+        }, { post: true });
+        hideLoader();
+
+        if (res && res.success) {
+          showToast("Allegato caricato con successo");
+          haptic.success();
+          clearSelectedAttachment();
+          if (descInput) descInput.value = "";
+
+          // Ricarica la scheda evento e aggiorna la cache locale
+          const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: eventId });
+          if (detRes && detRes.success) {
+            writeEventsLocalCache(getEventsCacheKey("detail_" + eventId), {
+              preventivo: detRes.preventivo,
+              notes: detRes.notes,
+              current_user_id: detRes.current_user_id,
+              attachments: detRes.attachments || []
+            });
+            renderAttachments(detRes.attachments || [], eventId);
+          }
+        } else {
+          alert("Errore caricamento allegato: " + (res?.error || "Operazione non riuscita"));
+        }
+      } catch (err) {
+        hideLoader();
+        alert("Errore: " + (err.message || String(err)));
+      }
+    }
+
+    async function deleteEventAttachment(attachmentId) {
+      const ok = await askConfirmation("Vuoi eliminare questo allegato da Videorent?");
+      if (!ok) return;
+      if (!vrEventsState.currentEventDetail) return;
+      const eventId = vrEventsState.currentEventDetail.id;
+
+      showLoader("Eliminazione allegato...");
+      try {
+        const res = await callApi("miniapp_delete_vr_attachment", { attachmentId: attachmentId });
+        hideLoader();
+        if (res && res.success) {
+          showToast("Allegato eliminato");
+          haptic.success();
+          const detRes = await callApi("miniapp_get_vr_event_detail", { eventId: eventId });
+          if (detRes && detRes.success) {
+            writeEventsLocalCache(getEventsCacheKey("detail_" + eventId), {
+              preventivo: detRes.preventivo,
+              notes: detRes.notes,
+              current_user_id: detRes.current_user_id,
+              attachments: detRes.attachments || []
+            });
+            renderAttachments(detRes.attachments || [], eventId);
+          }
+        } else {
+          alert("Errore eliminazione allegato: " + (res?.error || "Operazione non riuscita"));
+        }
+      } catch (err) {
+        hideLoader();
+        alert("Errore: " + (err.message || String(err)));
       }
     }
 
@@ -8102,7 +8430,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=47").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=48").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
