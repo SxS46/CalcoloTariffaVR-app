@@ -2313,7 +2313,7 @@
         <div id="ev-presence-action-card" class="card" style="display:none;">
           <div class="shift-title" style="margin-bottom:6px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Conferma Presenza</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
-            Risulti assegnato a questo lavoro in attesa di conferma.
+            Risulti assegnato a questo lavoro da confermare.
           </p>
           <div style="display:flex;gap:8px;flex-direction:column;">
             <button id="btn-confirm-presence-modal" class="btn btn-success" style="width:100%;" onclick="confirmPresenceFromModal()">
@@ -7436,7 +7436,7 @@ function openModal(id) {
         if (isRejected) {
           statusBadgeHtml = `<span class="status-badge" style="background:rgba(239,68,68,0.15);color:var(--danger);">Rifiutato</span>`;
         } else if (isPending) {
-          statusBadgeHtml = `<span class="status-badge" style="background:rgba(245,158,11,0.15);color:var(--warning);">In Attesa</span>`;
+          statusBadgeHtml = `<span class="status-badge" style="background:rgba(245,158,11,0.15);color:var(--warning);">Da Confermare</span>`;
         } else {
           statusBadgeHtml = `<span class="status-badge" style="background:rgba(16,185,129,0.15);color:var(--success);">Confermato</span>`;
         }
@@ -7530,7 +7530,7 @@ function openModal(id) {
           statusBadge.style.background = "rgba(239,68,68,0.15)";
           statusBadge.style.color = "var(--danger)";
         } else if (isPending) {
-          statusBadge.textContent = "In Attesa";
+          statusBadge.textContent = "Da Confermare";
           statusBadge.style.background = "rgba(245,158,11,0.15)";
           statusBadge.style.color = "var(--warning)";
         } else {
@@ -8556,7 +8556,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=53").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=54").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
