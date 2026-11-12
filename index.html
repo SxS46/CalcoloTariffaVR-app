@@ -1281,7 +1281,7 @@
         <div id="user-avatar" class="avatar">VR</div>
         <div>
           <div id="user-name" class="user-name">Caricamento...</div>
-          <div id="user-role" class="user-role" style="display:none;"></div>
+          <div id="user-stats-subtitle" class="user-role" style="display:none;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:none;letter-spacing:0;margin-top:2px;"></div>
         </div>
       </div>
       <div class="header-actions" style="display:flex;align-items:center;gap:6px;">
@@ -3586,7 +3586,7 @@
       const avatarEl = document.getElementById("user-avatar");
       const roleEl = document.getElementById("user-role");
 
-      // Mostra sempre e solo il Nome nell'intestazione della schermata principale
+      // Mostra solo il Nome nell'intestazione della schermata principale
       let firstName = u.firstName || u.first_name || "";
       if (!firstName && u.name) {
         const lower = u.name.toLowerCase().trim();
@@ -3597,19 +3597,8 @@
         else if (lower.includes("battaglioli")) firstName = "Andrea";
         else firstName = u.name.split(" ")[0];
       }
-      // Saluto dinamico naturale in base all'orario
-      const now = new Date();
-      const hour = now.getHours();
-      let greeting = "Ciao";
-      if (hour >= 5 && hour < 13) {
-        greeting = "Buongiorno";
-      } else if (hour >= 13 && hour < 18) {
-        greeting = "Ciao";
-      } else {
-        greeting = "Buonasera";
-      }
 
-      nameEl.textContent = firstName ? `${greeting} ${firstName}` : greeting;
+      nameEl.textContent = firstName || "Tecnico";
       const initials = ((firstName || "V").substring(0, 1) + ((u.lastName || (u.name && u.name.split(" ")[1])) || "R").substring(0, 1)).toUpperCase();
       const photoUrl = tgUser.photo_url || u.photo_url;
 
@@ -3623,9 +3612,78 @@
         avatarEl.style.boxShadow = "0 4px 12px rgba(2, 132, 199, 0.35)";
       }
 
-      if (roleEl) {
-        roleEl.textContent = "";
-        roleEl.style.display = "none";
+      updateHeaderUserStats();
+    }
+
+    /**
+     * Calcola le statistiche annuali dei lavori (fatti, totali confermati, da confermare)
+     */
+    function computeYearEventStats(eventsList, targetYear) {
+      if (!Array.isArray(eventsList) || eventsList.length === 0) return null;
+      const currentYear = targetYear || (new Date()).getFullYear();
+      const now = new Date();
+      const todayEndMs = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
+
+      let fatti = 0;
+      let confermatiFuturi = 0;
+      let daConfermare = 0;
+      const seenIds = new Set();
+
+      eventsList.forEach(ev => {
+        if (!ev || !ev.id || !ev.start) return;
+        const cleanId = String(ev.id).replace(/^#/, "").trim();
+        if (seenIds.has(cleanId)) return;
+        seenIds.add(cleanId);
+
+        // Escludi lavori rifiutati o annullati
+        if (ev.status === "rifiutato" || ev.isCancelled === true) return;
+
+        const sDate = parseEventDateSafe(ev.start, false);
+        if (!sDate || sDate.getFullYear() !== currentYear) return;
+
+        const eDate = ev.end ? parseEventDateSafe(ev.end, true) : null;
+        const endMs = eDate ? eDate.getTime() : sDate.getTime();
+        const isPast = endMs < todayEndMs;
+        const isConfirmed = ev.isConfirmed !== false;
+
+        if (isPast) {
+          fatti++;
+        } else {
+          if (isConfirmed) {
+            confermatiFuturi++;
+          } else {
+            daConfermare++;
+          }
+        }
+      });
+
+      const totaliConfermati = fatti + confermatiFuturi;
+      return {
+        fatti,
+        totaliConfermati,
+        daConfermare,
+        year: currentYear
+      };
+    }
+
+    /**
+     * Aggiorna il sottotitolo dell'header con il conteggio annuale (fatti / totali confermati + da confermare)
+     */
+    function updateHeaderUserStats() {
+      const subtitleEl = document.getElementById("user-stats-subtitle");
+      if (!subtitleEl) return;
+      ensureVrEventsLoaded();
+      const allEvs = [...(vrEventsState.upcoming || []), ...(vrEventsState.past || [])];
+      const stats = computeYearEventStats(allEvs);
+      if (stats && (stats.totaliConfermati > 0 || stats.daConfermare > 0 || stats.fatti > 0)) {
+        let subText = `${stats.fatti} / ${stats.totaliConfermati} eventi`;
+        if (stats.daConfermare > 0) {
+          subText += ` (+${stats.daConfermare} da conf.)`;
+        }
+        subtitleEl.textContent = subText;
+        subtitleEl.style.display = "block";
+      } else {
+        subtitleEl.style.display = "none";
       }
     }
 
@@ -7184,6 +7242,7 @@ function openModal(id) {
       const locRow = document.getElementById("today-event-quick-loc-row");
       const gpsBadge = document.getElementById("today-event-quick-gps-badge");
       if (!container) return;
+      updateHeaderUserStats();
 
       const ev = getTodayVrEvent();
       if (ev && ev.id) {
@@ -8614,7 +8673,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=56").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=57").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
