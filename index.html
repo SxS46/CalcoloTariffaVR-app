@@ -7751,6 +7751,49 @@ function openModal(id) {
     let currentMaterialsData = null;
     let currentMaterialsQuery = "";
 
+    function isSubtotalMaterialRow(r) {
+      if (!r) return true;
+      const tipo = String(r.tipo || "").toLowerCase().trim();
+      if (["sub", "subtot", "subtotale", "sub_tot", "sub_totale", "tot", "totale"].includes(tipo)) {
+        return true;
+      }
+      if (r.is_subtotal || r.is_total) {
+        return true;
+      }
+      const descr = String(r.descr || "").toLowerCase().trim();
+      if (
+        descr.startsWith("subtotale") ||
+        descr.startsWith("sub-totale") ||
+        descr.startsWith("sub totale") ||
+        descr.startsWith("sub tot.") ||
+        descr === "subtot" ||
+        descr === "totale" ||
+        descr.startsWith("totale sala") ||
+        descr.startsWith("totale capitolo") ||
+        descr.startsWith("totale sezione") ||
+        descr.startsWith("totale categoria")
+      ) {
+        return true;
+      }
+      return false;
+    }
+
+    function formatMaterialQtyBadge(qty) {
+      if (qty === null || qty === undefined || qty === "") return "";
+      const rawStr = String(qty).trim().replace(",", ".");
+      const num = Number(rawStr);
+      if (isNaN(num) || num <= 0) {
+        if (rawStr && rawStr !== "0") {
+          return `<span class="status-badge" style="background:rgba(255,255,255,0.06);font-size:11px;font-weight:700;margin-right:6px;">${escapeHtml(rawStr)}</span>`;
+        }
+        return "";
+      }
+      // Se è un numero intero (es. 1.00, 2.00, 10), mostra solo l'intero (1x, 2x, 10x)
+      // Se ha decimali effettivi (es. 1.5, 2.25), mostra i decimali senza zeri finali superflui
+      const cleanNum = (num % 1 === 0) ? String(Math.round(num)) : String(parseFloat(num.toFixed(2)));
+      return `<span class="status-badge" style="background:rgba(255,255,255,0.06);font-size:11px;font-weight:700;margin-right:6px;">${cleanNum}x</span>`;
+    }
+
     function renderMaterials(prev) {
       const matLoading = document.getElementById("ev-materials-loading");
       const matList = document.getElementById("ev-materials-list");
@@ -7786,6 +7829,7 @@ function openModal(id) {
       let totalItemCount = 0;
 
       prev.rows.forEach(r => {
+        if (!r) return;
         if (r.tipo === "hdr") {
           currentGroup = {
             header: r,
@@ -7795,6 +7839,10 @@ function openModal(id) {
           };
           groups.push(currentGroup);
         } else {
+          // Filtra ed esclude le righe di subtotale / totale che non appartengono alla lista fisica dei materiali
+          if (isSubtotalMaterialRow(r)) {
+            return;
+          }
           if (!currentGroup) {
             currentGroup = {
               header: { tipo: "hdr", descr: "Generale" },
@@ -7869,7 +7917,7 @@ function openModal(id) {
           `;
 
           visibleItems.forEach(r => {
-            const qtyStr = r.qty ? `<span class="status-badge" style="background:rgba(255,255,255,0.06);font-size:11px;font-weight:700;margin-right:6px;">${r.qty}x</span>` : '';
+            const qtyStr = formatMaterialQtyBadge(r.qty);
             const noteStr = r.note ? `<span style="color:var(--warning);font-size:10px;margin-left:4px;">(${escapeHtml(r.note)})</span>` : '';
             html += `
               <div style="display:flex;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
@@ -8476,7 +8524,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=50").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=51").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
