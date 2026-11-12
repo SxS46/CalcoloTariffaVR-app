@@ -2249,9 +2249,15 @@
           </div>
         </div>
 
-        <!-- Sezione 4: Note (Diario) -->
+        <!-- Sezione 4: Note -->
         <div class="card" style="margin-bottom:10px;">
-          <div class="shift-title" style="margin-bottom:8px;display:flex;align-items:center;gap:6px;"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Note</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div class="shift-title" style="margin-bottom:0;display:flex;align-items:center;gap:6px;">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>Note</span>
+            </div>
+            <span id="ev-detail-notes-count" class="status-badge" style="display:none;font-size:11px;padding:2px 8px;background:rgba(14,165,233,0.15);color:var(--accent);">0</span>
+          </div>
           <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
             Annotazioni visibili a Videorent e ai colleghi di lavoro.
           </p>
@@ -2273,7 +2279,7 @@
             </div>
             <span id="ev-detail-attachments-count" class="status-badge" style="display:none;font-size:11px;padding:2px 8px;background:rgba(14,165,233,0.15);color:var(--accent);">0</span>
           </div>
-          <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
             Documenti, ordini di servizio, schede o foto caricati per questo lavoro.
           </p>
 
@@ -2281,30 +2287,25 @@
           <div id="ev-attachments-loading" style="padding:6px 0;display:none;">
             <div class="skeleton-shimmer" style="height:36px;width:100%;margin-bottom:6px;border-radius:8px;"></div>
           </div>
-          <div id="ev-attachments-list" style="margin-bottom:12px;">
+          <div id="ev-attachments-list" style="margin-bottom:10px;">
             <!-- Popolato dinamicamente -->
           </div>
 
-          <!-- Box Caricamento Nuovo Allegato -->
-          <div style="background:rgba(255,255,255,0.03);border:1px dashed var(--border);border-radius:10px;padding:10px;">
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">
-              Carica Nuovo Allegato
-            </div>
-            <input type="text" id="ev-attach-desc-input" class="form-input" placeholder="Descrizione allegato (opzionale)" style="font-size:12px;padding:7px 10px;margin-bottom:8px;height:34px;min-height:34px;border-radius:6px;background:rgba(255,255,255,0.04);">
-            
+          <!-- Caricamento Nuovo Allegato -->
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <input type="text" id="ev-attach-desc-input" class="form-input" placeholder="Descrizione allegato (opzionale)" style="font-size:12px;padding:8px 10px;height:36px;min-height:36px;border-radius:8px;">
             <input type="file" id="ev-attach-file-input" style="display:none;" onchange="handleAttachmentFileSelected(this)">
-            
-            <div style="display:flex;gap:8px;align-items:center;">
-              <button type="button" class="btn btn-outline" style="flex:1;font-size:12px;padding:7px 10px;height:36px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="document.getElementById('ev-attach-file-input').click()">
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button type="button" class="btn btn-outline" style="flex:1;font-size:12px;padding:8px 10px;height:36px;display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:8px;" onclick="document.getElementById('ev-attach-file-input').click()">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
                 <span id="ev-attach-file-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Scegli file...</span>
               </button>
-              <button type="button" id="btn-upload-attachment" class="btn btn-primary" style="flex:0 0 auto;font-size:12px;padding:7px 14px;height:36px;display:flex;align-items:center;gap:6px;" onclick="submitEventAttachment()" disabled>
+              <button type="button" id="btn-upload-attachment" class="btn btn-primary" style="flex:0 0 auto;font-size:12px;padding:8px 14px;height:36px;display:flex;align-items:center;gap:6px;border-radius:8px;" onclick="submitEventAttachment()" disabled>
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                 <span>Carica</span>
               </button>
             </div>
-            <div id="ev-attach-selected-info" style="display:none;margin-top:6px;font-size:11px;color:var(--text-muted);align-items:center;justify-content:space-between;">
+            <div id="ev-attach-selected-info" style="display:none;margin-top:2px;font-size:11px;color:var(--text-muted);align-items:center;justify-content:space-between;">
               <span id="ev-attach-size-badge"></span>
               <button type="button" style="background:none;border:none;color:var(--danger);font-size:11px;cursor:pointer;padding:0;" onclick="clearSelectedAttachment()">Rimuovi</button>
             </div>
@@ -7167,10 +7168,8 @@ function openModal(id) {
         if (idEl) idEl.textContent = "#" + cleanId;
 
         // Sanitizzazione ID duplicato da titolo/cliente (elimina duplicazioni come #41996 • 41996 - ...)
-        let rawHeading = (ev.client ? `${ev.client}${ev.title ? ' – ' + ev.title : ''}` : (ev.title || ev.fullHeading || "Lavoro di Oggi"));
-        rawHeading = rawHeading.replace(new RegExp(`^#?${cleanId}\\s*[-–•:]*\\s*`, "i"), "").trim();
-        rawHeading = rawHeading.replace(new RegExp(`\\b${cleanId}\\b\\s*[-–•:]*\\s*`, "i"), "").trim();
-        const displayHeading = rawHeading || (ev.client || "Lavoro Programmato");
+        const cleanTitle = getEventCleanTitle(ev);
+        const displayHeading = ev.client ? `${ev.client}${cleanTitle ? ' – ' + cleanTitle : ''}` : cleanTitle;
         if (titleEl) {
           titleEl.textContent = displayHeading;
           titleEl.title = displayHeading;
@@ -7215,6 +7214,17 @@ function openModal(id) {
       } else {
         showScreen("events");
       }
+    }
+
+    function getEventCleanTitle(ev) {
+      if (!ev) return "";
+      const cleanId = String(ev.id || "").replace("#", "").trim();
+      let titleStr = String(ev.title || ev.fullHeading || "").trim();
+      if (cleanId) {
+        titleStr = titleStr.replace(new RegExp(`^#?${cleanId}\\s*[-–—:•]*\\s*`, "i"), "").trim();
+      }
+      titleStr = titleStr.replace(/^#?\d+\s*[-–—:•]\s*/, "").trim();
+      return titleStr || (ev.client ? `${ev.client}` : (ev.fullHeading || ("Lavoro #" + cleanId)));
     }
 
     function formatEventDates(startStr, endStr) {
@@ -7434,7 +7444,7 @@ function openModal(id) {
             </div>
 
             <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;line-height:1.3;">
-              ${escapeHtml(ev.title || ev.fullHeading || "Lavoro #" + ev.id)}
+              ${escapeHtml(getEventCleanTitle(ev))}
             </div>
 
             <div style="font-size:12px;color:var(--text-muted);line-height:1.4;">
@@ -7494,7 +7504,11 @@ function openModal(id) {
       vrEventsState.currentEventDetail = ev;
 
       document.getElementById("ev-detail-id").textContent = `#${ev.id}`;
-      document.getElementById("ev-detail-title").textContent = ev.title || ev.fullHeading || "Evento #" + ev.id;
+      document.getElementById("ev-detail-title").textContent = getEventCleanTitle(ev);
+      const notesCountBadge = document.getElementById("ev-detail-notes-count");
+      if (notesCountBadge) notesCountBadge.style.display = "none";
+      const attsCountBadge = document.getElementById("ev-detail-attachments-count");
+      if (attsCountBadge) attsCountBadge.style.display = "none";
       
       const statusBadge = document.getElementById("ev-detail-status-badge");
       const isRejected = (ev.status === "rifiutato" || ev.isCancelled === true);
@@ -7985,11 +7999,18 @@ function openModal(id) {
 
     function renderTechNotes(notes, currentUserId) {
       const container = document.getElementById("ev-tech-notes-list");
+      const countBadge = document.getElementById("ev-detail-notes-count");
       if (!container) return;
 
       if (!Array.isArray(notes) || notes.length === 0) {
-        container.innerHTML = `<div style="color:var(--text-muted);font-size:12px;padding:4px 0;">Nessuna nota del tecnico inserita.</div>`;
+        if (countBadge) countBadge.style.display = "none";
+        container.innerHTML = `<div style="color:var(--text-muted);font-size:12px;padding:4px 0;">Nessuna nota presente.</div>`;
         return;
+      }
+
+      if (countBadge) {
+        countBadge.textContent = notes.length;
+        countBadge.style.display = "inline-block";
       }
 
       let html = "";
@@ -8125,7 +8146,7 @@ function openModal(id) {
 
       if (!Array.isArray(attachments) || attachments.length === 0) {
         if (countBadge) countBadge.style.display = "none";
-        container.innerHTML = `<div style="background:rgba(255,255,255,0.02);border:1px dashed var(--border);border-radius:8px;padding:12px;text-align:center;color:var(--text-muted);font-size:12px;">📁 Nessun allegato presente</div>`;
+        container.innerHTML = `<div style="color:var(--text-muted);font-size:12px;padding:4px 0;">Nessun allegato presente.</div>`;
         return;
       }
 
@@ -8144,7 +8165,7 @@ function openModal(id) {
         const downloadUrl = att.url || `https://g.videorent.it/uploads/events/${eventId}/tech_attachments/${att.filepath}`;
 
         html += `
-          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:9px 10px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
               <div style="flex-shrink:0;width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;">
                 ${iconSvg}
@@ -8524,7 +8545,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=51").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=52").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
