@@ -3628,7 +3628,22 @@
     }
 
     /**
-     * Calcola le statistiche annuali dei lavori (fatti, totali confermati, da confermare)
+     * Calcola la durata in giorni solari di un evento (inclusi inizio e fine)
+     */
+    function getEventDurationDays(ev) {
+      if (!ev || !ev.start) return 1;
+      const sDate = parseEventDateSafe(ev.start, false);
+      if (!sDate) return 1;
+      const eDate = ev.end ? parseEventDateSafe(ev.end, true) : null;
+      if (!eDate) return 1;
+      const sPure = new Date(sDate.getFullYear(), sDate.getMonth(), sDate.getDate());
+      const ePure = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate());
+      const diffDays = Math.round((ePure.getTime() - sPure.getTime()) / (24 * 3600 * 1000)) + 1;
+      return Math.max(1, diffDays);
+    }
+
+    /**
+     * Calcola le statistiche annuali dei lavori (fatti, totali confermati, da confermare) in GIORNI lavorativi
      */
     function computeYearEventStats(eventsList, targetYear) {
       if (!Array.isArray(eventsList) || eventsList.length === 0) return null;
@@ -3657,14 +3672,15 @@
         const endMs = eDate ? eDate.getTime() : sDate.getTime();
         const isPast = endMs < todayEndMs;
         const isConfirmed = ev.isConfirmed !== false;
+        const days = getEventDurationDays(ev);
 
         if (isPast) {
-          fatti++;
+          fatti += days;
         } else {
           if (isConfirmed) {
-            confermatiFuturi++;
+            confermatiFuturi += days;
           } else {
-            daConfermare++;
+            daConfermare += days;
           }
         }
       });
@@ -3679,16 +3695,34 @@
     }
 
     /**
-     * Aggiorna il sottotitolo dell'header con il conteggio annuale (fatti / totali confermati + da confermare)
+     * Aggiorna il sottotitolo dell'header con il conteggio annuale in GIORNI (fatti / totali confermati + da confermare)
+     * Priorità 1: dati ufficiali forniti dal gestionale Videorent (my-planner-list.php)
+     * Priorità 2 (Fallback): calcolo delle giornate effettive sommando la durata degli eventi
      */
     function updateHeaderUserStats() {
       const subtitleEl = document.getElementById("user-stats-subtitle");
       if (!subtitleEl) return;
       ensureVrEventsLoaded();
+
+      // 1. Dati ufficiali estratti direttamente dal gestionale Videorent
+      if (vrEventsState.stats && (vrEventsState.stats.confermati > 0 || vrEventsState.stats.effettuati > 0 || vrEventsState.stats.nonConfermati > 0)) {
+        const eff = vrEventsState.stats.effettuati || 0;
+        const conf = vrEventsState.stats.confermati || 0;
+        const nonConf = vrEventsState.stats.nonConfermati || 0;
+        let subText = `${eff} / ${conf} giorni`;
+        if (nonConf > 0) {
+          subText += ` (+${nonConf} da conf.)`;
+        }
+        subtitleEl.textContent = subText;
+        subtitleEl.style.display = "block";
+        return;
+      }
+
+      // 2. Fallback locale: calcolo delle giornate effettive
       const allEvs = [...(vrEventsState.upcoming || []), ...(vrEventsState.past || [])];
       const stats = computeYearEventStats(allEvs);
       if (stats && (stats.totaliConfermati > 0 || stats.daConfermare > 0 || stats.fatti > 0)) {
-        let subText = `${stats.fatti} / ${stats.totaliConfermati} eventi`;
+        let subText = `${stats.fatti} / ${stats.totaliConfermati} giorni`;
         if (stats.daConfermare > 0) {
           subText += ` (+${stats.daConfermare} da conf.)`;
         }
@@ -6905,6 +6939,7 @@ function openModal(id) {
       activeTab: 'upcoming', // 'upcoming' | 'past'
       upcoming: [],
       past: [],
+      stats: null,
       loaded: false,
       currentEventDetail: null
     };
@@ -7078,6 +7113,7 @@ function openModal(id) {
             past = cached.data.past || [];
             vrEventsState.upcoming = upcoming;
             vrEventsState.past = past;
+            vrEventsState.stats = cached.data.stats || null;
             vrEventsState.loaded = true;
           }
         }
@@ -7093,9 +7129,11 @@ function openModal(id) {
             past = partitioned.past;
             vrEventsState.upcoming = upcoming;
             vrEventsState.past = past;
+            vrEventsState.stats = res.stats || vrEventsState.stats || null;
             vrEventsState.loaded = true;
-            writeEventsLocalCache(getEventsCacheKey("events"), { upcoming, past });
+            writeEventsLocalCache(getEventsCacheKey("events"), { upcoming, past, stats: vrEventsState.stats });
             updateTodayEventQuickButton();
+            updateHeaderUserStats();
           }
         }
 
@@ -7157,12 +7195,15 @@ function openModal(id) {
           const partitioned = partitionAndSortEvents(res.upcoming, res.past);
           vrEventsState.upcoming = partitioned.upcoming;
           vrEventsState.past = partitioned.past;
+          vrEventsState.stats = res.stats || vrEventsState.stats || null;
           vrEventsState.loaded = true;
           writeEventsLocalCache(getEventsCacheKey("events"), {
             upcoming: vrEventsState.upcoming,
-            past: vrEventsState.past
+            past: vrEventsState.past,
+            stats: vrEventsState.stats
           });
           updateTodayEventQuickButton();
+          updateHeaderUserStats();
         }
       } catch (e) {
         console.warn("Auto-load events error:", e);
@@ -7179,6 +7220,7 @@ function openModal(id) {
             const partitioned = partitionAndSortEvents(cached.data.upcoming, cached.data.past);
             vrEventsState.upcoming = partitioned.upcoming;
             vrEventsState.past = partitioned.past;
+            vrEventsState.stats = cached.data.stats || null;
             vrEventsState.loaded = true;
           }
         } catch(e) {}
@@ -7429,13 +7471,16 @@ function openModal(id) {
         // Salva in cache persistente
         writeEventsLocalCache(cacheKey, {
           upcoming: partitioned.upcoming,
-          past: partitioned.past
+          past: partitioned.past,
+          stats: res.stats || vrEventsState.stats || null
         });
 
         vrEventsState.upcoming = partitioned.upcoming;
         vrEventsState.past = partitioned.past;
+        vrEventsState.stats = res.stats || vrEventsState.stats || null;
         vrEventsState.loaded = true;
         updateTodayEventQuickButton();
+        updateHeaderUserStats();
 
         // Se i dati non sono cambiati rispetto a quelli a video, NON ri-renderizzare la lista
         if (hasRenderedCache && oldEventsSig === newEventsSig) {
@@ -7636,11 +7681,14 @@ function openModal(id) {
             const partitioned = partitionAndSortEvents(res.upcoming, res.past);
             vrEventsState.upcoming = partitioned.upcoming;
             vrEventsState.past = partitioned.past;
+            vrEventsState.stats = res.stats || vrEventsState.stats || null;
             vrEventsState.loaded = true;
             writeEventsLocalCache(getEventsCacheKey("events"), {
               upcoming: vrEventsState.upcoming,
-              past: vrEventsState.past
+              past: vrEventsState.past,
+              stats: vrEventsState.stats
             });
+            updateHeaderUserStats();
             all = [...vrEventsState.upcoming, ...vrEventsState.past];
             ev = all.find(e => String(e.id).replace("#", "").trim() === cleanTargetId);
           }
@@ -8699,7 +8747,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=58").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=59").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
