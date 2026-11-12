@@ -3597,7 +3597,19 @@
         else if (lower.includes("battaglioli")) firstName = "Andrea";
         else firstName = u.name.split(" ")[0];
       }
-      nameEl.textContent = firstName || "Tecnico";
+      // Saluto dinamico naturale in base all'orario
+      const now = new Date();
+      const hour = now.getHours();
+      let greeting = "Ciao";
+      if (hour >= 5 && hour < 13) {
+        greeting = "Buongiorno";
+      } else if (hour >= 13 && hour < 18) {
+        greeting = "Ciao";
+      } else {
+        greeting = "Buonasera";
+      }
+
+      nameEl.textContent = firstName ? `${greeting} ${firstName}` : greeting;
       const initials = ((firstName || "V").substring(0, 1) + ((u.lastName || (u.name && u.name.split(" ")[1])) || "R").substring(0, 1)).toUpperCase();
       const photoUrl = tgUser.photo_url || u.photo_url;
 
@@ -8602,7 +8614,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=55").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=56").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
