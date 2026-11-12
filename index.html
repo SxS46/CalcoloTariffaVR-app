@@ -3586,8 +3586,19 @@
       const avatarEl = document.getElementById("user-avatar");
       const roleEl = document.getElementById("user-role");
 
-      nameEl.textContent = u.name || u.first_name || "";
-      const initials = (u.name || u.first_name || "VR").substring(0, 2).toUpperCase();
+      // Mostra sempre e solo il Nome nell'intestazione della schermata principale
+      let firstName = u.firstName || u.first_name || "";
+      if (!firstName && u.name) {
+        const lower = u.name.toLowerCase().trim();
+        if (lower.includes("severi")) firstName = "Simone";
+        else if (lower.includes("ciampa")) firstName = "Lorenzo";
+        else if (lower.includes("ferrari")) firstName = "Lorenzo";
+        else if (lower.includes("massarenti")) firstName = "Paolo";
+        else if (lower.includes("battaglioli")) firstName = "Andrea";
+        else firstName = u.name.split(" ")[0];
+      }
+      nameEl.textContent = firstName || "Tecnico";
+      const initials = ((firstName || "V").substring(0, 1) + ((u.lastName || (u.name && u.name.split(" ")[1])) || "R").substring(0, 1)).toUpperCase();
       const photoUrl = tgUser.photo_url || u.photo_url;
 
       if (photoUrl) {
@@ -7407,6 +7418,39 @@ function openModal(id) {
       renderEventsList();
     }
 
+    function formatCrewMemberSurname(rawName) {
+      if (!rawName) return "";
+      const name = String(rawName).trim();
+      const lower = name.toLowerCase();
+      if (lower === "simone" || lower === "simone severi" || lower === "severi") return "Severi";
+      if (lower === "lorenzo ciampa" || lower === "ciampa") return "Ciampa";
+      if (lower === "lorenzo ferrari" || lower === "ferrari") return "Ferrari";
+      if (lower === "paolo massarenti" || lower === "massarenti") return "Massarenti";
+      if (lower === "andrea battaglioli" || lower === "battaglioli") return "Battaglioli";
+      const parts = name.split(/\s+/).filter(Boolean);
+      if (parts.length > 1) return parts[parts.length - 1];
+      return name;
+    }
+
+    function formatCrewList(crewArray, currentUser) {
+      if (!Array.isArray(crewArray) || crewArray.length === 0) return [];
+      const currentLast = currentUser ? (currentUser.lastName || (currentUser.name ? currentUser.name.split(" ").slice(-1)[0] : "")) : "";
+      const currentFirst = currentUser ? (currentUser.firstName || (currentUser.name ? currentUser.name.split(" ")[0] : "")) : "";
+      const currentFull = currentUser ? (currentUser.name || "") : "";
+
+      const surnames = [];
+      crewArray.forEach(c => {
+        const s = formatCrewMemberSurname(c);
+        if (!s) return;
+        const sLow = s.toLowerCase();
+        if (currentUser && (sLow === currentLast.toLowerCase() || sLow === currentFirst.toLowerCase() || sLow === currentFull.toLowerCase())) {
+          return;
+        }
+        if (!surnames.includes(s)) surnames.push(s);
+      });
+      return surnames;
+    }
+
     function renderEventsList() {
       const container = document.getElementById("events-list");
       if (!container) return;
@@ -7430,7 +7474,8 @@ function openModal(id) {
         const isPending = !isRejected && (isPendingPresence || ev.isConfirmed === false);
         const dateFormatted = formatEventDates(ev.start, ev.end);
         const loc = [ev.venue, ev.city].filter(Boolean).join(" — ") || ev.fullLocation || "Luogo da definire";
-        const crewHtml = (ev.crew && ev.crew.length > 0) ? `<div style="font-size:11px;color:var(--accent);margin-top:4px;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${ev.crew.join(", ")}</div>` : "";
+        const cleanCrew = formatCrewList(ev.crew, appState.user);
+        const crewHtml = (cleanCrew.length > 0) ? `<div style="font-size:11px;color:var(--accent);margin-top:4px;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${cleanCrew.join(", ")}</div>` : "";
 
         let statusBadgeHtml = "";
         if (isRejected) {
@@ -7547,9 +7592,10 @@ function openModal(id) {
       const crewRow = document.getElementById("ev-detail-crew-row");
       const crewEl = document.getElementById("ev-detail-crew");
       if (crewRow && crewEl) {
-        if (ev.crew && ev.crew.length > 0) {
+        const cleanCrew = formatCrewList(ev.crew, appState.user);
+        if (cleanCrew.length > 0) {
           crewRow.style.display = "block";
-          crewEl.textContent = ev.crew.join(", ");
+          crewEl.textContent = cleanCrew.join(", ");
         } else {
           crewRow.style.display = "none";
         }
@@ -8556,7 +8602,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=54").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=55").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
