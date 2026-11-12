@@ -421,6 +421,17 @@
       border: 1px solid var(--border);
       color: var(--text);
     }
+    .btn:disabled,
+    .btn[disabled],
+    button:disabled,
+    button[disabled] {
+      opacity: 0.38 !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      box-shadow: none !important;
+      transform: none !important;
+      filter: grayscale(40%) !important;
+    }
 
     /* Quick Actions Grid (Home) */
     .quick-actions-grid {
@@ -8465,7 +8476,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=49").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=50").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
