@@ -2414,7 +2414,12 @@
       </div>
       <div class="form-group">
         <label class="form-label">Extra / Rimborsi (€)</label>
-        <input type="number" id="end-modal-extra" class="form-input" placeholder="0" value="0">
+        <input type="number" id="end-modal-extra" step="any" class="form-input" placeholder="0" value="0">
+        <div id="end-modal-round-row" style="display:none;margin-top:8px;">
+          <button type="button" id="btn-end-modal-round" class="btn" style="width:100%;font-size:12.5px;padding:7px 10px;border-radius:10px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);color:var(--accent);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;" onclick="toggleEndModalRound()">
+            <span>🕒 Arrotonda ora (<strong id="end-modal-round-val">+15 €</strong>)</span>
+          </button>
+        </div>
       </div>
       <button class="btn btn-success" style="width:100%;margin-top:10px;" onclick="confirmEndShift()"><svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Salva e Registra</button>
     </div>
@@ -2510,7 +2515,12 @@
       </div>
       <div class="form-group">
         <label class="form-label">Extra (€)</label>
-        <input type="number" id="manual-extra" class="form-input" placeholder="0" value="0">
+        <input type="number" id="manual-extra" step="any" class="form-input" placeholder="0" value="0">
+        <div id="manual-modal-round-row" style="display:none;margin-top:8px;">
+          <button type="button" id="btn-manual-modal-round" class="btn" style="width:100%;font-size:12.5px;padding:7px 10px;border-radius:10px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);color:var(--accent);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;" onclick="toggleManualModalRound()">
+            <span>🕒 Arrotonda ora (<strong id="manual-modal-round-val">+15 €</strong>)</span>
+          </button>
+        </div>
       </div>
 
       <!-- Tariffa Concordata / Forfait -->
@@ -2608,7 +2618,12 @@
       <!-- Extra -->
       <div class="form-group">
         <label class="form-label">Extra (€)</label>
-        <input type="number" id="edit-extra" class="form-input" placeholder="0">
+        <input type="number" id="edit-extra" step="any" class="form-input" placeholder="0">
+        <div id="edit-modal-round-row" style="display:none;margin-top:8px;">
+          <button type="button" id="btn-edit-modal-round" class="btn" style="width:100%;font-size:12.5px;padding:7px 10px;border-radius:10px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);color:var(--accent);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;" onclick="toggleEditModalRound()">
+            <span>🕒 Arrotonda ora (<strong id="edit-modal-round-val">+15 €</strong>)</span>
+          </button>
+        </div>
       </div>
 
       <!-- Tariffa Concordata / Forfait -->
@@ -4400,6 +4415,209 @@
       return Math.round((eDec - sDec) * 100) / 100;
     }
 
+    function formatEuroAmount(val) {
+      if (val === undefined || val === null || isNaN(val)) return "0 €";
+      const num = Math.round(Number(val) * 100) / 100;
+      if (num % 1 === 0) return `${num} €`;
+      return `${String(num).replace(".", ",")} €`;
+    }
+
+    function getShiftOvertimeRoundingBonus(startStr, endStr, type) {
+      if (!startStr || !endStr) return 0;
+      const s = normalizeInputTime(startStr);
+      const e = normalizeInputTime(endStr);
+      if (!s || !e) return 0;
+      const dur = calculateShiftDuration(s, e);
+      const isCasa = (!type || String(type).toUpperCase() === "CASA");
+      const r = appState.rates || {};
+      const baseHours = isCasa ? (Number(r.casaFullHours) || 9) : (Number(r.trasfertaFullHours || r.trasfFullHours) || 9);
+      if (dur <= baseHours) return 0;
+
+      const extraHalfHours = Math.ceil((dur - baseHours) * 2);
+      if (extraHalfHours % 2 === 1) {
+        const straordRate = isCasa ? (Number(r.casaStraord || r.casaExtra) || 30) : (Number(r.trasfertaStraord || r.trasfStraord || r.trasfExtra) || 30);
+        return Math.round((straordRate / 2) * 100) / 100;
+      }
+      return 0;
+    }
+
+    // Gestione Arrotondamento Straordinario in Chiusura Turno Live
+    let endModalRoundApplied = 0;
+    let currentEndModalRoundBonus = 0;
+
+    function updateEndModalRoundSuggestion() {
+      const start = appState.activeShift?.start || "08:00";
+      const end = document.getElementById("end-modal-time")?.value || "";
+      const type = appState.activeShift?.type || "CASA";
+      const bonus = getShiftOvertimeRoundingBonus(start, end, type);
+      currentEndModalRoundBonus = bonus;
+      const row = document.getElementById("end-modal-round-row");
+      const btn = document.getElementById("btn-end-modal-round");
+
+      if (bonus > 0) {
+        if (row) row.style.display = "block";
+        if (btn) {
+          if (endModalRoundApplied > 0) {
+            btn.style.background = "var(--success)";
+            btn.style.borderColor = "var(--success)";
+            btn.style.color = "#fff";
+            btn.innerHTML = `<span>✓ Arrotondato all'ora (+${formatEuroAmount(bonus)})</span>`;
+          } else {
+            btn.style.background = "rgba(56,189,248,0.12)";
+            btn.style.borderColor = "rgba(56,189,248,0.3)";
+            btn.style.color = "var(--accent)";
+            btn.innerHTML = `<span>🕒 Arrotonda ora (<strong>+${formatEuroAmount(bonus)}</strong>)</span>`;
+          }
+        }
+      } else {
+        if (row) row.style.display = "none";
+        if (endModalRoundApplied > 0) {
+          const extraEl = document.getElementById("end-modal-extra");
+          if (extraEl) {
+            let curExtra = parseFloat(String(extraEl.value).replace(",", ".")) || 0;
+            curExtra = Math.max(0, Math.round((curExtra - endModalRoundApplied) * 100) / 100);
+            extraEl.value = curExtra === 0 ? "0" : curExtra;
+          }
+          endModalRoundApplied = 0;
+        }
+      }
+    }
+
+    function toggleEndModalRound() {
+      if (currentEndModalRoundBonus <= 0) return;
+      const extraEl = document.getElementById("end-modal-extra");
+      if (!extraEl) return;
+      let curExtra = parseFloat(String(extraEl.value).replace(",", ".")) || 0;
+      if (endModalRoundApplied > 0) {
+        curExtra = Math.max(0, Math.round((curExtra - endModalRoundApplied) * 100) / 100);
+        extraEl.value = curExtra === 0 ? "0" : curExtra;
+        endModalRoundApplied = 0;
+      } else {
+        curExtra = Math.round((curExtra + currentEndModalRoundBonus) * 100) / 100;
+        extraEl.value = curExtra;
+        endModalRoundApplied = currentEndModalRoundBonus;
+      }
+      updateEndModalRoundSuggestion();
+    }
+
+    // Gestione Arrotondamento Straordinario in Aggiungi Giornata Retroattiva
+    let manualModalRoundApplied = 0;
+    let currentManualModalRoundBonus = 0;
+
+    function updateManualModalRoundSuggestion() {
+      const start = document.getElementById("manual-start")?.value || "08:00";
+      const end = document.getElementById("manual-end")?.value || "";
+      const type = document.getElementById("manual-type")?.value || "CASA";
+      const bonus = getShiftOvertimeRoundingBonus(start, end, type);
+      currentManualModalRoundBonus = bonus;
+      const row = document.getElementById("manual-modal-round-row");
+      const btn = document.getElementById("btn-manual-modal-round");
+
+      if (bonus > 0) {
+        if (row) row.style.display = "block";
+        if (btn) {
+          if (manualModalRoundApplied > 0) {
+            btn.style.background = "var(--success)";
+            btn.style.borderColor = "var(--success)";
+            btn.style.color = "#fff";
+            btn.innerHTML = `<span>✓ Arrotondato all'ora (+${formatEuroAmount(bonus)})</span>`;
+          } else {
+            btn.style.background = "rgba(56,189,248,0.12)";
+            btn.style.borderColor = "rgba(56,189,248,0.3)";
+            btn.style.color = "var(--accent)";
+            btn.innerHTML = `<span>🕒 Arrotonda ora (<strong>+${formatEuroAmount(bonus)}</strong>)</span>`;
+          }
+        }
+      } else {
+        if (row) row.style.display = "none";
+        if (manualModalRoundApplied > 0) {
+          const extraEl = document.getElementById("manual-extra");
+          if (extraEl) {
+            let curExtra = parseFloat(String(extraEl.value).replace(",", ".")) || 0;
+            curExtra = Math.max(0, Math.round((curExtra - manualModalRoundApplied) * 100) / 100);
+            extraEl.value = curExtra === 0 ? "0" : curExtra;
+          }
+          manualModalRoundApplied = 0;
+        }
+      }
+    }
+
+    function toggleManualModalRound() {
+      if (currentManualModalRoundBonus <= 0) return;
+      const extraEl = document.getElementById("manual-extra");
+      if (!extraEl) return;
+      let curExtra = parseFloat(String(extraEl.value).replace(",", ".")) || 0;
+      if (manualModalRoundApplied > 0) {
+        curExtra = Math.max(0, Math.round((curExtra - manualModalRoundApplied) * 100) / 100);
+        extraEl.value = curExtra === 0 ? "0" : curExtra;
+        manualModalRoundApplied = 0;
+      } else {
+        curExtra = Math.round((curExtra + currentManualModalRoundBonus) * 100) / 100;
+        extraEl.value = curExtra;
+        manualModalRoundApplied = currentManualModalRoundBonus;
+      }
+      updateManualModalRoundSuggestion();
+    }
+
+    // Gestione Arrotondamento Straordinario in Modifica Giornata Esistente
+    let editModalRoundApplied = 0;
+    let currentEditModalRoundBonus = 0;
+
+    function updateEditModalRoundSuggestion() {
+      const start = document.getElementById("edit-start")?.value || "08:00";
+      const end = document.getElementById("edit-end")?.value || "";
+      const type = document.getElementById("edit-type-val")?.value || currentEditType || "CASA";
+      const bonus = getShiftOvertimeRoundingBonus(start, end, type);
+      currentEditModalRoundBonus = bonus;
+      const row = document.getElementById("edit-modal-round-row");
+      const btn = document.getElementById("btn-edit-modal-round");
+
+      if (bonus > 0) {
+        if (row) row.style.display = "block";
+        if (btn) {
+          if (editModalRoundApplied > 0) {
+            btn.style.background = "var(--success)";
+            btn.style.borderColor = "var(--success)";
+            btn.style.color = "#fff";
+            btn.innerHTML = `<span>✓ Arrotondato all'ora (+${formatEuroAmount(bonus)})</span>`;
+          } else {
+            btn.style.background = "rgba(56,189,248,0.12)";
+            btn.style.borderColor = "rgba(56,189,248,0.3)";
+            btn.style.color = "var(--accent)";
+            btn.innerHTML = `<span>🕒 Arrotonda ora (<strong>+${formatEuroAmount(bonus)}</strong>)</span>`;
+          }
+        }
+      } else {
+        if (row) row.style.display = "none";
+        if (editModalRoundApplied > 0) {
+          const extraEl = document.getElementById("edit-extra");
+          if (extraEl) {
+            let curExtra = parseFloat(String(extraEl.value).replace(",", ".")) || 0;
+            curExtra = Math.max(0, Math.round((curExtra - editModalRoundApplied) * 100) / 100);
+            extraEl.value = curExtra === 0 ? "0" : curExtra;
+          }
+          editModalRoundApplied = 0;
+        }
+      }
+    }
+
+    function toggleEditModalRound() {
+      if (currentEditModalRoundBonus <= 0) return;
+      const extraEl = document.getElementById("edit-extra");
+      if (!extraEl) return;
+      let curExtra = parseFloat(String(extraEl.value).replace(",", ".")) || 0;
+      if (editModalRoundApplied > 0) {
+        curExtra = Math.max(0, Math.round((curExtra - editModalRoundApplied) * 100) / 100);
+        extraEl.value = curExtra === 0 ? "0" : curExtra;
+        editModalRoundApplied = 0;
+      } else {
+        curExtra = Math.round((curExtra + currentEditModalRoundBonus) * 100) / 100;
+        extraEl.value = curExtra;
+        editModalRoundApplied = currentEditModalRoundBonus;
+      }
+      updateEditModalRoundSuggestion();
+    }
+
     function checkShiftOverlap(dateIso, startStr, endStr, ignoreRow) {
       if (!appState.entries || appState.entries.length === 0) return null;
       const s = normalizeInputTime(startStr);
@@ -5408,6 +5626,16 @@ function openModal(id) {
       renderTimePillSuggestions("end-modal-suggestions", "end-modal-time", suggs, defaultTime);
       document.getElementById("end-modal-extra").value = "0";
 
+      endModalRoundApplied = 0;
+      currentEndModalRoundBonus = 0;
+      const endInput = document.getElementById("end-modal-time");
+      if (endInput && !endInput._roundListenerAttached) {
+        endInput.addEventListener("input", updateEndModalRoundSuggestion);
+        endInput.addEventListener("change", updateEndModalRoundSuggestion);
+        endInput._roundListenerAttached = true;
+      }
+      updateEndModalRoundSuggestion();
+
       const alertEl = document.getElementById("end-modal-weekend-alert");
       if (appState.activeShift && appState.activeShift.type === "CASA") {
         const dCheck = appState.activeShift.dateObj ? new Date(appState.activeShift.dateObj) : new Date();
@@ -5674,8 +5902,32 @@ function openModal(id) {
       };
 
       const manualStartInput = document.getElementById("manual-start");
-      manualStartInput.onchange = updateManualEndSuggs;
+      manualStartInput.onchange = function() {
+        updateManualEndSuggs();
+        updateManualModalRoundSuggestion();
+      };
       updateManualEndSuggs();
+
+      manualModalRoundApplied = 0;
+      currentManualModalRoundBonus = 0;
+      const mStart = document.getElementById("manual-start");
+      const mEnd = document.getElementById("manual-end");
+      const mType = document.getElementById("manual-type");
+      if (mStart && !mStart._roundListenerAttached) {
+        mStart.addEventListener("input", updateManualModalRoundSuggestion);
+        mStart.addEventListener("change", updateManualModalRoundSuggestion);
+        mStart._roundListenerAttached = true;
+      }
+      if (mEnd && !mEnd._roundListenerAttached) {
+        mEnd.addEventListener("input", updateManualModalRoundSuggestion);
+        mEnd.addEventListener("change", updateManualModalRoundSuggestion);
+        mEnd._roundListenerAttached = true;
+      }
+      if (mType && !mType._roundListenerAttached) {
+        mType.addEventListener("change", updateManualModalRoundSuggestion);
+        mType._roundListenerAttached = true;
+      }
+      updateManualModalRoundSuggestion();
 
       openModal("modal-manual-entry");
     }
@@ -5757,6 +6009,7 @@ function openModal(id) {
         btnTrasf.className = "segmented-btn active trasf";
       }
       updateEditWeekendAlert();
+      updateEditModalRoundSuggestion();
     }
 
     function toggleEditFixedPay(checked) {
@@ -5886,7 +6139,24 @@ function openModal(id) {
           const newSuggs = computeTimeSuggestionsAround(defEnd, [-60, -30, 0, 30, 60]);
           renderTimePillSuggestions("edit-end-suggestions", "edit-end", newSuggs, defEnd);
         }
+        updateEditModalRoundSuggestion();
       };
+
+      editModalRoundApplied = 0;
+      currentEditModalRoundBonus = 0;
+      const eStart = document.getElementById("edit-start");
+      const eEnd = document.getElementById("edit-end");
+      if (eStart && !eStart._roundListenerAttached) {
+        eStart.addEventListener("input", updateEditModalRoundSuggestion);
+        eStart.addEventListener("change", updateEditModalRoundSuggestion);
+        eStart._roundListenerAttached = true;
+      }
+      if (eEnd && !eEnd._roundListenerAttached) {
+        eEnd.addEventListener("input", updateEditModalRoundSuggestion);
+        eEnd.addEventListener("change", updateEditModalRoundSuggestion);
+        eEnd._roundListenerAttached = true;
+      }
+      updateEditModalRoundSuggestion();
 
       // Configura pulsante Unisci / Separa da Evento Ieri (Parità 100% Bot)
       const btnToggle = document.getElementById("btn-edit-toggle-event");
@@ -8747,7 +9017,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=59").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=60").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
