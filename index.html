@@ -278,6 +278,55 @@
       background: linear-gradient(180deg, rgba(16, 185, 129, 0.06) 0%, #ffffff 100%);
       box-shadow: 0 4px 18px rgba(16, 185, 129, 0.16), 0 0 0 1px rgba(16, 185, 129, 0.25);
     }
+    /* Stato di aggiornamento / caricamento scheda turno (anti-tap & blur) */
+    .shift-card.is-updating {
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+    .shift-card.is-updating > *:not(.shift-card-overlay) {
+      opacity: 0.38;
+      filter: blur(0.8px);
+      transition: opacity 0.25s ease, filter 0.25s ease;
+    }
+    .shift-card-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.38);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      z-index: 10;
+    }
+    body.theme-light .shift-card-overlay, [data-theme="light"] .shift-card-overlay {
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .shift-card.is-updating .shift-card-overlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .shift-card-spinner {
+      width: 26px;
+      height: 26px;
+      border: 2.5px solid rgba(255, 255, 255, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: shiftCardSpin 0.75s linear infinite;
+    }
+    body.theme-light .shift-card-spinner, [data-theme="light"] .shift-card-spinner {
+      border: 2.5px solid rgba(0, 0, 0, 0.12);
+      border-top-color: var(--primary);
+    }
+    @keyframes shiftCardSpin {
+      to { transform: rotate(360deg); }
+    }
     .shift-header {
       display: flex;
       justify-content: space-between;
@@ -1294,7 +1343,11 @@
     <main id="screen-dashboard" class="view-screen active">
 
       <!-- Shift Live Card -->
-      <div id="shift-card" class="card shift-card">
+      <div id="shift-card" class="card shift-card is-updating">
+        <!-- Overlay di Caricamento Scheda Turno (senza scritte, solo blur e spinner discreto) -->
+        <div id="shift-card-overlay" class="shift-card-overlay" aria-hidden="true">
+          <div class="shift-card-spinner"></div>
+        </div>
         <div class="shift-header">
           <div class="shift-title">
             <span id="shift-pulse" class="pulse-dot" style="display:none;"></span>
@@ -3378,9 +3431,21 @@
       });
     }
 
+    // Gestione stato di caricamento / blocco interazioni scheda turno
+    function setShiftCardLoading(isLoading) {
+      const card = document.getElementById("shift-card");
+      if (!card) return;
+      if (isLoading) {
+        card.classList.add("is-updating");
+      } else {
+        card.classList.remove("is-updating");
+      }
+    }
+
     // Inizializzazione Dashboard (Stale-While-Revalidate / 0 ms / Offline-First)
     async function fetchDashboardData(forceRefresh = false) {
       setRefreshButtonState("spinning");
+      setShiftCardLoading(true);
       const isInitialBoot = !appState.user;
       const appStartTime = Date.now();
       const tgUser = getTelegramUser();
@@ -3564,6 +3629,7 @@
       } finally {
         clearTimeout(timeoutId);
         hideLoader();
+        setShiftCardLoading(false);
         // Prefetch silenzioso in background della scheda lavoro odierna (a schermo già pronto)
         if (appState.user && appState.user.status === "ACTIVE") {
           setTimeout(prefetchTodayEventDetail, 400);
@@ -9017,7 +9083,7 @@ function openModal(id) {
     // Registrazione Service Worker per supporto PWA Offline
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=60").catch(e => console.warn("SW registration error:", e));
+        navigator.serviceWorker.register("./sw.js?v=61").catch(e => console.warn("SW registration error:", e));
       });
     }
   </script>
